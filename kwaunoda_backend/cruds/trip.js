@@ -27,7 +27,8 @@ crudsObj.postTrip = (
     usd_rate,
     customer_comment,
     driver_comment,
-    driver_stars
+    driver_stars,
+    customer_stars
 ) => {
     return new Promise((resolve, reject) => {
         pool.query(
@@ -36,8 +37,8 @@ crudsObj.postTrip = (
              delivery_contact_details, dest_location, origin_location, 
              origin_location_lat, origin_location_long, destination_lat, 
              destination_long, distance, delivery_cost_proposed, 
-             accepted_cost, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment, driver_stars
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             accepted_cost, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment, driver_stars, customer_stars
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 driver_id,
                 cust_id,
@@ -62,7 +63,8 @@ crudsObj.postTrip = (
                 usd_rate,
                 customer_comment,
                 driver_comment,
-                driver_stars
+                driver_stars,
+                customer_stars
             ],
             (err, result) => {
                 if (err) {
@@ -133,7 +135,8 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
         usd_rate,
         customer_comment,
         driver_comment,
-        driver_stars
+        driver_stars,
+        customer_stars
     } = updatedValues;
 
     return new Promise((resolve, reject) => {
@@ -148,7 +151,7 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
                 accepted_cost = ?, payment_type = ?, 
                 currency_id = ?, currency_code = ?,
                 usd_rate = ?, customer_comment = ?, 
-                driver_comment = ?, driver_stars = ? 
+                driver_comment = ?, driver_stars = ?, customer_stars = ? 
             WHERE trip_id = ?`,
             [
                 driver_id,
@@ -175,6 +178,7 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
                 customer_comment,
                 driver_comment,
                 driver_stars,
+                customer_stars,
                 trip_id // This is the value for WHERE clause
             ],
             (err, result) => {

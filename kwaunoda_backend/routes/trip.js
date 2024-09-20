@@ -30,11 +30,11 @@ tripRouter.post('/', async (req, res, next) => {
         let customer_comment = postedValues.customer_comment;
         let driver_comment = postedValues.driver_comment;
         let driver_stars = postedValues.driver_stars;
-        
+        let customer_stars = postedValues.customer_stars;
 
         console.log(status);
 
-        let results = await tripDbOperations.postTrip(driver_id,cust_id,order_start_time,start_date_time,status,deliveray_details,weight,delivery_contact_details,dest_location,origin_location,origin_location_lat,origin_location_long,destination_lat,destination_long,distance,delivery_cost_proposed,accepted_cost,payment_type,currency_id,currency_code,usd_rate,customer_comment,driver_comment,driver_stars);
+        let results = await tripDbOperations.postTrip(driver_id,cust_id,order_start_time,start_date_time,status,deliveray_details,weight,delivery_contact_details,dest_location,origin_location,origin_location_lat,origin_location_long,destination_lat,destination_long,distance,delivery_cost_proposed,accepted_cost,payment_type,currency_id,currency_code,usd_rate,customer_comment,driver_comment,driver_stars,customer_stars);
         res.json(results);
     } catch (e) {
         console.log(e);

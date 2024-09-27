@@ -127,6 +127,17 @@ DriverRouter.get('/:driver_id', async (req, res, next) => {
     }
 });
 
+DriverRouter.get('/login/:driver_email', async (req, res, next) => {
+    try {
+        let driver_email = req.params.driver_email;
+        let result = await DriverDbOperations.getDriverByEmail(driver_email);
+        res.json(result);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
 DriverRouter.put('/:id', async (req, res, next) => {
     try {
         let driver_id = req.params.id;

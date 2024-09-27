@@ -109,7 +109,7 @@ crudsObj.postDriver = (
         if (err) {
             return reject(err);
         }
-        return resolve({ status: '200', message: 'saving successful' });
+        return resolve({ status: '200', message: 'saving successful', result });
     }
         );
         
@@ -127,9 +127,9 @@ crudsObj.getDrivers = () => {
     });
 };
 
-crudsObj.getDriverById = (driverid_id) => {
+crudsObj.getDriverById = (driver_id) => {
     return new Promise((resolve, reject) => {
-        pool.query('SELECT * FROM driver_details WHERE driverid = ?', [driverid], (err, results) => {
+        pool.query('SELECT * FROM driver_details WHERE driver_id = ?', [driver_id], (err, results) => {
             if (err) {
                 return reject(err);
             }
@@ -137,6 +137,19 @@ crudsObj.getDriverById = (driverid_id) => {
         });
     });
 };
+
+
+crudsObj.getDriverByEmail = (driver_email) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM driver_details WHERE email = ?', [driver_email], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+};
+
 
 crudsObj.updateDriver = (driverid, updatedValues) => {
     const {
@@ -198,8 +211,8 @@ crudsObj.updateDriver = (driverid, updatedValues) => {
                 nok2name = ?, nok2surname = ?, nok2relationship = ?, nok2phone = ?, rating = ?, 
                 credit_bar_rule_exception = ?, membershipstatus = ?, defaultsubs = ?, sendmail = ?, 
                 sendsms = ?, product_code = ?, cost_price = ?, selling_price = ?, 
-                payment_style = ?, profilePic = ?,
-            WHERE driverid = ?`,
+                payment_style = ?, profilePic = ?
+            WHERE driver_id = ?`,
             [
                 ecnumber,
                 account_type,

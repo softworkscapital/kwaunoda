@@ -5,12 +5,9 @@ const usersDbOperations = require('../cruds/users');
 userRouter.post('/', async (req, res, next) => {
     try {
         let postedValues = req.body;
-        let company_id = postedValues.company_id;
-        let branch_id = postedValues.branch_id;
         let username = postedValues.username;
-        let password = postedValues.passwordHash;
+        let password = postedValues.password;
         let role = postedValues.role;
-        let category = postedValues.category;
         let email = postedValues.email;
         let notify = postedValues.notify;
         let activesession = postedValues.activesession;
@@ -20,11 +17,17 @@ userRouter.post('/', async (req, res, next) => {
         let delivery = postedValues.delivery;
         let status = postedValues.status;
         let employee_id = postedValues.employee_id;
+        let company_id = postedValues.company_id;
+        let branch_id = postedValues.branch_id;
+        let sync_status = postedValues.sync_status;
+        let last_logged_account = postedValues.last_logged_account;
+        let driver_id = postedValues.driver_id;
+        let customerid = postedValues.customerid;
         // let client_profile_id = postedValues.client_profile_id;
 
         console.log(email);
 
-        let results = await usersDbOperations.postUser(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id, client_profile_id);
+        let results = await usersDbOperations.postUser(username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id,company_id,branch_id,sync_status,last_logged_account,driver_id,customerid);
         res.json(results);
     } catch (e) {
         console.log(e);
@@ -180,8 +183,6 @@ userRouter.put('/:id', async (req, res, next) => {
     try {
       let id = req.params.id;
       let updatedValues = req.body;
-      let company_id = updatedValues.company_id;
-        let branch_id = updatedValues.branch_id;
         let username = updatedValues.username;
         let password = updatedValues.password;
         let role = updatedValues.role;
@@ -195,9 +196,15 @@ userRouter.put('/:id', async (req, res, next) => {
         let delivery = updatedValues.delivery;
         let status = updatedValues.status;
         let employee_id = updatedValues.employee_id;
+        let company_id = postedValues.company_id;
+        let branch_id = postedValues.branch_id;
+        let sync_status = postedValues.sync_status;
+        let last_logged_account = postedValues.last_logged_account;
+        let driver_id = postedValues.driver_id;
+        let customerid = postedValues.customerid;
   
       let result = await usersDbOperations.updateUser(
-        id,company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id
+        id,company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id,company_id,branch_id,sync_status,last_logged_account,driver_id,customerid
       );
       res.json(result);
     } catch (e) {

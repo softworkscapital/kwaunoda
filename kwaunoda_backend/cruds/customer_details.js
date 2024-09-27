@@ -141,6 +141,17 @@ crudsObj.getCustomerById = (customer_id) => {
     });
 };
 
+crudsObj.getCustomerByEmail = (email) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM customer_details WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+};
+
 crudsObj.updateCustomer = (customer_id, updatedValues) => {
     const {
         ecnumber,

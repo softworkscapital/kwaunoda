@@ -4,15 +4,14 @@ const axios = require('axios');
 
 let crudsObj = {};
 
-crudsObj.postUser = (company_id, branch_id, username, password, role, category, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, client_profile_id) => {
+crudsObj.postUser = (username, password, role,  email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid) => {
     console.log(password);
-    console.log(client_profile_id);
     return new Promise((resolve, reject) => {
-        pool.query('INSERT INTO users(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,client_profile_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [company_id, branch_id, username, password, role, category, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, client_profile_id], (err, result) => {
+        pool.query('INSERT INTO users(username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id,company_id,branch_id,sync_status,last_logged_account,driver_id,customerid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid ], (err, result) => {
             if (err) {
                 return reject(err);
             }
-            return resolve({ statu: '200', message: 'saving successful' });
+            return resolve({ status: '200', message: 'saving successful' });
         })
     })
 };

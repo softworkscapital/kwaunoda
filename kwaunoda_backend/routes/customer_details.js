@@ -128,6 +128,17 @@ CustomerRouter.get('/:id', async (req, res, next) => {
     }
 });
 
+CustomerRouter.get('/login/:email', async (req, res, next) => {
+    try {
+        let email = req.params.email;
+        let result = await CustomersDbOperations.getCustomerByEmail(email);
+        res.json(result);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
 CustomerRouter.put('/:id', async (req, res, next) => {
     try {
         let customer_id = req.params.id;

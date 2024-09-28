@@ -112,7 +112,7 @@ crudsObj.postCustomer = (
                 if (err) {
                     return reject(err);
                 }
-                return resolve({ status: '200', message: 'saving successful' });
+                return resolve({ status: '200', message: 'saving successful', result });
             }
         );
         

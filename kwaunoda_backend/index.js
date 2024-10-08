@@ -18,11 +18,22 @@ const customerRouter = require('./routes/customer_details');
 const counterRouter = require('./routes/counter_offer');
 const complaintRouter = require('./routes/complaint');
 const pool = require('./cruds/poolfile')
+const bodyParser = require('body-parser');
 
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+const corsOptions = {
+    origin: 'http://localhost:8081', // Adjust this to your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOptions));
+// Increase the limit for JSON and URL-encoded data
+app.use(bodyParser.json({ limit: '100mb' })); // Adjust the limit as needed
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
 //App Route Usage
 app.use('/trip', tripRouter);
@@ -57,15 +68,15 @@ app.post('/driver/login', async (req, res) => {
     }
 });
 
-const options = {
-  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-};
+// const options = {
+//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+// };
 
-https.createServer(options, app).listen(process.env.APPPORT || '3010', () => {
-  console.log('app is listening to port' + process.env.APPPORT);
-});
-
-// app.listen(PORT, () => {
-//     console.log('app is listening to port' + ' ' + PORT);
+// https.createServer(options, app).listen(process.env.APPPORT || '3010', () => {
+//   console.log('app is listening to port' + process.env.APPPORT);
 // });
+
+app.listen(PORT, () => {
+    console.log('app is listening to port' + ' ' + PORT);
+});

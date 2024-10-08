@@ -131,6 +131,17 @@ tripRouter.get("/driver/notify/", async (req, res, next) => {
   }
 });
 
+tripRouter.get("/driver/notify/:id", async (req, res, next) => {
+  try {
+    let driver_id = req.params.id;
+    let results = await tripDbOperations.getTripByStatusToDriverEnd(driver_id);
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
 tripRouter.get("/customer/notify/:id", async (req, res, next) => {
   try {
     let cust_id = req.params.id;

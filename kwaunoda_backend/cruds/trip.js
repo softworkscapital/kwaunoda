@@ -41,7 +41,7 @@ crudsObj.postTrip = (
              origin_location_lat, origin_location_long, destination_lat, 
              destination_long, distance, delivery_cost_proposed, 
              accepted_cost, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment, driver_stars, customer_stars
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         driver_id,
         cust_id,
@@ -121,6 +121,21 @@ crudsObj.getTripByStatusToDriver = () => {
   });
 };
 
+crudsObj.getTripByStatusToDriverEnd = (driver_id) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      'SELECT * FROM trip WHERE status = "Waiting Driver Rating" AND driver_id = ?',
+      [driver_id],
+      (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(results);
+      }
+    );
+  });
+};
+
 crudsObj.getTripByStatus = (driver_id, status) => {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM trip WHERE driver_id = ? AND status = ?";
@@ -151,7 +166,7 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE status = "InTransit" OR status = "Arrived At Destination" AND cust_id = ? ',
+      'SELECT * FROM trip WHERE cust_id = ? AND status = "InTransit" OR status = "Arrived At Destination"',
       [cust_id],
       (err, results) => {
         if (err) {

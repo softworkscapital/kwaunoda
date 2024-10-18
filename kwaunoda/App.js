@@ -35,35 +35,36 @@ import SignUpCustomer2 from "./src/screens/SignUpCustomer2";
 import SignUpCustomer3 from "./src/screens/SignUpCustomer3";
 import SignUpDriver1 from "./src/screens/SignUpDriver1";
 import DriverDeliveryAccepted from "./src/screens/DriverDeliveryAccepted";
-import Toast from 'react-native-toast-message';
-
-
+import Toast from "react-native-toast-message";
 
 const Stack = createStackNavigator();
 
 const App = () => {
-
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="SignUpCustomer" component={SignUpCustomer} />
+        <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
+        <Stack.Screen name="SignUpCustomer2" component={SignUpCustomer2} />
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
         <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="DeliveryNotice" component={DeliveryNotice} />
-        <Stack.Screen name="ProfileInformation" component={ProfileInformation} />
+        <Stack.Screen
+          name="ProfileInformation"
+          component={ProfileInformation}
+        />
         <Stack.Screen name="DriverEndTrip" component={DriverEndTrip} />
         <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
         <Stack.Screen name="Complaint" component={Complaint} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen name="SignUpCustomer" component={SignUpCustomer} />
-        <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="DeliveryAccepted" component={DeliveryAccepted} />
         <Stack.Screen name="HomeDriver" component={HomeDriver} />
-        <Stack.Screen name="DriverDeliveryAccepted" component={DriverDeliveryAccepted} />
-        <Stack.Screen name="SignUpCustomer2" component={SignUpCustomer2} />
+        <Stack.Screen
+          name="DriverDeliveryAccepted"
+          component={DriverDeliveryAccepted}
+        />
         <Stack.Screen name="SignUpDriver" component={SignUpDriver} />
         <Stack.Screen name="SignUpDriver1" component={SignUpDriver1} />
         <Stack.Screen name="CustomerSafety" component={CustomerSafety} />
@@ -80,7 +81,7 @@ const App = () => {
         <Stack.Screen name="CustomerComplaint" component={CustomerComplaint} />
         <Stack.Screen name="FAQ" component={FAQ} />
         <Stack.Screen name="AboutUs" component={AboutUs} />
-        
+
         <Stack.Screen name="Safety" component={Safety} />
         <Stack.Screen name="History" component={History} />
       </Stack.Navigator>

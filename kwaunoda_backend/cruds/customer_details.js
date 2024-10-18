@@ -4,9 +4,8 @@ const pool = require('./poolfile');
 let crudsObj = {};
 
 crudsObj.postCustomer = (
-    customerid,
     ecnumber,
-    accountType,
+    account_type,
     account_category,
     signed_on,
     name,
@@ -49,7 +48,7 @@ crudsObj.postCustomer = (
     payment_style,
     bp_number,
     vat_number,
-    profilePic
+    profilePic // The URL of the uploaded image
 ) => {
     return new Promise((resolve, reject) => {
         pool.query(
@@ -60,10 +59,10 @@ crudsObj.postCustomer = (
                 nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone, 
                 creditstanding, membershipstatus, defaultsubs, sendmail, sendsms, product_code, cost_price, 
                 selling_price, payment_style, bp_number, vat_number, profilePic
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 ecnumber,
-                accountType,
+                account_type,
                 account_category,
                 signed_on,
                 name,
@@ -115,7 +114,6 @@ crudsObj.postCustomer = (
                 return resolve({ status: '200', message: 'saving successful', result });
             }
         );
-        
     });
 };
 

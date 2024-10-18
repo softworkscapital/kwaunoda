@@ -52,67 +52,66 @@ crudsObj.postDriver = (
     return new Promise((resolve, reject) => {
         pool.query(
             `INSERT INTO driver_details (
-        ecnumber, account_type, signed_on, username, name, surname, idnumber, sex, dob, 
-        address, house_number_and_street_name, surbub, city, country, lat_cordinates, long_cordinates, 
-        phone, plate, email, password, employer, workindustry, workaddress, workphone, workphone2, 
-        nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone, 
-        rating, credit_bar_rule_exception, membershipstatus, defaultsubs, sendmail, sendsms, product_code, cost_price, 
-        selling_price, payment_style, profilePic
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-        ecnumber,
-        account_type,
-        signed_on,
-        username,
-        name,
-        surname,
-        idnumber,
-        sex,
-        dob,
-        address,
-        house_number_and_street_name,
-        surbub,
-        city,
-        country,
-        lat_cordinates,
-        long_cordinates,
-        phone,
-        plate,
-        email,
-        password,
-        employer,
-        workindustry,
-        workaddress,
-        workphone,
-        workphone2,
-        nok1name,
-        nok1surname,
-        nok1relationship,
-        nok1phone,
-        nok2name,
-        nok2surname,
-        nok2relationship,
-        nok2phone,
-        rating,
-        credit_bar_rule_exception,
-        membershipstatus,
-        defaultsubs,
-        sendmail,
-        sendsms,
-        product_code,
-        cost_price,
-        selling_price,
-        payment_style,
-        profilePic
-    ],
-    (err, result) => {
-        if (err) {
-            return reject(err);
-        }
-        return resolve({ status: '200', message: 'saving successful', result });
-    }
+                ecnumber, account_type, signed_on, username, name, surname, idnumber, sex, dob, 
+                address, house_number_and_street_name, surbub, city, country, lat_cordinates, long_cordinates, 
+                phone, plate, email, password, employer, workindustry, workaddress, workphone, workphone2, 
+                nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone, 
+                rating, credit_bar_rule_exception, membershipstatus, defaultsubs, sendmail, sendsms, product_code, cost_price, 
+                selling_price, payment_style, profilePic
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                ecnumber,
+                account_type,
+                signed_on,
+                username,
+                name,
+                surname,
+                idnumber,
+                sex,
+                dob,
+                address,
+                house_number_and_street_name,
+                surbub,
+                city,
+                country,
+                lat_cordinates,
+                long_cordinates,
+                phone,
+                plate,
+                email,
+                password,
+                employer,
+                workindustry,
+                workaddress,
+                workphone,
+                workphone2,
+                nok1name,
+                nok1surname,
+                nok1relationship,
+                nok1phone,
+                nok2name,
+                nok2surname,
+                nok2relationship,
+                nok2phone,
+                rating,
+                credit_bar_rule_exception,
+                membershipstatus,
+                defaultsubs,
+                sendmail,
+                sendsms,
+                product_code,
+                cost_price,
+                selling_price,
+                payment_style,
+                profilePic
+            ],
+            (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve({ status: '200', message: 'saving successful', result });
+            }
         );
-        
     });
 };
 
@@ -138,7 +137,6 @@ crudsObj.getDriverById = (driver_id) => {
     });
 };
 
-
 crudsObj.getDriverByEmail = (driver_email) => {
     return new Promise((resolve, reject) => {
         pool.query('SELECT * FROM driver_details WHERE email = ?', [driver_email], (err, results) => {
@@ -149,7 +147,6 @@ crudsObj.getDriverByEmail = (driver_email) => {
         });
     });
 };
-
 
 crudsObj.updateDriver = (driverid, updatedValues) => {
     const {
@@ -272,12 +269,30 @@ crudsObj.updateDriver = (driverid, updatedValues) => {
 
 crudsObj.deleteDriver = (id) => {
     return new Promise((resolve, reject) => {
-        pool.query('DELETE FROM driver_details WHERE driverid = ?', [id], (err, results) => {
+        pool.query('DELETE FROM driver_details WHERE driver_id = ?', [id], (err, results) => {
             if (err) {
                 return reject(err);
             }
             return resolve(results);
         });
+    });
+};
+
+// New method for updating coordinates
+crudsObj.updateDriverCoordinates = (driverid, lat_cordinates, long_cordinates) => {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            `UPDATE driver_details SET 
+                lat_cordinates = ?, long_cordinates = ?
+            WHERE driver_id = ?`,
+            [lat_cordinates, long_cordinates, driverid],
+            (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve({ status: '200', message: 'Coordinates updated successfully' });
+            }
+        );
     });
 };
 

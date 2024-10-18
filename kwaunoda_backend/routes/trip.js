@@ -24,6 +24,7 @@ tripRouter.post("/", async (req, res, next) => {
     let distance = postedValues.distance;
     let delivery_cost_proposed = postedValues.delivery_cost_proposed;
     let accepted_cost = postedValues.accepted_cost;
+    let paying_when = postedValues.paying_when;
     let payment_type = postedValues.payment_type;
     let currency_id = postedValues.currency_id;
     let currency_code = postedValues.urrency_code;
@@ -55,6 +56,7 @@ tripRouter.post("/", async (req, res, next) => {
       distance,
       delivery_cost_proposed,
       accepted_cost,
+      paying_when,
       payment_type,
       currency_id,
       currency_code,
@@ -98,6 +100,26 @@ tripRouter.get("/driver_id/status", async (req, res, next) => {
     res.sendStatus(500);
   }
 });
+tripRouter.put("/updateStatusAndDriver/:id", async (req, res, next) => {
+  try {
+    const trip_id = req.params.id; // Get trip_id from URL parameters
+    const { driver_id, status } = req.body; // Get driver_id and status from request body
+
+    // Validate the input
+    if (!driver_id || !status) {
+      return res.status(400).json({ error: "Driver ID and status are required." });
+    }
+
+    // Call the updateStatusAndDriver function
+    const result = await tripDbOperations.updateStatusAndDriver(trip_id, driver_id, status);
+
+    // Send the result back to the client
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500); // Send a 500 Internal Server Error status
+  }
+});
 
 tripRouter.get("/byStatus/driver_id/status", async (req, res, next) => {
   const { driver_id, status } = req.query; // Extract parameters from the query
@@ -135,6 +157,17 @@ tripRouter.get("/driver/notify/:id", async (req, res, next) => {
   try {
     let driver_id = req.params.id;
     let results = await tripDbOperations.getTripByStatusToDriverEnd(driver_id);
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+tripRouter.get("/dash/notify/:status", async (req, res, next) => {
+  try {
+    let status = req.params.status;
+    let results = await tripDbOperations.getTripByStatusDash(status);
     res.json(results);
   } catch (e) {
     console.log(e);

@@ -8,7 +8,7 @@ const https = require("https");
 const path = require("path");
 const fs = require("fs");
 
-const PORT = process.env.APPPORT || 3003;
+const PORT = process.env.APPPORT || 3011;
 // Route path
 const tripRouter = require("./routes/trip");
 const userRouter = require("./routes/users");
@@ -72,15 +72,15 @@ app.post("/driver/login", async (req, res) => {
   }
 });
 
-// const options = {
-//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-// };
+const options = {
+  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+};
 
-// https.createServer(options, app).listen(process.env.APPPORT || '3010', () => {
-//   console.log('app is listening to port' + process.env.APPPORT);
-// });
-
-app.listen(PORT, () => {
-  console.log("app is listening to port" + " " + PORT);
+https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+  console.log('app is listening to port' + process.env.APPPORT);
 });
+
+// app.listen(PORT, () => {
+//   console.log("app is listening to port" + " " + PORT);
+// });

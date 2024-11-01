@@ -1,0 +1,78 @@
+/* SearchPage.css */
+
+/* General body styles */
+body {
+    background-color: white; /* Background color */
+    color: black; /* Golden Yellow text color */
+    font-family: Arial, sans-serif; /* Font family */
+}
+
+/* Minimum height for the container */
+.min-h-screen {
+    min-height: 100vh; /* Full screen height */
+}
+
+/* Container styling */
+.container {
+    max-width: 800px; /* Maximum width of the container */
+    margin: 0 auto; /* Centering the container */
+    padding: 32px; /* Padding around the container */
+}
+
+/* Heading styles */
+h1 {
+    font-size: 2.5rem; /* Font size */
+    font-weight: bold; /* Font weight */
+    text-align: center; /* Centered text */
+    margin-bottom: 32px; /* Space below the heading */
+}
+
+/* Input field styles */
+input {
+    width: 100%; /* Full width */
+    padding: 12px; /* Padding inside the input */
+    border-radius: 8px; /* Rounded corners */
+    border: 2px solid #FFD700; /* Golden Yellow border /* Input background color */
+    color: #FFD700; /* Golden Yellow text color */
+    outline: none; /* Remove outline */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+/* Input field focus state */
+input:focus {
+    border-color: #FFC300; /* Slightly brighter yellow on focus */
+}
+
+/* Button styles */
+button {
+    margin-top: 10px;
+    background-color: #FFD700; /* Golden Yellow background */
+    color: black; /* Black text color */
+    padding: 12px 24px; /* Padding on button */
+    border-radius: 8px; /* Rounded corners */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+    margin-left: 8px; /* Optional: space between input and button */
+}
+
+/* Button hover state */
+button:hover {
+    background-color: rgb(247, 247, 116); /* Darker yellow on hover */
+}
+
+/* Result card styles */
+.result {
+    padding-top: 10px;
+    margin-top: 10px;
+    background-color: #FFD700; /* Golden Yellow background */
+    color: black; /* Black text color */
+    padding: 16px; /* Padding inside result cards */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Shadow effect */
+    margin-bottom: 16px; /* Space below each result */
+}
+
+form {
+    justify-content: center; /* Center horizontally */
+}

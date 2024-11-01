@@ -1,0 +1,40 @@
+.bottom-bar {
+    background-color: #f8f9fa; /* Light background color */
+    padding: 10px 0; /* Add some padding */
+  }
+  
+
+  .trip-card {
+    width: 70%; /* Set card width to 70% of the parent */
+    margin: 0 auto; /* Center the card within the column */
+    background-color: #FFD700; /* Golden yellow */
+    color: #000; /* Text color for contrast */
+    transition: transform 0.2s, background-color 0.2s; /* Smooth scaling and background color */
+    border: none; /* Remove default border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+  }
+  
+  .trip-card:hover {
+    transform: scale(1.05); /* Scale up on hover */
+    background-color: #FFC107; /* Slightly darker yellow on hover */
+  }
+  
+.bottom-section {
+  position: fixed;
+  padding: 20px; /* Add padding for visibility */
+  bottom: 0;
+  left: 0;
+  width: 75.8%;
+  background-color: #f1f1f1; /* Light gray background */
+  padding: 1px;
+  margin-left: 5px;
+  border-top: 1px solid #ccc;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+
+.bottom-section ul {
+  list-style-type: none;
+  padding: 0;
+}

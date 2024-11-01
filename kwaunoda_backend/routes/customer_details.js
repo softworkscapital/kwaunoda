@@ -157,4 +157,37 @@ CustomerRouter.delete('/:id', async (req, res, next) => {
     }
 });
 
+ //customer route
+ CustomerRouter.get('/customer_status/:status', async (req, res, next) => {
+    try {
+        let status = req.params.status;
+        let result = await CustomersDbOperations.getCustomerByStatus(status);
+        res.json(result);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
+
+
+CustomerRouter.put("/update_status/:id", async (req, res, next) => {
+    try {
+      let customerid = req.params.id;
+      let updatedValues = req.body;
+  
+      let results = await CustomersDbOperations.updateCustomerStatus(
+        customerid,
+        updatedValues
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  });
+
+
+
+
 module.exports = CustomerRouter;

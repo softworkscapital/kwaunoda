@@ -198,4 +198,34 @@ DriverRouter.delete("/:id", async (req, res, next) => {
   }
 });
 
+
+//driver route
+DriverRouter.get("/driver_status/:status", async (req, res, next) => {
+  try {
+    let status = req.params.status;
+    let result = await DriverDbOperations.getDriverByStatus(status);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+DriverRouter.put("/update_status/:id", async (req, res, next) => {
+  try {
+    let driver_id = req.params.id;
+    let updatedValues = req.body;
+
+    let results = await DriverDbOperations.updateDriverStatus(
+      driver_id,
+      updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+
 module.exports = DriverRouter;

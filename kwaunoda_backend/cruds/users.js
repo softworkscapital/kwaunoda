@@ -68,15 +68,22 @@ crudsObj.postUser = (
 
 crudsObj.getLastInsertedUserId = () => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT MAX(userid) AS lastId FROM users", (err, results) => {
+    pool.query("SELECT MAX(userid) FROM users LIMIT 1", (err, results) => {
       if (err) {
-        return reject(err);
+        console.error("Database query error:", err);
+        return reject(new Error("Failed to fetch the last inserted user ID"));
       }
-      // Check if results are not empty and return the last user ID
-      return resolve(results[0].lastId);
+      
+      if (results.length > 0) {
+        return resolve(results[0].userid); // Return the last inserted user ID
+      } else {
+        return resolve(null); // No users found
+      }
     });
   });
 };
+
+
 crudsObj.postUsernNew = (companyId, username, role, email, password) => {
   console.log(password);
   return new Promise((resolve, reject) => {

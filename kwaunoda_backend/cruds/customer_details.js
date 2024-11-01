@@ -282,4 +282,39 @@ crudsObj.deleteCustomer = (id) => {
     });
 };
 
+  //customer crud
+  crudsObj.getCustomerByStatus = (status) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM customer_details WHERE membershipstatus = ?', [status], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+};
+
+
+  //customer crud
+  crudsObj.updateCustomerStatus = (customerid, updatedValues) => {
+    const { membershipstatus } = updatedValues; // Only extract membershipstatus
+  
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE driver_details SET 
+          membershipstatus = ?
+        WHERE driver_id = ?`,
+        [membershipstatus, customerid], // Only pass the necessary parameters
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve({ status: "200", message: "Update successful" });
+        }
+      );
+    });
+  };
+
+
+
 module.exports = crudsObj;

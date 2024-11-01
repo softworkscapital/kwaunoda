@@ -337,4 +337,48 @@ crudsObj.updateDriverCoordinates = (
   });
 };
 
+// Driver Crud
+crudsObj.updateDriverStatus = (driverid, updatedValues) => {
+    const { membershipstatus } = updatedValues; // Only extract membershipstatus
+  
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE driver_details SET 
+          membershipstatus = ?
+        WHERE driver_id = ?`,
+        [membershipstatus, driverid], // Only pass the necessary parameters
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve({ status: "200", message: "Update successful" });
+        }
+      );
+    });
+  };
+
+// Driver Crud update
+  crudsObj.updateDriverStatus = (driverid, updatedValues) => {
+    const { membershipstatus } = updatedValues; // Only extract membershipstatus
+  
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE driver_details SET 
+          membershipstatus = ?
+        WHERE driver_id = ?`,
+        [membershipstatus, driverid], // Only pass the necessary parameters
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve({ status: "200", message: "Update successful" });
+        }
+      );
+    });
+  };
+
+
+
+
+
 module.exports = crudsObj;

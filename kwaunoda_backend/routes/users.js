@@ -1,31 +1,14 @@
 const express = require("express");
 const userRouter = express.Router();
-const usersDbOperations = require("../cruds/users");
+const usersDbOperations = require("../cruds/users"); // Adjust the path accordingly
 
+// Create a new user
 userRouter.post("/", async (req, res, next) => {
   try {
-    let postedValues = req.body;
-    let userid = postedValues.userid;
-    let username = postedValues.username;
-    let password = postedValues.password;
-    let role = postedValues.role;
-    let email = postedValues.email;
-    let notify = postedValues.notify;
-    let activesession = postedValues.activesession;
-    let addproperty = postedValues.addproperty;
-    let editproperty = postedValues.editproperty;
-    let approverequests = postedValues.approverequests;
-    let delivery = postedValues.delivery;
-    let status = postedValues.status;
-    let employee_id = postedValues.employee_id;
-    let company_id = postedValues.company_id;
-    let branch_id = postedValues.branch_id;
-    let sync_status = postedValues.sync_status;
-    let last_logged_account = postedValues.last_logged_account;
-    let driver_id = postedValues.driver_id;
-    let customerid = postedValues.customerid;
+    const postedValues = req.body; // Get the posted data
 
-    let results = await usersDbOperations.postUser(
+    // Destructure the required fields from the posted values
+    const {
       userid,
       username,
       password,
@@ -44,32 +27,79 @@ userRouter.post("/", async (req, res, next) => {
       sync_status,
       last_logged_account,
       driver_id,
-      customerid
+      customerid,
+      otp,
+    } = postedValues;
+
+    // Call the DB operation to insert the user
+    const results = await usersDbOperations.postUser(
+      userid,
+      username,
+      password,
+      role,
+      email,
+      notify,
+      activesession,
+      addproperty,
+      editproperty,
+      approverequests,
+      delivery,
+      status,
+      employee_id,
+      company_id,
+      branch_id,
+      sync_status,
+      last_logged_account,
+      driver_id,
+      customerid,
+      otp
     );
+
+    // Respond with the results
     res.json(results);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
-  }
-});
-userRouter.get("/", async (req, res, next) => {
-  try {
-    let results = await usersDbOperations.getUsers();
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
+    res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
 
-userRouter.get("/:id", async (req, res, next) => {
+// Get Last Inserted User ID
+userRouter.get("/last-inserted-id", async (req, res, next) => {
   try {
-    let id = req.params.id;
-    let result = await usersDbOperations.getUserById(id);
-    res.json(result);
+    const lastId = await usersDbOperations.getLastInsertedUserId(); // Fetching last inserted user ID
+    res.json({ lastInsertedId: lastId });
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.sendStatus(500); // Send a 500 status code in case of an error
+  }
+});
+
+// Get All Users
+userRouter.get("/", async (req, res, next) => {
+  try {
+    const users = await usersDbOperations.getUsers(); // Fetch all users
+    res.json(users); // Respond with users
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500); // Send a 500 status code in case of an error
+  }
+});
+
+// Get User by ID
+userRouter.get("/:id", async (req, res, next) => {
+  try {
+    const userId = req.params.id; // Extract user ID from parameters
+    const user = await usersDbOperations.getUserById(userId); // Fetch user by ID
+
+    // Check if user was found
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user); // Respond with user details
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
 
@@ -86,215 +116,31 @@ userRouter.get("/:email/:password", async (req, res, next) => {
   }
 });
 
-//Get User By User Email
-userRouter.get("/user/email/:email", async (req, res, next) => {
-  try {
-    let email = req.params.email;
-    let result = await usersDbOperations.getUserByEmail(email);
-    res.json(result);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
 
-userRouter.get("/user/:email/:otp", async (req, res, next) => {
-  try {
-    let email = req.params.email;
-    let otp = req.params.otp;
-    let result = await usersDbOperations.getUserByOtp(email, otp);
-    res.json(result);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-//Update OTP
-userRouter.put("/updateopt/:id", async (req, res, next) => {
-  try {
-    let registration_id = req.params.id;
-    let postedValues = req.body;
-    let status = postedValues.otp;
-
-    let result = await usersDbOperations.updateOTPStatus(
-      registration_id,
-      status
-    );
-    res.json(result);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-//Update OTP
-userRouter.put("/updatepassword/:id", async (req, res, next) => {
-  try {
-    let userid = req.params.id;
-    let postedValues = req.body;
-    let password = postedValues.passwordHash;
-
-    let result = await usersDbOperations.updatePasswordStatus(userid, password);
-    res.json(result);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
+// Update User by ID
 userRouter.put("/:id", async (req, res, next) => {
   try {
-    let id = req.params.id;
-    let updatedValues = req.body;
-    let username = updatedValues.username;
-    let password = updatedValues.password;
-    let role = updatedValues.role;
-    let category = updatedValues.category;
-    let email = updatedValues.email;
-    let notify = updatedValues.notify;
-    let activesession = updatedValues.activesession;
-    let addproperty = updatedValues.addproperty;
-    let editproperty = updatedValues.editproperty;
-    let approverequests = updatedValues.approverequests;
-    let delivery = updatedValues.delivery;
-    let status = updatedValues.status;
-    let employee_id = updatedValues.employee_id;
-    let company_id = postedValues.company_id;
-    let branch_id = postedValues.branch_id;
-    let sync_status = postedValues.sync_status;
-    let last_logged_account = postedValues.last_logged_account;
-    let driver_id = postedValues.driver_id;
-    let customerid = postedValues.customerid;
+    const userId = req.params.id; // Extract user ID from parameters
+    const updatedValues = req.body; // Get updated values from the request body
 
-    let result = await usersDbOperations.updateUser(
-      id,
-      company_id,
-      branch_id,
-      username,
-      password,
-      role,
-      category,
-      email,
-      notify,
-      activesession,
-      addproperty,
-      editproperty,
-      approverequests,
-      delivery,
-      status,
-      employee_id,
-      company_id,
-      branch_id,
-      sync_status,
-      last_logged_account,
-      driver_id,
-      customerid
-    );
-    res.json(result);
+    const results = await usersDbOperations.updateUser(userId, updatedValues); // Update user in DB
+    res.json(results); // Respond with the updated user
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
 
+// Delete User by ID
 userRouter.delete("/:id", async (req, res, next) => {
   try {
-    let id = req.params.id;
-    let result = await usersDbOperations.deleteUser(id);
-    res.json(result);
+    const userId = req.params.id; // Extract user ID from parameters
+    await usersDbOperations.deleteUser(userId); // Delete user from DB
+    res.sendStatus(204); // Respond with no content status
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
 
-userRouter.post("/user/", async (req, res, next) => {
-  try {
-    let postedValues = req.body;
-    let companyId = postedValues.companyId;
-    let username = postedValues.username;
-    let role = postedValues.role;
-    let email = postedValues.email;
-    let password = postedValues.password;
-
-    console.log(email);
-
-    let results = await usersDbOperations.postUsernNew(
-      companyId,
-      username,
-      role,
-      email,
-      password
-    );
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-userRouter.post("/client/", async (req, res, next) => {
-  try {
-    let postedValues = req.body;
-    let company_id = postedValues.company_id;
-    let branch_id = postedValues.branch_id;
-    let username = postedValues.username;
-    let password = postedValues.password;
-    let role = postedValues.role;
-    let category = postedValues.category;
-    let email = postedValues.user_email;
-    let notify = postedValues.notify;
-    let activesession = postedValues.activesession;
-    let addproperty = postedValues.addproperty;
-    let editproperty = postedValues.editproperty;
-    let approverequests = postedValues.approverequests;
-    let delivery = postedValues.delivery;
-    let status = postedValues.status;
-    let employee_id = postedValues.employee_id;
-    let company_email = postedValues.company_email;
-    let client_profile_id = postedValues.id;
-    let user_phone = postedValues.phone;
-    let otp = postedValues.otp;
-
-    console.log(client_profile_id);
-
-    let results = await usersDbOperations.postUser2(
-      company_id,
-      branch_id,
-      username,
-      password,
-      role,
-      category,
-      email,
-      notify,
-      activesession,
-      addproperty,
-      editproperty,
-      approverequests,
-      delivery,
-      status,
-      employee_id,
-      company_email,
-      client_profile_id,
-      user_phone,
-      otp
-    );
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-userRouter.get("/last-inserted-id", async (req, res, next) => {
-  try {
-    let lastId = await usersDbOperations.getLastInsertedUserId(); // Fetching last inserted user ID
-    res.json({ lastInsertedId: lastId });
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-module.exports = userRouter;
+module.exports = userRouter; // Export the userRouter

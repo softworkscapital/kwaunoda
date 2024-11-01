@@ -5,19 +5,19 @@ import { Link } from "react-router-dom";
 // import Header from "./from tellthem/Header";
 // import AdminHeader from "./from tellthem/AdminHeader"
 import { API_URL } from "./config";
+import { useNavigate } from "react-router-dom";
 
 const Billing = () => {
-
-    const [topUpList, setTopUpList] = useState([]); // Initialize topUpList as an empty array
-
+    const navigate = useNavigate(); // Initialize the navigate function
+    const [topUpList, setTopUpList] = useState([]);
     const [isAdmin, setIsAdmin] = useState('');
-    
+
     useEffect(() => {
         const role = 'Admin';
         if (role === 'Admin') {
             setIsAdmin(true);
         }
-        if(role === '' || role === null){
+        if (role === '' || role === null) {
             window.location.href = '/';
         }
         const client_profile_id = localStorage.getItem('async_client_profile_id');
@@ -30,24 +30,26 @@ const Billing = () => {
                 console.log(err.message);
             });
     }, []);
+    
     return (
         <div>
-            {/* {isAdmin ? <AdminHeader /> : null}
-            {!isAdmin ? <Header /> : null} */}
-            <body class="sb-nav-fixed">
-
+            <body className="sb-nav-fixed">
                 <div id="layoutSidenav">
-
                     <div id="layoutSidenav_content">
                         <main>
-                            <div class="container-fluid px-4">
-                                <h1 class="mt-4">Account Top Up</h1>
-                                <ol class="breadcrumb mb-4">
-                                    <li class="breadcrumb-item active"></li>
+                            <div className="container-fluid px-4">
+                                <h1 className="mt-4">Account Top Up</h1>
+                                <ol className="breadcrumb mb-4">
+                                    <li className="breadcrumb-item active"></li>
                                 </ol>
-                                <div style={{}}>
-                                    <Link className="btn btn-success btnAdd" style={{ float: "right" }} to="/AddTopUp
-                                    ">Account Top Up</Link>
+                                <div>
+                                    <button 
+                                        className="btn btn-success btnAdd" 
+                                        style={{ float: "right" }} 
+                                        onClick={() => navigate("/AddTopUp")}
+                                    >
+                                        Account Top Up
+                                    </button>
                                 </div>
                                 <table className="table table-bordered">
                                     <thead className="bg-dark text-light">
@@ -70,8 +72,8 @@ const Billing = () => {
                                                     <td>{item.credit}</td>
                                                     <td>{item.balance}</td>
                                                     <td>
-                                                        <a href="{EditUser/1" >Edit </a>_
-                                                        <a href="/item" >Remove</a>
+                                                        <a href={`/EditUser/${item.top_up_id}`}>Edit</a>
+                                                        <a href="/item">Remove</a>
                                                     </td>
                                                 </tr>
                                             ))

@@ -23,11 +23,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "owner": "softworkscapital",
     "extra": {
       "eas": {
-        "projectId": "7f41fa86-9983-4ba6-8ec7-8b76dc5a17d4"
+        "projectId": "74ee7d59-4463-49ad-bea9-f0925979c23f"
       }
-    }
+    },
+    "owner": "softworkscapital"
   }
 }

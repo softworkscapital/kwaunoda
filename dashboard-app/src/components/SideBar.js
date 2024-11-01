@@ -15,6 +15,7 @@ const SideBar = () => {
     const [customersCount, setCustomersCount] = useState(0);
     const [tripsCount, setTripsCount] = useState(0);
     const [driversCount, setDriversCount] = useState(0);
+    const [pendingCount,setPendingCount] = useState(0);
 
     const getTrips = async() =>{
         try {
@@ -28,6 +29,22 @@ const SideBar = () => {
         }
 
     }
+
+    const getPending = async () => {
+        let status = "Pending"
+        try {
+          const response = await fetch(`${APILINK}/driver/driver_status/${status}`);
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("All data:", data);
+          setPendingCount(data.length);// Return the fetched data
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          throw error; // Rethrow or handle it as needed
+        }
+      };
 
     const getDrivers = async() =>{
         try {
@@ -58,6 +75,17 @@ const SideBar = () => {
         getDrivers()
         getCustomers();
         getTrips();
+        getPending();
+
+        const interval = setInterval(() => {
+            getDrivers();
+            getCustomers();
+            getTrips();
+            getPending();// Call handleSearch every 7 seconds
+          }, 7000);
+        
+          return () => clearInterval(interval);
+
       }, []);
 
     return (
@@ -76,42 +104,155 @@ const SideBar = () => {
                     <div class="menu-list">
 
                         <nav className="navbar navbar-expand-lg navbar-light">
-                            {/* <a className="d-xl-none d-lg-none" href="0">Finance Dashboard</a> */}
+                            {/* <a className="d-xl-none d-lg-none" href="0">Finance Dashboard</a>
                             <button className="navbar-toggler" type="button" onClick={toggleMenu} aria-label="Toggle navigation">
                                 <span className="navbar-toggler-icon"></span>
-                            </button>
+                            </button> */}
                             <div className={`collapse navbar-collapse${isMenuOpen ? ' show' : ''}`}>
                                 <ul className="navbar-nav flex-column">
                                     <li className="">
-                                        <a className="nav-link" href="#" style={{fontSize: '24px',  color: 'black', textAlign: 'left', fontWeight: 'bold'}}>MENU </a>
+                                        <a className="nav-link" href="#" style={{fontSize: '24px',  color: 'black', alignSelf: 'center', fontWeight: 'bold'}}>MENU </a>
                                     </li>
                                     <li className="nav-item">
                                         {/* <a className="nav-link active" href="findashboard" style={{fontSize: '12px'}}   >Dashboard <span className="badge badge-success">6</span></a> */}
-                                        <a className="nav-link" href="/dash" style={{fontSize: '14px',  color: 'black' }}   >DASHBOARD <span className="badge badge-success">6</span></a>
+                                        <a className="nav-link" href="/dash"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}   >DASHBOARD <span className="badge badge-success">6</span></a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/Customerstable/list" style={{fontSize: '14px', color:'black'}}> CUSTOMERS</a>
+                                    <a className="nav-link" 
+   href="/Customerstable/list" 
+   style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>
+  CUSTOMERS  
+  <strong style={{ 
+     fontSize: '15px', 
+     marginLeft: '10px' // Add left margin for spacing
+  }}>
+    {customersCount}
+  </strong>
+</a>                                    </li>
+                                    <li className="nav-item">
+                                    <a className="nav-link" 
+   href="/Driverstable/list" 
+   style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>
+  DRIVERS  
+  <strong style={{ 
+     fontSize: '15px',  
+     marginLeft: '10px' // Add left margin for spacing
+  }}>
+    {driversCount}
+  </strong>
+</a>                                       </li>
+                                    <li className="nav-item">
+                                    <a className="nav-link" 
+   href="table/trips" 
+   style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>
+  TRIPS
+  <strong style={{ 
+     fontSize: '15px',  
+     marginLeft: '10px' // Add left margin for spacing
+  }}>
+    {tripsCount}
+  </strong>
+</a>                                       </li>
+                                    <li className="nav-item">
+                                        <a className="nav-link" href="/Admindash"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>BILLING</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/Driverstable/list" style={{fontSize: '14px', color:'black'}}>DRIVERS</a>
+                                        <a className="nav-link" href="/search"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>SEARCH USER</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/table/trips" style={{fontSize: '14px', color:'black'}}>TRIPS</a>
+                                        <a className="nav-link" href="#"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>FEEDBACK</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/Admindash" style={{fontSize: '14px', color:'black'}}>BILLING</a>
+                                        <a className="nav-link" href="/verifyReg"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>PENDING VERIFICATION <strong style={{ 
+    fontSize: '15px', 
+    marginLeft: '10px' // Add left margin for spacing
+ }}>{pendingCount}</strong></a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="#" style={{fontSize: '14px', color:'black'}}>FEEDBACK</a>
+                                        <a className="nav-link" href="/Report"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>REPORT</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/verifyReg" style={{fontSize: '14px', color:'black'}}>PENDING REGISTRATION</a>
+                                        <a className="nav-link" href="/billing"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>ACCOUNT TOP UP</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" href="/Report" style={{fontSize: '14px', color:'black'}}>REPORT</a>
-                                    </li>
-                                    <li className="nav-item">
-                                        <a className="nav-link" href="/billing" style={{fontSize: '14px', color:'black'}}>ACCOUNT TOP UP</a>
+                                        <a className="nav-link" href="/searchTrip"    style={{ 
+     display: 'flex', 
+     justifyContent: 'space-between', 
+     alignItems: 'center', 
+     fontSize: '14px', 
+     color: 'black', 
+     padding: '10px 20px' // Add padding for better spacing
+   }}>SEARCH TRIP</a>
                                     </li>
 
                                     <li className="nav-item" style={{ marginTop: '130px', color: 'black' }}>

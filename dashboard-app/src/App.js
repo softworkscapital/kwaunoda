@@ -13,7 +13,7 @@ import Reports from './components/from tellthem/Reports';
 import AdminDashboard from './components/from tellthem/AdminDashboard';
 import axios from 'axios';
 import PendingReg from './components/from tellthem/PendingRegistrations';
-import DashboardT from './components/from tellthem/Dashboard';
+import SearchTrip from './components/searchTrip';
 
 
 function App() {
@@ -80,7 +80,7 @@ function App() {
                         <Route path="/Report" element={<Reports/>} />
                         <Route path="/Admindash" element={<AdminDashboard/>}/>
                         <Route path="/verifyReg" element={<PendingReg/>}/>
-                        <Route path="/dash" element={<DashboardT/>}/>
+                        <Route path="/searchTrip" element={<SearchTrip/>}/>
                     </Routes>
                 </div>
         </Router>

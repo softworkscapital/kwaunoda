@@ -30,9 +30,9 @@ const Table = ({ tripData }) => {
                       <Link
                         className="btn btn-primary btnAdd"
                         style={{ float: "right", marginRight: "40px" }}
-                        to="/adddirectexpenses"
+                        to="/searchTrip"
                       >
-                        Add Employee Detail
+                        Search Trip
                       </Link>
                     </h2>
                     <div className="card-body">

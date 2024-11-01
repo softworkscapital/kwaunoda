@@ -42,7 +42,7 @@ import DriverNewOrderList from "./src/screens/DriverNewOrderList"; //
 import InTransitTrip from "./src/screens/InTransitTrip"; 
 import OTPDriver from "./src/screens/OTPDriver";
 import OTPCustomer from "./src/screens/OTPCustomer";
-import Wallet from "./src/screens/Wallet";
+import Welcome from "./src/screens/Welcome";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -50,9 +50,10 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
-        <Stack.Screen name="OTPDriver" component={OTPDriver} />
-        <Stack.Screen name="Wallet" component={Wallet} />
         <Stack.Screen name="OTPCustomer" component={OTPCustomer} />
+      <Stack.Screen name="Welcome" component={Welcome} />
+      <Stack.Screen name="OTPDriver" component={OTPDriver} />
+        <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="MapView" component={MapViewComponent} />
         <Stack.Screen name="HomeDriver" component={HomeDriver} />
         <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
@@ -74,7 +75,6 @@ const App = () => {
         <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
         <Stack.Screen name="Complaint" component={Complaint} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="DeliveryAccepted" component={DeliveryAccepted} />
         <Stack.Screen

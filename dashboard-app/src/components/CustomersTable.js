@@ -29,7 +29,7 @@ const CustomersTable =  ({ customersData }) => {
               <div className="card">
                 <h2 className="card-header">
                   Customer Details Table
-                  <Link className="btn btn-primary btnAdd" style={{ float: "right", marginRight: "40px" }} to="/adddirectexpenses">Add Employee Detail</Link>
+                  {/* <Link className="btn btn-primary btnAdd" style={{ float: "right", marginRight: "40px" }} to="/adddirectexpenses">Add Employee Detail</Link> */}
                 </h2>
                 <div className="card-body">
                   <div className="table-responsive" style={{ overflowY: 'auto', maxHeight: '400px', maxWidth: '1000px' }}>

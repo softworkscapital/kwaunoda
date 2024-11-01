@@ -25,24 +25,23 @@ const SignUpDriver1 = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [username, setUsername] = useState("");
-  const [otp, setOtp] = useState(); // State for OTP
+  const [otp, setOtp] = useState(""); // State for OTP
+  const [phoneNumber, setPhoneNumber] = useState(""); // State for phone number input
 
   const navigation = useNavigation();
 
-  // Generate OTP once when the component mounts
   useEffect(() => {
     const generatedOtp = generateOTP();
     setOtp(generatedOtp);
-    console.log("Generated OTP:", generatedOtp); // Log the generated OTP
-  }, []); // Empty dependency array ensures it runs only once
+    console.log("Generated OTP:", generatedOtp);
+  }, []);
 
   function generateOTP() {
-    return Math.floor(1000 + Math.random() * 9000).toString(); // Generates a 4-digit OTP
+    return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
   const validateInput = () => {
-    if (!email || !password || !confirmPassword || !username) {
-      console.log(otp, "iyooo")
+    if (!email || !password || !confirmPassword || !username || !phoneNumber) {
       showToast("Validation Error", "Please fill all fields.");
       return false;
     }
@@ -54,10 +53,7 @@ const SignUpDriver1 = () => {
     }
 
     if (password.length < 8) {
-      showToast(
-        "Validation Error",
-        "Password must be at least 8 characters long."
-      );
+      showToast("Validation Error", "Password must be at least 8 characters long.");
       return false;
     }
 
@@ -80,33 +76,38 @@ const SignUpDriver1 = () => {
     });
   };
 
+  const sendOtpToPhone = async (phoneNumber) => {
+    const message = `Your OTP is: ${otp}`;
 
-  // const sendOtpToPhone = async (phoneNumber) => {
-  //   const apiKey = "3hHe5wqCHq4jf14"; // Your API key
-  //   const message = `Your OTP is: ${otp}`;
-    
-  //   const response = await fetch(`https://sms-provider.com/api/send`, { // Replace with your SMS provider's endpoint
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       apiKey,
-  //       to: phoneNumber,
-  //       message,
-  //     }),
-  //   });
+    try {
+      const response = await fetch("https://srv547457.hstgr.cloud:3003/smsendpoint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientid: "1001",
+          clientkey: "hdojFa502Uy6nG2",
+          message,
+          recipients: [`263${phoneNumber.slice(1)}`],
+          senderid: "REMS",
+        }),
+      });
 
-  //   if (!response.ok) {
-  //     const errorText = await response.text();
-  //     console.error("Error sending OTP:", response.status, errorText);
-  //     showToast("Error", "Failed to send OTP.");
-  //     return false;
-  //   }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error sending OTP:", response.status, errorText);
+        showToast("Error", "Failed to send OTP.");
+        return false;
+      }
 
-  //   return true;
-  // };
-
+      return true;
+    } catch (error) {
+      console.error("Network Error:", error);
+      showToast("Error", "Could not send OTP. Please check your connection.");
+      return false;
+    }
+  };
 
   const checkPasswordStrength = (password) => {
     let strength = 0;
@@ -144,9 +145,7 @@ const SignUpDriver1 = () => {
       if (lettersArray[i] === "Z") {
         lettersArray[i] = "A";
       } else {
-        lettersArray[i] = String.fromCharCode(
-          lettersArray[i].charCodeAt(0) + 1
-        );
+        lettersArray[i] = String.fromCharCode(lettersArray[i].charCodeAt(0) + 1);
         carry = false;
       }
     }
@@ -167,6 +166,12 @@ const SignUpDriver1 = () => {
     try {
       const driveData = await AsyncStorage.getItem("driverDetailsD0");
       const driverDetails = JSON.parse(driveData);
+
+      const otpSent = await sendOtpToPhone(phoneNumber);
+      if (!otpSent) {
+        setLoading(false);
+        return;
+      }
 
       const idResponse = await fetch(`${APILINK}/users/last-inserted-id/`, {
         method: "GET",
@@ -191,14 +196,27 @@ const SignUpDriver1 = () => {
         username: username.trim(),
         email: email.trim(),
         password: password,
-        last_logged_account: "driver",
-        customerid: 0,
-        status: "Offline",
-        driver_id: user_id,
         otp: otp,
+        notify: false, // Set default values
+        activesession: false,
+        addproperty: false,
+        editproperty: false,
+        approverequests: false,
+        delivery: false,
+        status: "pending verification", // Set status as pending
+        employee_id: null,
+        company_id: null,
+        branch_id: null,
+        sync_status: "unsynced",
+        last_logged_account: "driver",
+        driver_id: user_id,
+        customerid: 0,
       };
 
-      console.log("User object to be sent:", user); // Log the user object
+      console.log("User object to be sent:", user);
+      
+      // Save user details to local storage
+      await AsyncStorage.setItem("driverDetails", JSON.stringify(user));
 
       const userResp = await fetch(`${APILINK}/users/`, {
         method: "POST",
@@ -209,12 +227,8 @@ const SignUpDriver1 = () => {
       });
 
       if (!userResp.ok) {
-        const errorText = await userResp.text(); // Log the response text
-        console.error(
-          "Error posting to user details:",
-          userResp.status,
-          errorText
-        );
+        const errorText = await userResp.text();
+        console.error("Error posting to user details:", userResp.status, errorText);
         showToast("Error", "Failed to create user.");
         return;
       }
@@ -239,8 +253,7 @@ const SignUpDriver1 = () => {
         sex: driverDetails.sex || "",
         dob: driverDetails.dob || "",
         address: driverDetails.address || "",
-        house_number_and_street_name:
-          driverDetails.house_number_and_street_name || "",
+        house_number_and_street_name: driverDetails.house_number_and_street_name || "",
         suburb: driverDetails.suburb || "",
         city: driverDetails.city || "",
         country: driverDetails.country || "",
@@ -256,18 +269,14 @@ const SignUpDriver1 = () => {
 
       if (!driverResp.ok) {
         const errorText = await driverResp.text();
-        console.error(
-          "Error posting to driver details:",
-          driverResp.status,
-          errorText
-        );
+        console.error("Error posting to driver details:", driverResp.status, errorText);
         showToast("Error", "Failed to create driver.");
         return;
       }
 
       const driverResponse = await driverResp.json();
       Alert.alert("Success", driverResponse.message);
-      navigation.navigate("CustomerLogin");
+      navigation.navigate("OTPDriver");
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "Failed to save details. Please try again.");
@@ -301,6 +310,16 @@ const SignUpDriver1 = () => {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
             />
           </View>
 

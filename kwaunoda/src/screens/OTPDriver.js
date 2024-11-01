@@ -10,153 +10,70 @@ import {
   Alert,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OTPDriver = ({ navigation }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [loading, setLoading] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [driverDetails, setDriverDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchedOtp, setFetchedOtp] = useState("");
+  const [driverId, setDriverId] = useState(""); // State for driverId
 
-  const fetchDriverDetails = async () => {
-    const data = await AsyncStorage.getItem("driverDetails");
-    if (data) {
-      const parsedData = JSON.parse(data);
-      setDriverDetails(parsedData);
-      console.log("Fetched Driver Details:", parsedData);
+  const fetchdriverDetails = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("driverDetails"); // Fetch user details from local storage
+      if (userData) {
+        const driverDetails = JSON.parse(userData);
+        setDriverId(driverDetails.driver_id); // Set driverId from user details
+        console.log("Fetched Driver ID from local storage:", driverDetails.driver_id); // Log the fetched ID
+
+        // Fetch OTP based on driverId
+        const response = await fetch(`${API_URL}/USERS/${driverDetails.driver_id}`);
+        if (response.ok) {
+          const user = await response.json();
+          setFetchedOtp(user[0].otp.toString()); // Convert OTP to string
+          console.log("Fetched User Details:", user[0]);
+        } else {
+          const errorResponse = await response.json();
+          console.error("Error fetching user data:", errorResponse);
+          Toast.show({
+            text1: "Error Fetching Data",
+            text2: "Failed to fetch user data. Please try again.",
+            type: "error",
+            position: "top",
+          });
+        }
+      } else {
+        Toast.show({
+          text1: "No User Data",
+          text2: "User data not found in local storage.",
+          type: "error",
+          position: "top",
+        });
+      }
+    } catch (error) {
+      console.error("Network Error:", error);
+      Toast.show({
+        text1: "Network Error",
+        text2: "Could not fetch user data. Please check your connection.",
+        type: "error",
+        position: "top",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDriverDetails();
+    fetchdriverDetails();
   }, []);
 
-  const generateAndSendOtp = async () => {
-    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(otpCode);
-    console.log("haaayas")
-    console.log("Generated OTP:", otpCode);
-
-    if (!driverDetails) {
-      Toast.show({
-        text1: "Error",
-        text2: "Driver details not found.",
-        type: "error",
-        position: "top",
-      });
-      return;
-    }
-
-    // Prepare user data payload
-    const userData = {
-      userid: driverDetails.userid,
-      username: driverDetails.username,
-      password: driverDetails.password,
-      role: "driver",
-      email: driverDetails.email,
-      notify: true,
-      activesession: false,
-      addproperty: false,
-      editproperty: false,
-      approverequests: false,
-      delivery: false,
-      status: "active",
-      employee_id: driverDetails.employee_id,
-      company_id: driverDetails.company_id,
-      branch_id: driverDetails.branch_id,
-      sync_status: false,
-      last_logged_account: null,
-      driver_id: driverDetails.driver_id,
-      customerid: driverDetails.customerid,
-      otp: otpCode, 
-    };
-
-    console.log("User Data to Post:", userData);
-
-    try {
-      const response = await fetch(`${API_URL}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (response.ok) {
-        // Send OTP to phone number
-        await sendOtpToPhone(otpCode, driverDetails.phoneNumber);
-      } else {
-        const errorResponse = await response.json();
-        console.error("Error posting user data:", errorResponse);
-        Toast.show({
-          text1: "Error Posting Data",
-          text2: "Failed to register user. Please try again.",
-          type: "error",
-          position: "top",
-        });
-      }
-    } catch (error) {
-      console.error("Error posting user data:", error);
-      Toast.show({
-        text1: "Network Error",
-        text2: "Could not register. Please check your connection.",
-        type: "error",
-        position: "top",
-      });
-    }
-  };
-
-  const sendOtpToPhone = async (otpCode, phoneNumber) => {
-    try {
-      const response = await fetch(`${API_URL}/send-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer YOUR_API_KEY`, // Replace with your actual API key
-        },
-        body: JSON.stringify({
-          to: phoneNumber,
-          message: `Your OTP is ${otpCode}.`,
-        }),
-      });
-
-      if (response.ok) {
-        Toast.show({
-          text1: "OTP Sent",
-          text2: "Check your SMS for the OTP.",
-          type: "success",
-          position: "top",
-        });
-        console.log("OTP sent successfully to:", phoneNumber);
-      } else {
-        const errorResponse = await response.json();
-        console.error("Error sending OTP:", errorResponse);
-        Toast.show({
-          text1: "Error Sending OTP",
-          text2: errorResponse.message || "Failed to send OTP. Please try again.",
-          type: "error",
-          position: "top",
-        });
-      }
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      Toast.show({
-        text1: "Network Error",
-        text2: "Could not send OTP. Please check your connection.",
-        type: "error",
-        position: "top",
-      });
-    }
-  };
-
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = () => {
     const otpString = otp.join("");
-    if (otpString === generatedOtp) {
+    if (otpString === fetchedOtp) {
       Alert.alert("Success", "OTP verified successfully.");
-      // Navigate to CustomerLogin
       navigation.navigate("CustomerLogin");
     } else {
       Alert.alert("Error", "Invalid OTP. Please try again.");
@@ -171,6 +88,19 @@ const OTPDriver = ({ navigation }) => {
       this[`otpInput${index + 1}`].focus();
     }
   };
+
+  const handleResendOtp = async () => {
+    // Logic to resend OTP can go here
+    Alert.alert("Resend OTP", "OTP has been resent to your phone.");
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="black" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -199,16 +129,12 @@ const OTPDriver = ({ navigation }) => {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.btnGetOtp} onPress={generateAndSendOtp}>
-        <Text style={styles.txtGetOtp}>Get OTP</Text>
+      <TouchableOpacity style={styles.btnVerify} onPress={handleVerifyOtp}>
+        <Text style={styles.txtVerify}>Verify OTP</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btnVerify} onPress={handleVerifyOtp}>
-        {loading ? (
-          <ActivityIndicator size="small" color="black" />
-        ) : (
-          <Text style={styles.txtVerify}>Verify OTP</Text>
-        )}
+      <TouchableOpacity onPress={handleResendOtp} style={styles.resendContainer}>
+        <Text style={styles.txtResend}>Resend OTP</Text>
       </TouchableOpacity>
 
       <Toast />
@@ -221,6 +147,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
   },
   topBar: {
     width: "100%",
@@ -262,19 +192,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 24,
   },
-  btnGetOtp: {
-    backgroundColor: "#FFC000",
-    borderRadius: 50,
-    paddingVertical: 14,
-    width: "90%",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  txtGetOtp: {
-    color: "black",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
   btnVerify: {
     backgroundColor: "#FFC000",
     borderRadius: 50,
@@ -284,6 +201,14 @@ const styles = StyleSheet.create({
   },
   txtVerify: {
     color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  resendContainer: {
+    marginTop: 20,
+  },
+  txtResend: {
+    color: "#007BFF", // Change color to blue to indicate it's clickable
     fontSize: 16,
     fontWeight: "bold",
   },

@@ -102,6 +102,7 @@ const CustomerLogin = () => {
       });
     }
   };
+
   const validateInput = () => {
     if (!email || !password) {
       Toast.show({
@@ -117,10 +118,8 @@ const CustomerLogin = () => {
     return true;
   };
 
-  const theLogin = async () => {
+  const fetchUserDetails = async () => {
     try {
-      if (!validateInput()) return;
-
       const response = await fetch(`${API_URL}/users/${email}/${password}`, {
         method: "GET",
         headers: {
@@ -129,27 +128,32 @@ const CustomerLogin = () => {
       });
 
       const result = await response.json();
-      console.log("response:", result);
+      console.log("User Response:", result);
 
       if (response.ok && result.length > 0) {
+        const userStatus = result[0].status; // Assuming the user status is in the response
         const ids = {
           driver_id: result[0].driver_id,
           customerid: result[0].customerid,
           last_logged_account: result[0].last_logged_account,
         };
-        await AsyncStorage.setItem(
-          "driver",
-          JSON.stringify(result[0].driver_id)
-        );
-        console.log("ma Id aya", ids);
+
+        // Store driver ID in AsyncStorage
+        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
+        console.log("User IDs:", ids);
         await AsyncStorage.setItem("theIds", JSON.stringify(ids));
-        Alert.alert("Success", result.message);
-        redirectHome(result[0].last_logged_account, ids.driver_id); // Pass driver_id if available
+
+        if (userStatus === "pending verification") {
+          // Alert.alert("Pending Approval", "Your account is pending approval.");
+          navigation.navigate("Welcome");
+        } else {
+          redirectHome(ids.last_logged_account, ids.driver_id);
+        }
       } else {
         Alert.alert("Error", "No user found or wrong password/email.");
       }
     } catch (error) {
-      console.log("Error during customer login:", error);
+      console.log("Error fetching user details:", error);
       Toast.show({
         text1: "Error",
         text2: "An error occurred. Please try again.",
@@ -161,8 +165,12 @@ const CustomerLogin = () => {
     }
   };
 
-  const handleSignIn = async () => {
+  const theLogin = async () => {
     if (!validateInput()) return; // Validate input before proceeding
+    await fetchUserDetails(); // Fetch user details to check status
+  };
+
+  const handleSignIn = async () => {
     await theLogin(); // Attempt login
   };
 

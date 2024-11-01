@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     StyleSheet,
     View,
@@ -10,63 +10,41 @@ import {
     Alert
 } from "react-native";
 import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { API_URL } from './config'; // Adjust the path as necessary
 
-const OTPCustomer = () => {
+const OTPCustomer = ({ navigation }) => {
     const [otp, setOtp] = useState(['', '', '', '']);
     const [loading, setLoading] = useState(false);
-    const [generatedOtp, setGeneratedOtp] = useState("");
-    const [registrationDetails, setRegistrationDetails] = useState(null);
-
-    useEffect(() => {
-        const fetchRegistrationDetails = async () => {
-            const data = await AsyncStorage.getItem('registrationDetails');
-            if (data) {
-                const parsedData = JSON.parse(data);
-                setRegistrationDetails(parsedData);
-                console.log("Fetched Registration Details:", parsedData);
-                generateAndSendOtp(parsedData.email);
-            }
-        };
-        fetchRegistrationDetails();
-    }, []);
-
-    const generateAndSendOtp = async (email) => {
-        const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-        setGeneratedOtp(otpCode);
-        console.log("Generated OTP:", otpCode);
-
-        // Simulate sending OTP to email
-        Toast.show({
-            text1: "OTP Sent",
-            text2: "Check your email for the OTP.",
-            type: 'success',
-            position: 'top',
-        });
-    };
+    const hardcodedUserId = "AAA-100002"; // Hardcoded user ID
 
     const handleVerifyOtp = async () => {
         const otpString = otp.join('');
-        if (otpString === generatedOtp) {
-            setLoading(true);
-            try {
-                // Store registration details in AsyncStorage instead of posting to a database
-                await AsyncStorage.setItem('customerDetails', JSON.stringify(registrationDetails));
-                console.log("Customer details stored in Async Storage:", registrationDetails);
-                
-                Alert.alert("Success", "Registration completed successfully.");
-                await AsyncStorage.removeItem('registrationDetails'); // Clear registration details
-                // Navigate to the desired screen, e.g., CustomerLogin
-            } catch (error) {
-                console.error("Error during registration:", error);
-                Alert.alert("Error", "An error occurred during registration. Please try again.");
-            } finally {
-                setLoading(false);
+        setLoading(true);
+        try {
+            // Fetch user details using the hardcoded user ID
+            const response = await fetch(`${API_URL}/USERS/${hardcodedUserId}`);
+            const userDetails = await response.json();
+            console.log("Fetched User Details:", userDetails);
+
+            if (userDetails && userDetails.length > 0) {
+                const fetchedOtp = userDetails[0].otp.toString(); // Assuming OTP is in user details
+                console.log("Fetched OTP from database:", fetchedOtp); // Log the fetched OTP
+                if (otpString === fetchedOtp) {
+                    Alert.alert("Success", "OTP verified successfully.");
+                    navigation.navigate('CustomerLogin'); // Navigate to CustomerLogin.js
+                } else {
+                    Alert.alert("Error", "Invalid OTP. Please try again.");
+                }
+            } else {
+                Alert.alert("Error", "User details not found.");
             }
-        } else {
-            Alert.alert("Error", "Invalid OTP. Please try again.");
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+            Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -74,9 +52,15 @@ const OTPCustomer = () => {
         const newOtp = [...otp];
         newOtp[index] = text;
         setOtp(newOtp);
+        // Automatically focus on the next input if the current one is filled
         if (text.length === 1 && index < otp.length - 1) {
             this[`otpInput${index + 1}`].focus();
         }
+    };
+
+    const handleResendOtp = () => {
+        // Optionally, resend OTP logic can be implemented here
+        Alert.alert("Info", "Resend OTP functionality not implemented yet.");
     };
 
     return (
@@ -109,6 +93,11 @@ const OTPCustomer = () => {
                     <Text style={styles.txtVerify}>Verify OTP</Text>
                 )}
             </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleResendOtp} style={styles.resendContainer}>
+                <Text style={styles.txtResend}>Resend OTP</Text>
+            </TouchableOpacity>
+
             <Toast />
         </SafeAreaView>
     );
@@ -168,6 +157,14 @@ const styles = StyleSheet.create({
     },
     txtVerify: {
         color: "black",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    resendContainer: {
+        marginTop: 20,
+    },
+    txtResend: {
+        color: "#007BFF", // Change color to blue to indicate it's clickable
         fontSize: 16,
         fontWeight: "bold",
     },

@@ -13,6 +13,24 @@ body {
 }
 
 
+.verify-button {
+    position: absolute; /* Position it in the corner */
+    top: 10px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    background-color: green; /* Green background */
+    color: white; /* White text */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 8px 12px;
+    margin-right: 10px; /* Padding for size */
+    cursor: pointer; /* Cursor changes to pointer on hover */
+    transition: background-color 0.3s; /* Smooth transition */
+  }
+  
+  .verify-button:hover {
+    background-color: darkgreen; /* Darker green on hover */
+  }
+
 .card {
     border: 1px solid #d4af37; /* Golden border */
     border-radius: 8px;

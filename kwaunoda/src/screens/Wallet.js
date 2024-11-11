@@ -24,7 +24,7 @@ const Wallet = () => {
   const navigation = useNavigation();
 
   const redirectHome = () => {
-    navigation.navigate("HomeDriver");
+    navigation.goBack(); 
   };
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Wallet = () => {
         console.log("kkkkkk", result);
         if (result) {
           setTopUpHistory(result);
-          setBalance(result[0].total_balance);
+          setBalance(result[0].balance);
           setDate(new Date().toISOString());
            // Store the trips
         } else {
@@ -72,56 +72,7 @@ const Wallet = () => {
 
   }, []);
 
-//   useEffect(() => {
-//     // Fetch delivery history data from the app's backend or local storage
-//     const test = async ()=>{
-//       const User = await AsyncStorage.getItem('userDetails');
-//       const user = JSON.parse(User);
-//       const customer_id = user.customerid;
-//       const driver_id = user.driver_id;
-//       const resp = await fetch(
-//         `${APILINK}/trip/MylastTwentyTripsById/${customer_id}/${driver_id}`,
-//         {
-//           method: "GET",
-//           headers: {
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
 
-//       const result = await resp.json();
-//       console.log("hie", result)
-//       setDeliveryHistory(result);
-//     }
-
-//     // fetchDeliveryHistory();
-//     test();
-//   }, []);
-
-  // const fetchDeliveryHistory = () => {
-  //   // Replace this with your actual delivery history data retrieval logic
-  //   const sampleData = [
-  //     {
-  //       id: '1',
-  //       orderNumber: 'ORDER-001',
-  //       deliveredOn: '2023-08-12',
-  //       status: 'Delivered',
-  //     },
-  //     {
-  //       id: '2',
-  //       orderNumber: 'ORDER-002',
-  //       deliveredOn: '2023-07-30',
-  //       status: 'Delivered',
-  //     },
-  //     {
-  //       id: '3',
-  //       orderNumber: 'ORDER-003',
-  //       deliveredOn: '2023-06-22',
-  //       status: 'Cancelled',
-  //     },
-  //   ];
-  //   setDeliveryHistory(sampleData);
-  // };
 
   const handleAddTopUp = (e) => {
       e.preventDefault();
@@ -193,6 +144,7 @@ const Wallet = () => {
               borderRadius: 8,            // Optional: round the corners
               backgroundColor: "white",   // Set background color to white
               margin: 20,
+              marginTop: 10
         }}>      
       <View style={styles.profileContainer}>
           <Image
@@ -218,9 +170,9 @@ const Wallet = () => {
         <View style={styles.detailsContainer}>
           <View style={[styles.detail, {alignSelf: "center"}]}>
             {/* <MaterialIcons name="wallet" size={70} color="#000" /> */}
-            <Text style={[styles.text, {fontSize: 30}]}> ${oldbalance}</Text>
+            <Text style={[styles.text, {fontSize: 16}]}> ${oldbalance}</Text>
           </View>
-          <Text style={[styles.text, {fontSize: 19, alignSelf: "center", paddingLeft: 10, color: "green"},{ marginLeft: 10 }]}>Balance</Text>
+          <Text style={[styles.text, {fontSize: 12, alignSelf: "center", paddingLeft: 10, color: "green"},{ marginLeft: 10 }]}>Balance</Text>
         </View>
         </View>
 
@@ -344,7 +296,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   btnSignUp: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderRadius: 50,
     padding: 14,
     width: "80%",
@@ -352,7 +304,7 @@ const styles = StyleSheet.create({
 
   },
   goldenYellow: {
-    backgroundColor: '#FFD700',
+    backgroundColor: 'green',
   },
   backArrow: {
     padding: 8,
@@ -385,11 +337,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   detailsContainer: {
-    marginVertical: 20,
-    marginHorizontal: 40,
+    marginVertical: 5,
+    marginHorizontal: 60,
   },
   username: {
-    fontSize: 19,
+    fontSize: 15,
     fontWeight: "bold",
   },
   pickerContainer: {
@@ -403,13 +355,13 @@ const styles = StyleSheet.create({
     width: '100%',                // Full width
   },
   userid: {
-    fontSize: 22,
+    fontSize: 12,
     fontWeight: "bold",
   },
   profilePicture: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 10,
   },
   profileContainer: {

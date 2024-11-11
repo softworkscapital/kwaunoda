@@ -120,9 +120,10 @@ tripRouter.put("/updateStatusAndDriver/:id", async (req, res, next) => {
     res.sendStatus(500); // Send a 500 Internal Server Error status
   }
 });
-tripRouter.get("/dash/notify/", async (req, res, next) => {
+tripRouter.get("/tripsbystatus/:status", async (req, res, next) => {
   try {
-    let results = await tripDbOperations.getTripToDash();
+    let status = req.params.status
+    let results = await tripDbOperations.getTripToDash(status);
     res.json(results);
   } catch (e) {
     console.log(e);

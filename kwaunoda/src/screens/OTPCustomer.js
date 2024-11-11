@@ -15,16 +15,19 @@ import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { API_URL } from './config'; // Adjust the path as necessary
 
 const OTPCustomer = ({ navigation }) => {
-    const [otp, setOtp] = useState(['', '', '', '']);
-    const [loading, setLoading] = useState(false);
-    const hardcodedUserId = "AAA-100002"; // Hardcoded user ID
+    const route = useRoute(); // Access route parameters
+    const { userId } = route.params; // Destructure userId from route parameters
+  
+    const [otp, setOtp] = useState(["", "", "", ""]);
+    const [loading, setLoading] = useState(true);
+    const [fetchedOtp, setFetchedOtp] = useState("");
 
     const handleVerifyOtp = async () => {
         const otpString = otp.join('');
         setLoading(true);
         try {
             // Fetch user details using the hardcoded user ID
-            const response = await fetch(`${API_URL}/USERS/${hardcodedUserId}`);
+            const response = await fetch(`${API_URL}/USERS/${userId}`);
             const userDetails = await response.json();
             console.log("Fetched User Details:", userDetails);
 
@@ -67,7 +70,7 @@ const OTPCustomer = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-                <Text style={styles.appName}>Kwaunoda</Text>
+                <Text style={styles.appName}>EasyGo</Text>
             </View>
 
             <View style={styles.titleContainer}>
@@ -112,7 +115,7 @@ const styles = StyleSheet.create({
     topBar: {
         width: "100%",
         height: "25%",
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderBottomLeftRadius: 45,
         borderBottomRightRadius: 45,
         justifyContent: "center",
@@ -149,7 +152,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
     },
     btnVerify: {
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderRadius: 50,
         padding: 14,
         width: "90%",

@@ -1,0 +1,30 @@
+.analytics-card {
+  background-color: #f9e8b3; /* Golden yellow background */
+  color: #000; /* Black text for contrast */
+  border: none; /* Remove border for a cleaner look */
+  border-radius: 10px; /* Rounded corners */
+  padding: 20px; /* Padding inside the card */
+  transition: transform 0.2s; /* Animation for hover effect */
+}
+
+.analytics-card:hover {
+  transform: scale(1.05); /* Slightly scale up on hover */
+}
+
+.analytics-item {
+  display: flex; /* Use flexbox for alignment */
+  justify-content: space-between; /* Space between label and value */
+  align-items: center; /* Center items vertically */
+  font-size: 1.2em; /* Increase font size for better readability */
+  margin: 20px 0; 
+  padding-left: 35px;/* Space between items */
+  margin-right: 100px;
+  /* Ensure a fixed width for consistent alignment */
+  width: 50%; /* Full width to take advantage of available space */
+}
+
+.value {
+  text-align: center;
+  
+  /* width: 80px; Fixed width for consistent alignment */
+}

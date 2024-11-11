@@ -22,21 +22,24 @@ const Feedback = () => {
   const navigation = useNavigation();
 
   const redirectHome = () => {
-    navigation.navigate("HomeDriver");
+    navigation.goBack(); 
   };
 
   const handleRatingPress = (value) => {
     setRating(value);
   };
 
+
+
   const handleFeedback = async () => {
     const User = await AsyncStorage.getItem("userDetails");
+    const storedDriverId = await AsyncStorage.getItem("driver");
     const user = JSON.parse(User);
     const FeedbackData = {
-      driver_id: user.driver_id, // Replace with actual driver ID
+      driver_id: storedDriverId, // Replace with actual driver ID
       driver_comment: comment, // Optional comments
       customer_stars: rating,
-      status: "Trip Ended", // Optional stars rating
+      status: "Trip Ended",
     };
 
 
@@ -78,6 +81,8 @@ const Feedback = () => {
       );
     }
   };
+
+
 
   return (
     <View style={styles.container}>

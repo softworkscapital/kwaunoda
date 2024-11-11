@@ -9,8 +9,9 @@ crudsObj.postCustomerAdminChat= (
         time_chat,
         trip_id,
         admin_id,
-        customerid,
-        message
+        driver_id,
+        message,
+        origin
 
 ) => {
   return new Promise((resolve, reject) => {
@@ -20,17 +21,19 @@ crudsObj.postCustomerAdminChat= (
         time_chat,
         trip_id,
         admin_id,
-        customerid,
-        message
-              ) VALUES (?, ?, ?, ?,?,?)`,
+        driver_id,
+        message,
+        origin
+              ) VALUES (?, ?, ?, ?,?,?,?)`,
       [
        
         date_chat,
         time_chat,
         trip_id,
         admin_id,
-        customerid,
-        message
+        driver_id,
+        message,
+        origin
       ],
       (err, result) => {
         if (err) {
@@ -69,11 +72,11 @@ crudsObj.getCustomerAdminChatsByTripId = (trip_id) => {
 };
 
 
-crudsObj.getCustomerAdminChatById = (customer_admin_chat_id) => {
+crudsObj.getCustomerAdminChatByDriverId = (driver_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "SELECT * FROM customer_admin_chats WHERE customer_admin_chat_id = ?",
-      [customer_admin_chat_id],
+      "SELECT * FROM customer_admin_chats WHERE driver_id = ?",
+      [driver_id],
       (err, results) => {
         if (err) {
           return reject(err);
@@ -91,8 +94,9 @@ crudsObj.updateCustomerAdminChat = (customer_admin_chat_id, updatedValues) => {
         time_chat,
         trip_id,
         admin_id,
-        customerid,
-        message
+        driver_id,
+        message,
+        origin
     } = updatedValues;
 
     console.log("Updating record with ID:", customer_admin_chat_id);
@@ -105,16 +109,18 @@ crudsObj.updateCustomerAdminChat = (customer_admin_chat_id, updatedValues) => {
                 time_chat =?,
                 trip_id =?,
                 admin_id =?,
-                customerid =?,
-                message =?
+                driver_id =?,
+                message =?,
+                origin =?
             WHERE customer_admin_chat_id = ?`,
             [
                 date_chat,
                 time_chat,
                 trip_id,
                 admin_id,
-                customerid,
+                driver_id,
                 message,
+                origin,
                 customer_admin_chat_id,
             ],
             (err, result) => {

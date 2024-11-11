@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     box: {
         width: 120, // Increased width
         height: 120, // Increased height
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
         marginTop: 120,
     },
     btnBack: {
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderRadius: 50,
         padding: 14,
         width: "100%",

@@ -136,7 +136,7 @@ const BottomFooter = () => {
 
 const styles = StyleSheet.create({
     goldenYellow: {
-        backgroundColor: '#FFD700',
+        backgroundColor: 'green',
     },
     bottomBar: {
         position: 'absolute',

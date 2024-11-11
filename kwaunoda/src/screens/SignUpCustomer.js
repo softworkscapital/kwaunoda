@@ -53,11 +53,11 @@ const SignUpCustomer = () => {
       return false;
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+    if (!/^\d+$/.test(phone)) {
       Toast.show({
         type: "error",
         text1: "Validation Error",
-        text2: "Phone number must be 10 digits.",
+        text2: "Phone number must be more than 8 digits.",
         position: "center",
         visibilityTime: 3000,
         autoHide: true,
@@ -65,17 +65,7 @@ const SignUpCustomer = () => {
       return false;
     }
 
-    if (!/^\d+$/.test(idnumber)) {
-      Toast.show({
-        type: "error",
-        text1: "Validation Error",
-        text2: "ID No. must be numeric.",
-        position: "center",
-        visibilityTime: 3000,
-        autoHide: true,
-      });
-      return false;
-    }
+
 
     return true;
   };
@@ -138,30 +128,11 @@ const SignUpCustomer = () => {
             />
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <FontAwesomeIcon
-              icon={faPhone}
-              size={12}
-              style={{ marginRight: 8 }}
-            />
-            <Picker
-              selectedValue={countryCode}
-              style={{ height: 40, width: 100, marginRight: 8 }}
-              onValueChange={(itemValue) => setCountryCode(itemValue)}
-            >
-              <Picker.Item label="+263" value="263" />
-              <Picker.Item label="+1" value="1" />
-              {/* Add more country codes as needed */}
-            </Picker>
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
-              style={{
-                flex: 1,
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                paddingHorizontal: 8,
-              }}
-              placeholder="Phone Number"
+              style={styles.input}
+              placeholder="Phone eg 263777111222"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -172,7 +143,7 @@ const SignUpCustomer = () => {
             <FontAwesomeIcon icon={faIdCard} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="ID No."
+              placeholder="id number e.g 63-8888888A63"
               value={idnumber}
               onChangeText={setIdnumber}
             />
@@ -204,7 +175,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "25%",
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -241,7 +212,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   btnSignUp: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderRadius: 50,
     padding: 14,
     width: "100%",

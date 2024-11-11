@@ -1,0 +1,39 @@
+.chat-container {
+  padding: 20px; /* Add some padding around the container */
+}
+
+.chat-cards {
+  display: flex;
+  flex-direction: row;
+  gap: 10px; /* Space between cards */
+}
+
+.chat-card {
+  background-color: #f9e8b3; /* Light golden yellow */
+  border: 1px solid #d1b83c; /* Darker golden yellow for the border */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+
+.chat-card:active {
+  transform: scale(0.95); /* Slightly scale down the card on click */
+}
+
+.chat-card:hover {
+  transform: translateY(-2px); /* Slight lift effect on hover */
+}
+
+.chat-title {
+  color: #8a6e2b; /* Dark golden yellow for the title */
+  font-weight: bold;
+}
+
+.chat-text {
+  color: #555; /* Dark gray for text */
+}
+
+.card-body {
+  padding: 15px; /* Adjust padding */
+}

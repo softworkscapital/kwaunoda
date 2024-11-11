@@ -26,7 +26,7 @@ import { API_URL } from "./config"; // Import the API_URL
 const SignUpDriver = () => {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
-  const [phone, setPhone] = useState("");
+  // const [phone, setPhone] = useState("");
   const [plate, setPlate] = useState("");
   const [idnumber, setIdnumber] = useState("");
   const [profilePic, setProfilePic] = useState(null);
@@ -42,7 +42,7 @@ const SignUpDriver = () => {
     if (
       !name ||
       !surname ||
-      !phone ||
+      // !phone ||
       !idnumber ||
       !plate ||
       !profilePic ||
@@ -62,17 +62,17 @@ const SignUpDriver = () => {
       return false;
     }
 
-    if (!/^\d+$/.test(phone)) {
-      Toast.show({
-        text1: "Validation Error",
-        text2: "Phone number should contain only digits.",
-        type: "error",
-        position: "center",
-        visibilityTime: 3000,
-        autoHide: true,
-      });
-      return false;
-    }
+    // if (!/^\d+$/.test(phone)) {
+    //   Toast.show({
+    //     text1: "Validation Error",
+    //     text2: "Phone number should contain only digits.",
+    //     type: "error",
+    //     position: "center",
+    //     visibilityTime: 3000,
+    //     autoHide: true,
+    //   });
+    //   return false;
+    // }
 
     return true;
   };
@@ -133,7 +133,7 @@ const SignUpDriver = () => {
       const driverDetails = {
         name,
         surname,
-        phone,
+        // phone,
         idnumber,
         plate,
         profilePicPath,
@@ -194,22 +194,22 @@ const SignUpDriver = () => {
             />
           </View>
 
-          <View style={styles.inputContainer}>
+          {/* <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Phone"
+              placeholder="Phone eg 263777111222"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
             />
-          </View>
+          </View> */}
 
           <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faIdCard} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="ID No."
+              placeholder="id number e.g 63-8888888A63"
               value={idnumber}
               onChangeText={setIdnumber}
             />
@@ -219,7 +219,7 @@ const SignUpDriver = () => {
             <FontAwesomeIcon icon={faIdCard} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Vehicle Number Plate"
+              placeholder="Vehicle Number Plate e.g AAA-0000"
               value={plate}
               onChangeText={setPlate}
             />
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "25%",
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   btnSignUp: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderRadius: 50,
     padding: 14,
     width: "100%",

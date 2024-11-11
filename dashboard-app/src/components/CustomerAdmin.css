@@ -1,0 +1,78 @@
+* {
+  box-sizing: border-box; /* Ensure consistent box sizing */
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #fff;
+}
+
+.chat-header {
+  background-color: goldenrod; /* Golden yellow for header */
+  padding: 10px;
+  text-align: center;
+}
+
+.chat-content {
+  flex: 1; /* Allow chat content to fill the remaining space */
+  padding: 10px;
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.message-container {
+  margin: 5px 0;
+  padding: 10px; /* Padding can be adjusted for more space */
+  border-radius: 15px;
+  max-width: 40%;
+  word-wrap: break-word; /* Allow text to wrap within the bubble */
+}
+
+.sent-message {
+  background-color: #dcf8c6; /* Light green for sent messages */
+  align-self: flex-end; /* Align sent messages to the right */
+  margin-left: auto; /* Push to the right */
+}
+
+.received-message {
+  background-color: #e6e6fa; /* Lavender for received messages */
+  align-self: flex-start; /* Align received messages to the left */
+  margin-right: auto; /* Push to the left */
+}
+
+.message-text {
+  font-size: 16px; /* Adjust font size as needed */
+  color: #000; /* Set message text color to black */
+}
+
+.date-text {
+  font-size: 12px; /* Smaller font for date */
+  color: #888;
+  margin-top: 5px; /* Add space above the date text */
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.send-button {
+  background-color: goldenrod;
+  border-radius: 20px;
+  padding: 10px;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}

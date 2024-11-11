@@ -3,7 +3,127 @@ const pool = require('./poolfile');
 
 let crudsObj = {};
 
+// crudsObj.postCustomer = (
+//     customerid,
+//     ecnumber,
+//     account_type,
+//     account_category,
+//     signed_on,
+//     name,
+//     surname,
+//     idnumber,
+//     sex,
+//     dob,
+//     address,
+//     house_number_and_street_name,
+//     surbub, // Corrected spelling
+//     city,
+//     country,
+//     lat_coordinates, // Corrected spelling
+//     long_coordinates, // Corrected spelling
+//     phone,
+//     username,
+//     email,
+//     password,
+//     employer,
+//     workindustry,
+//     workaddress,
+//     workphone,
+//     workphone2,
+//     nok1name,
+//     nok1surname,
+//     nok1relationship,
+//     nok1phone,
+//     nok2name,
+//     nok2surname,
+//     nok2relationship,
+//     nok2phone,
+//     creditstanding,
+//     credit_bar_rule_exception, // Added missing field
+//     membershipstatus,
+//     defaultsubs,
+//     sendmail,
+//     sendsms,
+//     product_code,
+//     cost_price,
+//     selling_price,
+//     payment_style,
+//     bp_number,
+//     vat_number,
+//     profilePic // The URL of the uploaded image
+// ) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query(
+//             `INSERT INTO customer_details (
+//                 customerid, ecnumber, account_type, account_category, signed_on, name, surname, idnumber, sex, dob, 
+//                 address, house_number_and_street_name, 	surbub, city, country, lat_coordinates, long_coordinates, 
+//                 phone, username, email, password, employer, workindustry, workaddress, workphone, workphone2, 
+//                 nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone, 
+//                 creditstanding, credit_bar_rule_rule_exception, membershipstatus, defaultsubs, sendmail, sendsms, 
+//                 product_code, cost_price, selling_price, payment_style, bp_number, vat_number, profilePic
+//             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+//             [
+//                 customerid,
+//                 ecnumber,
+//                 account_type,
+//                 account_category,
+//                 signed_on,
+//                 name,
+//                 surname,
+//                 idnumber,
+//                 sex,
+//                 dob,
+//                 address,
+//                 house_number_and_street_name,
+//                 surbub, // Updated to the correct spelling
+//                 city,
+//                 country,
+//                 lat_coordinates, // Updated to the correct spelling
+//                 long_coordinates, // Updated to the correct spelling
+//                 phone,
+//                 username,
+//                 email,
+//                 password,
+//                 employer,
+//                 workindustry,
+//                 workaddress,
+//                 workphone,
+//                 workphone2,
+//                 nok1name,
+//                 nok1surname,
+//                 nok1relationship,
+//                 nok1phone,
+//                 nok2name,
+//                 nok2surname,
+//                 nok2relationship,
+//                 nok2phone,
+//                 creditstanding,
+//                 credit_bar_rule_exception, // Added missing field to values
+//                 membershipstatus,
+//                 defaultsubs,
+//                 sendmail,
+//                 sendsms,
+//                 product_code,
+//                 cost_price,
+//                 selling_price,
+//                 payment_style,
+//                 bp_number,
+//                 vat_number,
+//                 profilePic // Include profilePic in the VALUES
+//             ],
+//             (err, result) => {
+//                 if (err) {
+//                     return reject(err);
+//                 }
+//                 return resolve({ status: '200', message: 'saving successful', result });
+//             }
+//         );
+//     });
+// };
+
+
 crudsObj.postCustomer = (
+    customerid,
     ecnumber,
     account_type,
     account_category,
@@ -15,11 +135,11 @@ crudsObj.postCustomer = (
     dob,
     address,
     house_number_and_street_name,
-    surbub,
+    surbub, // Corrected spelling from 'surbub'
     city,
     country,
-    lat_cordinates,
-    long_cordinates,
+    lat_cordinates, // Corrected spelling from 'lat_cordinates'
+    long_cordinates, // Corrected spelling from 'long_cordinates'
     phone,
     username,
     email,
@@ -38,6 +158,7 @@ crudsObj.postCustomer = (
     nok2relationship,
     nok2phone,
     creditstanding,
+    credit_bar_rule_exception,
     membershipstatus,
     defaultsubs,
     sendmail,
@@ -48,20 +169,18 @@ crudsObj.postCustomer = (
     payment_style,
     bp_number,
     vat_number,
-    profilePic // The URL of the uploaded image
+     // The URL of the uploaded image\
+
 ) => {
+
+    console.log("_______________________________vat_number",vat_number);
+    console.log("payment_style",payment_style);
+    console.log("bp_number",bp_number);
     return new Promise((resolve, reject) => {
         pool.query(
             `INSERT INTO customer_details (
-                ecnumber, account_type, account_category, signed_on, name, surname, idnumber, sex, dob, 
-                address, house_number_and_street_name, surbub, city, country, lat_cordinates, long_cordinates, 
-                phone, username, email, password, employer, workindustry, workaddress, workphone, workphone2, 
-                nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone, 
-                creditstanding, membershipstatus, defaultsubs, sendmail, sendsms, product_code, cost_price, 
-                selling_price, payment_style, bp_number, vat_number, profilePic
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                ecnumber,
+                customerid, 
+                ecnumber, 
                 account_type,
                 account_category,
                 signed_on,
@@ -72,10 +191,10 @@ crudsObj.postCustomer = (
                 dob,
                 address,
                 house_number_and_street_name,
-                surbub,
+                surbub, 
                 city,
                 country,
-                lat_cordinates,
+                lat_cordinates, 
                 long_cordinates,
                 phone,
                 username,
@@ -95,6 +214,55 @@ crudsObj.postCustomer = (
                 nok2relationship,
                 nok2phone,
                 creditstanding,
+                credit_bar_rule_exception,
+                membershipstatus,
+                defaultsubs,
+                sendmail,
+                sendsms,
+                product_code,
+                cost_price,
+                selling_price,
+                payment_style,
+                bp_number,
+                vat_number
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`,
+            [
+                customerid, 
+                ecnumber, // Added ecnumber to the values
+                account_type,
+                account_category,
+                signed_on,
+                name,
+                surname,
+                idnumber,
+                sex,
+                dob,
+                address,
+                house_number_and_street_name,
+                surbub, // Corrected spelling
+                city,
+                country,
+                lat_cordinates, // Corrected spelling
+                long_cordinates, // Corrected spelling
+                phone,
+                username,
+                email,
+                password,
+                employer,
+                workindustry,
+                workaddress,
+                workphone,
+                workphone2,
+                nok1name,
+                nok1surname,
+                nok1relationship,
+                nok1phone,
+                nok2name,
+                nok2surname,
+                nok2relationship,
+                nok2phone,
+                creditstanding,
+                credit_bar_rule_exception,
                 membershipstatus,
                 defaultsubs,
                 sendmail,
@@ -105,17 +273,18 @@ crudsObj.postCustomer = (
                 payment_style,
                 bp_number,
                 vat_number,
-                profilePic
+                 // Include profilePic in the VALUES
             ],
             (err, result) => {
                 if (err) {
                     return reject(err);
                 }
-                return resolve({ status: '200', message: 'saving successful', result });
+                return resolve({ status: "200", message: "saving successful", result });
             }
         );
     });
 };
+
 
 crudsObj.getCustomers = () => {
     return new Promise((resolve, reject) => {
@@ -314,6 +483,28 @@ crudsObj.deleteCustomer = (id) => {
       );
     });
   };
+
+
+  crudsObj.updateCustomerAccountType = (customerid, updatedValues) => {
+    const { account_category } = updatedValues; // Only extract membershipstatus
+  
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE customer_details SET 
+          account_category = ?
+        WHERE customerid = ?`,
+        [account_category, customerid], // Only pass the necessary parameters
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve({ status: "200", message: "Update successful" });
+        }
+      );
+    });
+  };
+  
+  
 
 
 

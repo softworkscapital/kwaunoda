@@ -8,7 +8,6 @@ import {
   Image,
   SafeAreaView,
   ScrollView,
-  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
@@ -55,6 +54,17 @@ const NewDelivery = () => {
 
   const navigation = useNavigation();
 
+  const fetchData = async () => {
+    const storedIds = await AsyncStorage.getItem("theIds");
+    console.log("hipiiiiiiii", storedIds);
+    const parsedIds = JSON.parse(storedIds);
+    console.log(parsedIds.cust_id_id);
+    setDriverId(parsedIds.cust_id);
+    console.log("driver", CustomerId);
+
+    setLoading(false);
+  };
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -81,17 +91,10 @@ const NewDelivery = () => {
           setTo(lastDelivery.destinationLocation || ""); // Set 'to' from AsyncStorage
           setDur(lastDelivery.duration || "");
           setDist(lastDelivery.distance || "");
-          setStartLocationLat(
-            parseFloat(lastDelivery.startCoords.latitude || "")
-          );
-          setStartLocationLong(
-            parseFloat(lastDelivery.startCoords.longitude || "")
-          );
+          setStartLocationLat(parseFloat(lastDelivery.startCoords.latitude || ""));
+          setStartLocationLong(parseFloat(lastDelivery.startCoords.longitude || ""));
           setEndLocationLat(parseFloat(lastDelivery.destCoords.latitude || ""));
-          setEndLocationLong(
-            parseFloat(lastDelivery.destCoords.longitude || "")
-          );
-          console.log(endLocationLat);
+          setEndLocationLong(parseFloat(lastDelivery.destCoords.longitude || ""));
         } else {
           console.warn("No deliveries found");
         }
@@ -104,15 +107,7 @@ const NewDelivery = () => {
   }, []);
 
   const validateFields = () => {
-    if (
-      !parcelDescription ||
-      !from ||
-      !to ||
-      !contact ||
-      !price ||
-      !payingWhen ||
-      !code
-    ) {
+    if (!from || !to || !contact || !price || !payingWhen || !code) {
       Toast.show({
         type: "error",
         text1: "Error",
@@ -127,22 +122,28 @@ const NewDelivery = () => {
     if (!validateFields()) return;
 
     try {
+      // Retrieve user details
       const userDetails = await AsyncStorage.getItem("userDetails");
       const user = userDetails ? JSON.parse(userDetails) : {};
 
+      // Retrieve the customer ID from AsyncStorage
+      const customerIdData = await AsyncStorage.getItem("theIds");
+      const customerIds = customerIdData ? JSON.parse(customerIdData) : {};
+      const customerId = customerIds.customerId || ""; // Assuming theId stores an object with customerId
+
       const deliveryData = {
-        driver_id: "",
-        cust_id: user.customerid || "",
+        driver_id: "", // You might want to set the driver ID here if available
+        cust_id: customerId, // Use the customer ID from theIds
         request_start_datetime: new Date().toISOString(),
         order_start_datetime: "",
         order_end_datetime: "",
         status: "New Order",
-        deliveray_details: parcelDescription,
-        delivery_notes: deliverynotes,
-        weight: weight,
+        deliveray_details: "default_value", // Provide a default value instead of null
+        delivery_notes: deliverynotes || null,
+        weight: weight || null,
         delivery_contact_details: contact,
-        dest_location: to, // Use 'to' for destination
-        origin_location: from, // Use 'from' for origin
+        dest_location: to,
+        origin_location: from,
         origin_location_lat: parseFloat(startLocationLat),
         origin_location_long: parseFloat(startLocationLong),
         destination_lat: parseFloat(endLocationLat),
@@ -172,10 +173,10 @@ const NewDelivery = () => {
       if (response.ok) {
         Toast.show({
           type: "success",
-          text1: "Success",
+          text1: "Trip Created Successfully",
           text2: result.message,
         });
-        navigation.goBack();
+        navigation.navigate("Home");
       } else {
         Toast.show({
           type: "error",
@@ -213,45 +214,14 @@ const NewDelivery = () => {
 
       <View style={{ alignItems: "center", marginTop: 10, bottom: 0 }}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={25} color="red" />
-        <Text style={styles.appName}>Kwaunoda</Text>
+        <Text style={styles.appName}>EasyGo</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
           <View>
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, marginBottom: 10 }}
-            >
+            <Text style={{ alignSelf: "center", fontSize: 14, marginBottom: 10 }}>
               New Delivery
             </Text>
-          </View>
-
-          <View style={styles.inputContainerAlt}>
-            <FontAwesomeIcon
-              icon={faBagShopping}
-              size={12}
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Parcel Description"
-              value={parcelDescription}
-              onChangeText={setParcelDescription}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <FontAwesomeIcon
-              icon={faScaleBalanced}
-              size={12}
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Weight (kg)"
-              value={weight}
-              onChangeText={setWeight}
-              keyboardType="numeric"
-            />
           </View>
 
           <View style={styles.inputContainer}>
@@ -316,20 +286,6 @@ const NewDelivery = () => {
             />
           </View>
 
-          <View style={styles.inputContainer2}>
-            <FontAwesomeIcon
-              icon={faBagShopping}
-              size={12}
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Delivery Notes"
-              value={deliverynotes}
-              onChangeText={setDeliverynotes}
-            />
-          </View>
-
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={payingWhen}
@@ -337,23 +293,12 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPayingWhen(itemValue)}
             >
               <Picker.Item label="Paying When" value="" />
-              <Picker.Item
-                label="Pay Before Delivery"
-                value="Pay Before Delivery"
-              />
-              <Picker.Item
-                label="Pay After Delivery"
-                value="Pay After Delivery"
-              />
+              <Picker.Item label="Pay Before Delivery" value="Pay Before Delivery" />
+              <Picker.Item label="Pay After Delivery" value="Pay After Delivery" />
             </Picker>
           </View>
 
-          <View
-            style={[
-              styles.pickerContainer,
-              { borderWidth: 1, borderColor: "#ccc", borderRadius: 4 },
-            ]}
-          >
+          <View style={styles.pickerContainer}>
             <Picker
               selectedValue={paymentMethod}
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
@@ -380,15 +325,11 @@ const NewDelivery = () => {
               />
             </View>
 
-            <View
-              style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}
-            >
+            <View style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}>
               <Picker
+                selectedValue={code}
                 style={[styles.picker, { fontSize: 10, color: "#666" }]}
-                onValueChange={(itemValue) => {
-                  const cod = itemValue;
-                  setCode(itemValue);
-                }}
+                onValueChange={(itemValue) => setCode(itemValue)}
               >
                 <Picker.Item label="CURRENCY" value="" />
                 <Picker.Item label="USD" value="USD" />
@@ -413,16 +354,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+    marginBottom: 20,
   },
   topBar: {
     height: "14%",
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 40,
   },
   viewTop: {
     height: 60,
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     flexDirection: "row",
     width: "100%",
     marginTop: 20,
@@ -470,30 +412,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
-  inputContainerAlt: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    height: "10%",
-    padding: 5,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-  },
-  inputContainer2: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    height: "10%",
-    padding: 5,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-  },
   icon: {
     marginRight: 15,
     marginLeft: 10,
@@ -503,11 +421,12 @@ const styles = StyleSheet.create({
     color: "#cc",
   },
   btnSignUp: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderRadius: 50,
     padding: 14,
     width: "100%",
     alignItems: "center",
+    marginTop: 20,
   },
   txtSignUp: {
     color: "black",

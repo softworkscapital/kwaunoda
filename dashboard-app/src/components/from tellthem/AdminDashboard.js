@@ -3,6 +3,11 @@ import Header from "../Header"
 import { API_URL } from '../config';
 import "../../css/App.css"
 import Navbar from '../../components/Navbar';
+import { Col, Container, Row } from "react-bootstrap";
+import SideBar from "../SideBar";
+import Footer from "../Footer";
+import { Link } from "react-router-dom";
+
 
 const AdminDashboard = () => {
     
@@ -19,9 +24,24 @@ const AdminDashboard = () => {
     const [topUpList, setTopUpList] = useState([]);
     const [isAdmin, setIsAdmin] = useState('');
     const [usage, setUsage] = useState('0');
+    const APILINK = API_URL;
+
+
+
 
     useEffect(() => {
+        fetchTopUp();
+
+        const interval = setInterval(()=>{
+            fetchTopUp();
+        },1000);
+  
+            return () => clearInterval(interval);
     }, [])
+
+
+
+
 
     useEffect(() => {
         const role = "Admin";
@@ -87,102 +107,142 @@ const AdminDashboard = () => {
         })
     }
 
+
+  
+    const fetchTopUp = async () => {
+      try {
+        const response = await fetch(`${APILINK}/topUp/`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("All data:", data);
+        
+        if (Array.isArray(data.results)) {
+          setTopUpList(data.results);
+        } else {
+          setTopUpList([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch top-up data:', error);
+        setTopUpList([]);
+      }
+    };
+  
+    useEffect(() => {
+      fetchTopUp();
+      const interval = setInterval(fetchTopUp, 1000);
+      return () => clearInterval(interval);
+    }, []);
+  
     return (
-        <div>
-            {/* {isAdmin ? <AdminHeader /> : null} */}
-            {/* {!isAdmin ? <Header /> : null} */}
-            <Navbar/>
-            <body class="sb-nav-fixed">
-
-                <div id="layoutSidenav">
-                    
-                    <div id="layoutSidenav_content">
-                        <main>
-                            <div class="container-fluid px-4">
-                                <h1 class="mt-4">Admin Dashboard</h1>
-                                <ol class="breadcrumb mb-4">
-                                    <li class="breadcrumb-item active">Dashboard</li>
-                                </ol>
-                                <div class="row">
-                                    <div class="col-xl-3 col-md-6">
-                                        <div class="card bg-success text-white mb-4">
-                                            <h5>$ {balance+ usage}</h5>
-                                            <h5>Total Balances</h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-md-6">
-                                        <div class="card bg-success text-white mb-4">
-                                            <h5>$ {usage}</h5>
-                                            <h5>Billing Usage</h5>
-                                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-md-6">
-                                        <div class="card bg-success text-white mb-4">
-                                            <h5>$ {balance}</h5>
-                                            <h5>Billing Prepaid</h5>
-                                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <table className="table table-bordered">
-                                    <thead className="bg-dark text-light">
-                                        <tr>
-                                            <td style={{ color: 'white' }}>Client ID</td>
-                                            <td style={{ color: 'white' }}>Date</td>
-                                            <td style={{ color: 'white' }}>Details</td>
-                                            <td style={{ color: 'white' }}>Dr</td>
-                                            <td style={{ color: 'white' }}>Cr</td>
-                                            <td style={{ color: 'white' }}>Balance</td>
-                                            {/* <td style={{ color: 'white' }}>Action</td> */}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            topUpList.map((item) => (
-                                                <tr key={item.top_up_id}>
-                                                    <td>{item.client_profile_id}</td>
-                                                    <td>{item.date}</td>
-                                                    <td>{item.description}</td>
-                                                    <td>{item.debit}</td>
-                                                    <td>{item.credit}</td>
-                                                    <td>{item.total_balance}</td>
-                                                    {/* <td>
-                                                        <a href="{EditUser/1" >Edit </a>_
-                                                        <a href="/item" >Remove</a>
-                                                    </td> */}
-                                                </tr>
-                                            ))
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </main>
-                        <footer class="py-4 bg-light mt-auto">
-                            <div class="container-fluid px-4">
-                                <div class="d-flex align-items-center justify-content-between small">
-                                    <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                                    <div>
-                                        <a href="#0">Privacy Policy</a>
-                                        &middot;
-                                        <a href="#0">Terms &amp; Conditions</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </footer>
+      <div>
+        <Navbar />
+        <Container fluid>
+          <Row>
+            <Col md={9} className="order-2 order-md-1">
+              <div className="dashboard">
+                <h1 className="mt-4">Admin Dashboard</h1>
+                <div className="row">
+                  <div className="col-xl-3 col-md-6">
+                    <div className="card bg-white text-black mb-4">
+                      <h5>${balance + usage}</h5>
+                      <h5>Total Balances</h5>
                     </div>
+                  </div>
+                  <div className="col-xl-3 col-md-6">
+                    <div className="card bg-white text-black mb-4">
+                      <h5>${usage}</h5>
+                      <h5>Billing Usage</h5>
+                      <div className="small text-white"><i className="fas fa-angle-right"></i></div>
+                    </div>
+                  </div>
+                  <div className="col-xl-3 col-md-6">
+                    <div className="card bg-white text-black mb-4">
+                      <h5>${balance}</h5>
+                      <h5>Billing Prepaid</h5>
+                      <div className="small text-white"><i className="fas fa-angle-right"></i></div>
+                    </div>
+                  </div>
                 </div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-                <script src="js/scripts.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-                <script src="assets/demo/chart-area-demo.js"></script>
-                <script src="assets/demo/chart-bar-demo.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
-                <script src="js/datatables-simple-demo.js"></script>
-            </body>
-
-        </div>
+  
+                {/* Top Up Details Section */}
+                <div style={{ marginTop: "30px" }}>
+                  <h1>Billing</h1>
+                  <div className="col-xl-12">
+                    <div className="card">
+                      <h2 className="card-header">
+                        Billing
+                        <Link
+                          className="btn btn-primary btnAdd"
+                          style={{ float: "right", marginRight: "40px" }}
+                          to="/searchTrip"
+                        >
+                          Search Trip
+                        </Link>
+                        
+                      </h2>
+                      <div className="card-body">
+                        <div
+                          className="table-responsive"
+                          style={{
+                            overflowY: "auto",
+                            maxHeight: "400px",
+                            maxWidth: "1000px",
+                          }}
+                        >
+                          <table className="table table-striped table-bordered first">
+                            <thead>
+                              <tr>
+                                <th>Top Up ID</th>
+                                <th>Client ID</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Total Balance</th>
+                                <th>Currency</th>
+                                <th>Exchange Rate</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Array.isArray(topUpList) && topUpList.length > 0 ? (
+                                topUpList.map((item) => (
+                                  <tr key={item.top_up_id}>
+                                    <td>{item.top_up_id}</td>
+                                    <td>{item.client_profile_id}</td>
+                                    <td>{new Date(item.date).toLocaleDateString()}</td>
+                                    <td>{item.description}</td>
+                                    <td>${item.debit}</td>
+                                    <td>${item.credit}</td>
+                                    <td>${item.total_balance}</td>
+                                    <td>{item.currency}</td>
+                                    <td>{item.exchange_rate}</td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="9">No data available</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={3} className="order-1 order-md-2">
+              <SideBar />
+            </Col>
+          </Row>
+          <Footer />
+        </Container>
+      </div>
     );
-}
+  };
+  
 
 export default AdminDashboard;

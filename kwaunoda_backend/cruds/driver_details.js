@@ -337,25 +337,26 @@ crudsObj.updateDriverCoordinates = (
   });
 };
 
-// Driver Crud
-crudsObj.updateDriverStatus = (driverid, updatedValues) => {
-    const { membershipstatus } = updatedValues; // Only extract membershipstatus
-  
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `UPDATE driver_details SET 
-          membershipstatus = ?
-        WHERE driver_id = ?`,
-        [membershipstatus, driverid], // Only pass the necessary parameters
-        (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve({ status: "200", message: "Update successful" });
+
+
+
+
+crudsObj.getDriverByStatus = (status) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "SELECT * FROM driver_details WHERE membershipstatus = ?",
+      [status],
+      (err, results) => {
+        if (err) {
+          return reject(err);
         }
-      );
-    });
-  };
+        return resolve(results);
+      }
+    );
+  });
+};
+
+
 
 // Driver Crud update
   crudsObj.updateDriverStatus = (driverid, updatedValues) => {
@@ -376,6 +377,31 @@ crudsObj.updateDriverStatus = (driverid, updatedValues) => {
       );
     });
   };
+
+
+
+
+  //update account_type using driver_id on the driver_details table
+crudsObj.updateDriverAccountType = (driver_id, updatedValues) => {
+  const { account_category } = updatedValues; // Only extract membershipstatus
+
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `UPDATE driver_details SET 
+        account_category = ?
+      WHERE driver_id = ?`,
+      [account_category, driver_id], // Only pass the necessary parameters
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({ status: "200", message: "Update successful" });
+      }
+    );
+  });
+};
+
+
 
 
 

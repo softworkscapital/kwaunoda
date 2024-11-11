@@ -13,6 +13,30 @@ body {
 }
 
 
+
+
+
+.verify-button:active {
+  transform: scale(0.95); /* Slightly shrink the button on click */
+}
+
+.verify-button:focus {
+  outline: 2px solid #fff; /* Outline for accessibility */
+  outline-offset: 2px; /* Space between outline and button */
+}
+
+.verify-button.blacklist:active,
+.verify-button.suspend:active {
+  transform: scale(0.95); /* Slightly shrink on active state */
+}
+
+
+.button-container {
+    display: flex; /* Use flexbox for horizontal alignment */
+    justify-content: space-between; /* Evenly space buttons across the container */
+    margin-top: 10px; /* Optional: adds some space above the button container */
+  }
+
 .verify-button {
     position: absolute; /* Position it in the corner */
     top: 10px; /* Adjust as needed */
@@ -24,11 +48,33 @@ body {
     padding: 8px 12px;
     margin-right: 10px; /* Padding for size */
     cursor: pointer; /* Cursor changes to pointer on hover */
-    transition: background-color 0.3s; /* Smooth transition */
+    transition: background-color 0.9s; /* Smooth transition */
+  }
+  
+  .verify-button.suspend {
+    background-color: red;
+    color: white;
+    margin-right: 120px;
+    transition: background-color 0.3s;
+  }
+  
+  .verify-button.blacklist {
+    background-color: black;
+    color: white; 
+    margin-right: 215px; /* Padding for size */
+    transition: background-color 0.3s;
   }
   
   .verify-button:hover {
-    background-color: darkgreen; /* Darker green on hover */
+    opacity: 0.6; /* Slightly darker on hover */
+  }
+
+  .verify-button.blacklist:hover {
+    opacity: 0.6; /* Slightly darker on hover */
+  }
+
+  .verify-button.suspend:hover {
+    opacity: 0.6; /* Slightly darker on hover */
   }
 
 .card {
@@ -48,6 +94,49 @@ body {
 .card p {
     margin: 4
 }
+
+  
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+  }
+  
+  .info-row strong {
+    flex: 1;
+    min-width: 150px; /* Adjust as needed */
+  }
+  
+  .info-row div {
+    flex: 2;
+  }
+  
+  @media (max-width: 600px) {
+    .info-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .info-row strong {
+      margin-bottom: 4px; /* Space between label and value */
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Container styling */
 .container {

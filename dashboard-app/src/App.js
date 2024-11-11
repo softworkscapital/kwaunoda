@@ -9,12 +9,15 @@ import DriversTable from './components/DriversTable';
 import SearchPage from './components/searchPage';
 import Billing from './components/Billing';
 import AddTopUp from './components/from tellthem/AddTopUp';
-import Reports from './components/from tellthem/Reports';
 import AdminDashboard from './components/from tellthem/AdminDashboard';
 import axios from 'axios';
 import PendingReg from './components/from tellthem/PendingRegistrations';
 import SearchTrip from './components/searchTrip';
-
+import Analytics from './components/Analytics';
+import Broadcast from './components/Broadcast';
+import Reports from './components/Reports';
+import CustomerAdminChat from './components/CustomerAdminChat';
+import ChatHome from './components/ChatHome';
 
 function App() {
     const [tripData, setTripData] = useState([]);
@@ -22,20 +25,18 @@ function App() {
     const [driversData, setDriversData] = useState([]);
     const APILINK = API_URL;
 
-    const getDrivers = async() =>{
+    const getDrivers = async () => {
         try {
             const response = await fetch(`${APILINK}/driver/`);
             const data = await response.json();
             console.log(data);
-
             setDriversData(data);
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
+    };
 
-    }
-
-   const getCustomers = async () => {
+    const getCustomers = async () => {
         try {
             const response = await axios.get(`${APILINK}/customerdetails/`);
             const data = response.data;
@@ -45,8 +46,6 @@ function App() {
             console.error('Error fetching customers:', error);
         }
     };
-
-
 
     const fetchTripData = async () => {
         try {
@@ -65,24 +64,26 @@ function App() {
     }, []);
 
     return (
-        
-        <Router> {/* Move Router to wrap the entire application */}
-                <div className="app">
-
-                    <Routes>
-                        <Route index element={<Dashboard/>}></Route>
-                        <Route path="/table/trips" element={<Table tripData={tripData} />} />
-                        <Route path="/Driverstable/list" element={<DriversTable driversData={driversData} />} />
-                        <Route path="/Customerstable/list" element={<CustomersTable customersData={customersData} />} />
-                        <Route path="/search" element={<SearchPage/>} />
-                        <Route path="/billing" element={<Billing/>} />
-                        <Route path="/AddTopUp" element={<AddTopUp/>} />
-                        <Route path="/Report" element={<Reports/>} />
-                        <Route path="/Admindash" element={<AdminDashboard/>}/>
-                        <Route path="/verifyReg" element={<PendingReg/>}/>
-                        <Route path="/searchTrip" element={<SearchTrip/>}/>
-                    </Routes>
-                </div>
+        <Router>
+            <div className="app">
+                <Routes>
+                    <Route index element={<Dashboard />} />
+                    <Route path="/table/trips" element={<Table tripData={tripData} />} />
+                    <Route path="/Driverstable/list" element={<DriversTable driversData={driversData} />} />
+                    <Route path="/Customerstable/list" element={<CustomersTable customersData={customersData} />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/billing" element={<Billing />} />
+                    <Route path="/AddTopUp" element={<AddTopUp />} />
+                    <Route path="/Reports" element={<Reports />} />
+                    <Route path="/broadcast" element={<Broadcast />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/Admindash" element={<AdminDashboard />} />
+                    <Route path="/verifyReg" element={<PendingReg />} />
+                    <Route path="/searchTrip" element={<SearchTrip />} />
+                    <Route path="/chatNow/:tripId" element={<CustomerAdminChat />} />
+                    <Route path="/chatHome" element={<ChatHome />} />
+                </Routes>
+            </div>
         </Router>
     );
 }

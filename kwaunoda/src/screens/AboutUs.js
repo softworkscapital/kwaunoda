@@ -8,7 +8,7 @@ const AboutUs = () => {
   const navigation = useNavigation();
 
   const redirectHome = () => {
-    navigation.navigate("HomeDriver");
+    navigation.goBack();
   };
 
   return (

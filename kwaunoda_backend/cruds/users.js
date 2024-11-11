@@ -6,79 +6,51 @@ let crudsObj = {};
 
 // Existing CRUD methods...
 
-crudsObj.postUser = (
-  userid,
-  username,
-  password,
-  role,
-  email,
-  notify,
-  activesession,
-  addproperty,
-  editproperty,
-  approverequests,
-  delivery,
-  status,
-  employee_id,
-  company_id,
-  branch_id,
-  sync_status,
-  last_logged_account,
-  driver_id,
-  customerid,
-  otp
-) => {
-  console.log(password);
+crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
     pool.query(
       "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id,company_id,branch_id,sync_status,last_logged_account,driver_id,customerid,otp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
-        userid,
-        username,
-        password,
-        role,
-        email,
-        notify,
-        activesession,
-        addproperty,
-        editproperty,
-        approverequests,
-        delivery,
-        status,
-        employee_id,
-        company_id,
-        branch_id,
-        sync_status,
-        last_logged_account,
-        driver_id,
-        customerid,
-        otp,
+        user.userId, // Make sure this is set correctly
+        user.username,
+        user.password,
+        user.role,
+        user.email,
+        user.notify,
+        user.activeSession,
+        user.addProperty,
+        user.editProperty,
+        user.approveRequests,
+        user.delivery,
+        user.status,
+        user.employeeId,
+        user.companyId,
+        user.branchId,
+        user.syncStatus,
+        user.lastLoggedAccount,
+        user.driverId,
+        user.customerId,
+        user.otp,
       ],
       (err, result) => {
         if (err) {
           return reject(err);
         }
-        return resolve({ status: "200", message: "saving successful" });
+        return resolve({ status: "200", message: "Saving successful" });
       }
     );
   });
 };
 
-// ... Other existing methods ...
 
-crudsObj.getLastInsertedUserId = () => {
+
+crudsObj.getLastUser = () => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT MAX(userid) FROM users LIMIT 1", (err, results) => {
+    pool.query("SELECT userid FROM users ORDER BY userid DESC LIMIT 1;", (err, results) => {
       if (err) {
-        console.error("Database query error:", err);
-        return reject(new Error("Failed to fetch the last inserted user ID"));
+        return reject(err);
       }
-      
-      if (results.length > 0) {
-        return resolve(results[0].userid); // Return the last inserted user ID
-      } else {
-        return resolve(null); // No users found
-      }
+      return resolve(results);
     });
   });
 };
@@ -321,6 +293,27 @@ crudsObj.deleteUser = (id) => {
       }
       return resolve(results);
     });
+  });
+};
+
+
+//update usersstatus
+crudsObj.updateUserStatus = (userid, updatedValues) => {
+  const { status } = updatedValues; // Only extract membershipstatus
+
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `UPDATE users SET 
+        status = ?
+      WHERE userid = ?`,
+      [status, userid], // Only pass the necessary parameters
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({ status: "200", message: "Update successful" });
+      }
+    );
   });
 };
 

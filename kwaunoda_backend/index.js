@@ -15,6 +15,11 @@ const driverRouter = require("./routes/driver");
 const customerRouter = require("./routes/customer_details");
 const counterRouter = require("./routes/counter_offer");
 const complaintRouter = require("./routes/complaint");
+const CustomerDriverChatRouter = require("./routes/customer_driver_chats");
+const CustomerAdminChatRouter = require("./routes/customer_admin_chats");
+const sentMessagesRouter = require("./routes/sent_messages");
+const topUpRouter = require("./routes/topUp");
+const BillingTarrifRouter = require("./routes/billing_tarrifs");
 const pool = require("./cruds/poolfile");
 const bodyParser = require("body-parser");
 
@@ -72,6 +77,11 @@ app.use("/driver", driverRouter);
 app.use("/customerdetails", customerRouter);
 app.use("/counteroffer", counterRouter);
 app.use("/complaint", complaintRouter);
+app.use("/customer_driver_chats", CustomerDriverChatRouter);
+app.use("/customer_admin_chats", CustomerAdminChatRouter);
+app.use("/sentmessages", sentMessagesRouter);
+app.use("/topUp", topUpRouter);
+app.use("/billingtarrifs", BillingTarrifRouter);
 
 app.get("/", (req, res) => {
   res.send("Kwaunoda");
@@ -102,15 +112,15 @@ app.post("/driver/login", async (req, res) => {
   }
 });
 
-const options = {
-  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-};
+// const options = {
+//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+// };
 
-https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
-  console.log('app is listening to port' + process.env.APPPORT);
-});
-
-// app.listen(PORT, () => {
-//   console.log("app is listening to port" + " " + PORT);
+// https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+//   console.log('app is listening to port' + process.env.APPPORT);
 // });
+
+app.listen(PORT, () => {
+  console.log("app is listening to port" + " " + PORT);
+});

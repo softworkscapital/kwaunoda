@@ -14,41 +14,55 @@ import { API_URL } from "./config";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoute } from "@react-navigation/native"; // Import useRoute
 
 const OTPDriver = ({ navigation }) => {
+  const route = useRoute(); // Access route parameters
+  const { userId } = route.params; // Destructure userId from route parameters
+
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(true);
   const [fetchedOtp, setFetchedOtp] = useState("");
-  const [driverId, setDriverId] = useState(""); // State for driverId
 
-  const fetchdriverDetails = async () => {
+  useEffect(() => {
+    console.log("Passed userId:", userId); // Log the passed userId
+    fetchDriverDetails(userId); // Pass userId to fetchDriverDetails
+  }, [userId]);
+
+  const fetchDriverDetails = async (userId) => {
     try {
-      const userData = await AsyncStorage.getItem("driverDetails"); // Fetch user details from local storage
-      if (userData) {
-        const driverDetails = JSON.parse(userData);
-        setDriverId(driverDetails.driver_id); // Set driverId from user details
-        console.log("Fetched Driver ID from local storage:", driverDetails.driver_id); // Log the fetched ID
+      if (!userId) {
+        Toast.show({
+          text1: "Error",
+          text2: "User ID not found.",
+          type: "error",
+          position: "top",
+        });
+        return;
+      }
 
-        // Fetch OTP based on driverId
-        const response = await fetch(`${API_URL}/USERS/${driverDetails.driver_id}`);
-        if (response.ok) {
-          const user = await response.json();
+      // Fetch OTP based on userId
+      const response = await fetch(`${API_URL}/USERS/${userId}`);
+      if (response.ok) {
+        const user = await response.json();
+        if (user.length > 0 && user[0].otp) {
           setFetchedOtp(user[0].otp.toString()); // Convert OTP to string
           console.log("Fetched User Details:", user[0]);
+          console.log("Fetched OTP:", user[0].otp); // Log the fetched OTP
         } else {
-          const errorResponse = await response.json();
-          console.error("Error fetching user data:", errorResponse);
           Toast.show({
-            text1: "Error Fetching Data",
-            text2: "Failed to fetch user data. Please try again.",
+            text1: "Error",
+            text2: "No OTP found for this user.",
             type: "error",
             position: "top",
           });
         }
       } else {
+        const errorResponse = await response.json();
+        console.error("Error fetching user data:", errorResponse);
         Toast.show({
-          text1: "No User Data",
-          text2: "User data not found in local storage.",
+          text1: "Error Fetching Data",
+          text2: "Failed to fetch user data. Please try again.",
           type: "error",
           position: "top",
         });
@@ -65,10 +79,6 @@ const OTPDriver = ({ navigation }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchdriverDetails();
-  }, []);
 
   const handleVerifyOtp = () => {
     const otpString = otp.join("");
@@ -90,7 +100,6 @@ const OTPDriver = ({ navigation }) => {
   };
 
   const handleResendOtp = async () => {
-    // Logic to resend OTP can go here
     Alert.alert("Resend OTP", "OTP has been resent to your phone.");
   };
 
@@ -106,7 +115,7 @@ const OTPDriver = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-        <Text style={styles.appName}>Kwaunoda</Text>
+        <Text style={styles.appName}>EasyGo</Text>
       </View>
 
       <View style={styles.titleContainer}>
@@ -155,7 +164,7 @@ const styles = StyleSheet.create({
   topBar: {
     width: "100%",
     height: "25%",
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   btnVerify: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     borderRadius: 50,
     paddingVertical: 14,
     width: "90%",

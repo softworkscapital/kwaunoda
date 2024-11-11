@@ -12,6 +12,14 @@ body {
     min-height: 100vh; /* Full screen height */
 }
 
+.scrollable {
+    max-height: 300px; /* Set a max height */
+    overflow-y: auto; /* Enable vertical scroll */
+    margin-top: 10px; /* Add some spacing */
+    padding: 10px; /* Add padding for better aesthetics */
+    border: 1px solid #ccc; /* Optional: add a border */
+    border-radius: 5px; /* Optional: round the corners */
+  }
 
 .card {
     border: 1px solid #d4af37; /* Golden border */

@@ -355,10 +355,11 @@ crudsObj.updateDriverComment = (trip_id, updatedValues) => {
   });
 };
 
-crudsObj.getTripToDash = () => {
+crudsObj.getTripToDash = (status) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE status = "InTransit"',
+      'SELECT * FROM trip WHERE status = ?',
+      [status],
       (err, results) => {
         if (err) {
           return reject(err);

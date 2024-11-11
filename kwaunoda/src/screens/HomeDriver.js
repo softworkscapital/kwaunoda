@@ -225,7 +225,7 @@ const HomeDriver = () => {
       resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
-        <View style={styles.viewTop}>
+        <View style={[styles.viewTop, {marginTop: 30}]}>
           <Image style={styles.profileImage} source={{ uri: pic }} />
           <View style={styles.nameContainer}>
             <Text style={styles.firstName}>{name}</Text>

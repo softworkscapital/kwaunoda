@@ -89,19 +89,12 @@ const SignUpDriver1 = () => {
           clientid: "1001",
           clientkey: "hdojFa502Uy6nG2",
           message,
-          recipients: [`263${phoneNumber.slice(1)}`],
+          recipients: [`${phoneNumber}`],
           senderid: "REMS",
         }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error sending OTP:", response.status, errorText);
-        showToast("Error", "Failed to send OTP.");
-        return false;
-      }
-
-      return true;
+      return true; // Assuming the OTP was sent successfully
     } catch (error) {
       console.error("Network Error:", error);
       showToast("Error", "Could not send OTP. Please check your connection.");
@@ -173,7 +166,7 @@ const SignUpDriver1 = () => {
         return;
       }
 
-      const idResponse = await fetch(`${APILINK}/users/last-inserted-id/`, {
+      const idResponse = await fetch(`${APILINK}/users/last_user_id/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -187,11 +180,15 @@ const SignUpDriver1 = () => {
       }
 
       const idResult = await idResponse.json();
-      const lastUserId = idResult.lastInsertedId;
-      const user_id = incrementId(lastUserId);
+      const lastUserId = idResult[0].userid;
+
+      let user_id = incrementId(lastUserId);
+
+      // Save user ID in local storage
+      await AsyncStorage.setItem("user_id", user_id); // Store user_id for OTP page
 
       const user = {
-        userid: user_id,
+        userId: user_id,
         role: "driver",
         username: username.trim(),
         email: email.trim(),
@@ -203,20 +200,23 @@ const SignUpDriver1 = () => {
         editproperty: false,
         approverequests: false,
         delivery: false,
-        status: "pending verification", // Set status as pending
+        status: "Pending Verification", // Set status as pending
         employee_id: null,
         company_id: null,
         branch_id: null,
-        sync_status: "unsynced",
+        sync_status: "Pending",
         last_logged_account: "driver",
-        driver_id: user_id,
-        customerid: 0,
+        driverId: user_id,
+        customerId: 0,
       };
 
       console.log("User object to be sent:", user);
       
       // Save user details to local storage
       await AsyncStorage.setItem("driverDetails", JSON.stringify(user));
+
+      await AsyncStorage.setItem("driver_id", JSON.stringify(user_id)); 
+      console.log("wadzanai anopenga", user_id);
 
       const userResp = await fetch(`${APILINK}/users/`, {
         method: "POST",
@@ -242,7 +242,7 @@ const SignUpDriver1 = () => {
         name: driverDetails.name.trim(),
         surname: driverDetails.surname.trim(),
         idnumber: driverDetails.idnumber.trim(),
-        phone: driverDetails.phone.trim(),
+        phone: phoneNumber.trim(),
         plate: driverDetails.plate.trim(),
         email: email.trim(),
         password: password,
@@ -257,6 +257,7 @@ const SignUpDriver1 = () => {
         suburb: driverDetails.suburb || "",
         city: driverDetails.city || "",
         country: driverDetails.country || "",
+        membershipstatus: "Pending Verification",
       };
 
       const driverResp = await fetch(`${APILINK}/driver/`, {
@@ -276,7 +277,7 @@ const SignUpDriver1 = () => {
 
       const driverResponse = await driverResp.json();
       Alert.alert("Success", driverResponse.message);
-      navigation.navigate("OTPDriver");
+      navigation.navigate("OTPDriver", { userId: user_id });
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "Failed to save details. Please try again.");

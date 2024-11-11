@@ -49,6 +49,7 @@ const Table = ({ tripData }) => {
                             <tr>
                               <th>trip_id</th>
                               <th>driver_id</th>
+                              <th>customer_id</th>
                               <th>request_start_datetime </th>
                               <th>order_start_datetime </th>
                               <th>order_end_datetime</th>

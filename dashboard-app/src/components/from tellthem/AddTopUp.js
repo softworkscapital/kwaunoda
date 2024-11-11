@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react";
+
 import { API_URL } from "../config";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";

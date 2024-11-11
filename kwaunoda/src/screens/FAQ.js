@@ -9,7 +9,7 @@ const FAQ = () => {
     const navigation = useNavigation();
 
     const redirectHome = () => {
-        navigation.navigate("HomeDriver");
+        navigation.goBack();
     };
 
 

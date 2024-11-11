@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     },
     topBar: {
         height: "25%",
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderBottomLeftRadius: 45,
         borderBottomRightRadius: 45,
         justifyContent: "center",
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     btnNext: {
-        backgroundColor: "#FFC000",
+        backgroundColor: "green",
         borderRadius: 50,
         padding: 14,
         width: "100%",

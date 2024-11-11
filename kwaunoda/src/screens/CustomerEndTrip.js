@@ -34,7 +34,7 @@ const CustomerEndTrip = () => {
         text1: "Error",
         text2: "Please provide a rating.",
         type: "error",
-        position: "top", // Changed to top
+        position: "top",
         visibilityTime: 3000,
         autoHide: true,
       });
@@ -45,7 +45,7 @@ const CustomerEndTrip = () => {
         text1: "Error",
         text2: "Please provide additional comments.",
         type: "error",
-        position: "top", // Changed to top
+        position: "top",
         visibilityTime: 3000,
         autoHide: true,
       });
@@ -55,7 +55,7 @@ const CustomerEndTrip = () => {
     const User = await AsyncStorage.getItem("userDetails");
     const user = JSON.parse(User);
     const FeedbackData = {
-      driver_id: user.id, // Adjust this as necessary
+      driver_id: user.id,
       customer_comment: comment,
       driver_stars: rating,
       status: "Awaiting Driver Rating",
@@ -77,7 +77,7 @@ const CustomerEndTrip = () => {
           text1: "Success",
           text2: result.message,
           type: "success",
-          position: "top", // Changed to top
+          position: "top",
           visibilityTime: 3000,
           autoHide: true,
         });
@@ -87,7 +87,7 @@ const CustomerEndTrip = () => {
           text1: "Error",
           text2: result.message || "Failed to submit feedback.",
           type: "error",
-          position: "top", // Changed to top
+          position: "top",
           visibilityTime: 3000,
           autoHide: true,
         });
@@ -98,7 +98,7 @@ const CustomerEndTrip = () => {
         text1: "Error",
         text2: "An error occurred while submitting your feedback.",
         type: "error",
-        position: "top", // Changed to top
+        position: "top",
         visibilityTime: 3000,
         autoHide: true,
       });
@@ -109,7 +109,7 @@ const CustomerEndTrip = () => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backArrow} onPress={redirectHome}>
+          <TouchableOpacity style={styles.backArrow} onPress={redirectHome()}>
             <MaterialIcons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
           <View style={styles.topBarContent}>
@@ -118,7 +118,6 @@ const CustomerEndTrip = () => {
         </View>
 
         <View style={styles.feedbackContainer}>
-          {/* Profile Picture Section */}
           <View style={styles.profileContainer}>
             <Image
               style={styles.profilePicture}
@@ -169,14 +168,14 @@ const CustomerEndTrip = () => {
 
           <TouchableOpacity
             style={[styles.submitButton, styles.goldenYellow, styles.textWhite]}
-            onPress={handleFeedback}
+            onPress={handleFeedback()}
           >
             <Text style={styles.submitButtonText}>Submit Feedback</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
       <BottomFooter2 />
-      <Toast ref={(ref) => Toast.setRef(ref)} /> {/* Toast reference */}
+      {/* <Toast ref={(ref) => Toast.setRef(ref)} /> Toast reference */}
     </View>
   );
 };
@@ -212,9 +211,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profilePicture: {
-    width: 60, // Adjusted size
-    height: 60, // Adjusted size
-    borderRadius: 30, // Half of width/height for a circular image
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 10,
   },
   driverName: {

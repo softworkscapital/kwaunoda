@@ -10,7 +10,8 @@ crudsObj.postCustomerDriverChat= (
         trip_id,
         driver_id,
         customerid,
-        message
+        message,
+        origin
 
 ) => {
   return new Promise((resolve, reject) => {
@@ -21,8 +22,9 @@ crudsObj.postCustomerDriverChat= (
         trip_id,
         driver_id,
         customerid,
-        message
-              ) VALUES (?, ?, ?, ?,?,?)`,
+        message,
+        origin
+              ) VALUES (?, ?, ?, ?,?,?,?)`,
       [
        
         date_chat,
@@ -30,7 +32,8 @@ crudsObj.postCustomerDriverChat= (
         trip_id,
         driver_id,
         customerid,
-        message
+        message,
+        origin
       ],
       (err, result) => {
         if (err) {
@@ -69,6 +72,75 @@ crudsObj.getCustomerDriverChatsByTripId = (trip_id) => {
 };
 
 
+
+
+crudsObj.getCustomerDriverChatsByTripIdAndCustomerId = (trip_id, customerid) => {
+  return new Promise((resolve, reject) => {
+      pool.query(
+          "SELECT * FROM customer_driver_chats WHERE trip_id = ? AND customerid = ? ",
+          [trip_id, customerid],
+          (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              return resolve(results);
+          }
+      );
+  });
+};
+
+
+
+
+crudsObj.getCustomerMessagesByTripIDCustomerId = (trip_id, customerid) => {
+  return new Promise((resolve, reject) => {
+      pool.query(
+          "SELECT message FROM customer_driver_chats WHERE trip_id = ? AND customerid = ?",
+          [trip_id, customerid],
+          (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              return resolve(results);
+          }
+      );
+  });
+};
+
+crudsObj.getDriverMessagesByTripIDCustomerId = (trip_id, driver_id) => {
+  return new Promise((resolve, reject) => {
+      pool.query(
+          "SELECT message FROM customer_driver_chats WHERE trip_id = ? AND driver_id = ?",
+          [trip_id, driver_id],
+          (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              return resolve(results);
+          }
+      );
+  });
+};
+
+
+
+
+crudsObj.getCustomerDriverChatsByTripIdAndDriverId = (trip_id, driver_id) => {
+  return new Promise((resolve, reject) => {
+      pool.query(
+          "SELECT * FROM customer_driver_chats WHERE trip_id = ? AND driver_id = ? ",
+          [trip_id, driver_id],
+          (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              return resolve(results);
+          }
+      );
+  });
+};
+
+
 crudsObj.getCustomerDriverChatById = (customer_driver_chat_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -93,7 +165,8 @@ crudsObj.updateCustomerDriverChat = (customer_driver_chat_id, updatedValues) => 
       trip_id,
       driver_id,
       customerid,
-      message
+      message,
+      origin
     } = updatedValues;
   
     console.log("Updating record with ID:", customer_driver_chat_id);
@@ -107,7 +180,8 @@ crudsObj.updateCustomerDriverChat = (customer_driver_chat_id, updatedValues) => 
           trip_id =?,
           driver_id =?,
           customerid =?,
-          message =?
+          message =?,
+          origin =?
         WHERE customer_driver_chat_id = ?`,
         [
           date_chat,
@@ -116,6 +190,7 @@ crudsObj.updateCustomerDriverChat = (customer_driver_chat_id, updatedValues) => 
           driver_id,
           customerid,
           message,
+          origin,
           customer_driver_chat_id,
         ],
         (err, result) => {

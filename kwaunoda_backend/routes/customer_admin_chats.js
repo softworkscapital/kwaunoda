@@ -11,8 +11,9 @@ CustomerAdminChatRouter.post('/', async (req, res, next) => {
             time_chat,
             trip_id,
             admin_id,
-            customerid,
-            message
+            driver_id,
+            message,
+            origin
             } = postedValues;
 
             let results = await  CustomerAdminChatsDbOperations.postCustomerAdminChat(
@@ -21,8 +22,9 @@ CustomerAdminChatRouter.post('/', async (req, res, next) => {
                 time_chat,
                 trip_id,
                 admin_id,
-                customerid,
-                message
+                driver_id,
+                message,
+                origin
         );
         res.json(results);
     } catch (e) {
@@ -41,7 +43,7 @@ CustomerAdminChatRouter.get('/', async (req, res, next) => {
     }
 });
 
-CustomerAdminChatRouter.get('/customer-admin-chats/:trip_id', async (req, res) => {
+CustomerAdminChatRouter.get('/customer_admin_chats/:trip_id', async (req, res) => {
     const trip_id = req.params.trip_id;
 
     try {
@@ -63,8 +65,8 @@ CustomerAdminChatRouter.get('/customer-admin-chats/:trip_id', async (req, res) =
 
 CustomerAdminChatRouter.get('/:id', async (req, res, next) => {
     try {
-        let hr_attendance_id = req.params.id;
-        let result = await  CustomerAdminChatsDbOperations.getCustomerAdminChatById(hr_attendance_id);
+        let driver_id = req.params.id;
+        let result = await  CustomerAdminChatsDbOperations.getCustomerAdminChatByDriverId(driver_id);
         res.json(result);
     } catch (e) {
         console.log(e);

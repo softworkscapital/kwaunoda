@@ -15,6 +15,7 @@ import { API_URL } from "./config";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import TopView from "../components/TopView";
 
 const DriverNewOrderList = () => {
   const [marker, setMarker] = useState({ latitude: 51.505, longitude: -0.09 });
@@ -22,32 +23,70 @@ const DriverNewOrderList = () => {
   const route = useRoute();
   const { driverId } = route.params || {};
   const [locations, setLocations] = useState([]);
-  const [filteredTrips, setFilteredTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [routePoints, setRoute] = useState(null);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const mapRef = useRef(null);
   const APILINK = API_URL;
-  const GOOGLE_MAPS_API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
+  const GOOGLE_MAPS_API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"; // Replace with your actual API key
 
-  // Error logging function
-  const logErrorToFile = async (error) => {
-    try {
-      await axios.post(`http://softworkscapital.com/kwaunoda/LOGS`, {
-        error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      console.error("Failed to log error:", err);
-    }
-  };
+  //////////////////////////////////////////////////////
+
+  const [name, setName] = useState();
+  const [type, setType] = useState();
+  const [pic, setPic] = useState();
+  // const [driver, setDriverId] = useState();
+  const [menuRequests, setMenuRequests] = useState([]);
+  const [menuModalVisible, setMenuModalVisible] = useState(false);
+  const [notificationModalVisible, setNotificationModalVisible] =
+    useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [tripDetails, setTripDetails] = useState([]);
+  const [deliveryCount, setDeliveryCount] = useState(0);
+
+  /////////////////////////////////////////////////////////////
+
+  const menuOptions = [
+    {
+      id: "1",
+      title: "Profile Info",
+      onPress: () => navigation.navigate("ProfileInformation"),
+    },
+    { id: "2", title: "FAQ", onPress: () => navigation.navigate("FAQ") },
+    { id: "3", title: "Safety", onPress: () => navigation.navigate("Safety") },
+    {
+      id: "4",
+      title: "Feedback",
+      onPress: () => navigation.navigate("Feedback"),
+    },
+    {
+      id: "5",
+      title: "About Us",
+      onPress: () => navigation.navigate("AboutUs"),
+    },
+    {
+      id: "6",
+      title: "Complaint",
+      onPress: () => navigation.navigate("Complaint"),
+    },
+    {
+      id: "7",
+      title: "History",
+      onPress: () => navigation.navigate("History"),
+    },
+    {
+      id: "8",
+      title: "Settings",
+      onPress: () => navigation.navigate("settings"),
+    },
+  ];
+
+  /////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     const fetchData = async () => {
       const storedIds = await AsyncStorage.getItem("theIds");
-
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
         await fetchDriverDetails(parsedIds.driver_id);
@@ -60,7 +99,7 @@ const DriverNewOrderList = () => {
     fetchData();
 
     const intervalId = setInterval(() => {
-      fetchData();
+      fetchTrips();
     }, 30000);
 
     return () => clearInterval(intervalId);
@@ -68,19 +107,12 @@ const DriverNewOrderList = () => {
 
   const fetchDriverDetails = async (driverId) => {
     try {
-      const response = await fetch(`${APILINK}/driver/${driverId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await fetch(`${APILINK}/driver/${AAA-10002}`);
       const result = await response.json();
       await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
       await fetchTrips(driverId);
     } catch (error) {
       console.error("Error fetching driver details:", error);
-      await logErrorToFile(error); // Log the error
       Alert.alert("Error", "Failed to fetch driver details. Please try again.");
       setLoading(false);
     }
@@ -89,61 +121,39 @@ const DriverNewOrderList = () => {
   const fetchTrips = async (driverId) => {
     setRefreshing(true);
     try {
-      const response = await fetch(`${APILINK}/trip/driver/notify/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await fetch(`${APILINK}/trip/driver/notify/`);
       const data = await response.json();
 
-      if (data.length === 0) {
+      console.log("Fetched trips data:", data); // Log the fetched data
+
+      if (Array.isArray(data) && data.length > 0) {
+        const trips = data.map((trip) => ({
+          trip_id: trip.trip_id,
+          origin_lat: parseFloat(trip.origin_location_lat),
+          origin_long: parseFloat(trip.origin_location_long),
+          destination_lat: parseFloat(trip.destination_lat),
+          destination_long: parseFloat(trip.destination_long),
+          weight: trip.weight,
+          detail: trip.deliveray_details, 
+          contact: trip.delivery_contact_details,
+          cost: trip.delivery_cost_proposed,
+        }));
+
+        setLocations(trips); // Set all trips directly
+      } else {
+        console.log("No trips available");
         Alert.alert(
           "No trips available",
           "There are currently no trips to show."
         );
-        setLoading(false);
-        return;
       }
-
-      const trips = data.map((trip) => ({
-        trip_id: trip.trip_id,
-        origin_lat: parseFloat(trip.origin_location_lat),
-        origin_long: parseFloat(trip.origin_location_long),
-        destination_lat: parseFloat(trip.destination_lat),
-        destination_long: parseFloat(trip.destination_long),
-        weight: trip.weight,
-        detail: trip.deliveray_details,
-        contact: trip.delivery_contact_details,
-        cost: trip.delivery_cost_proposed,
-      }));
-
-      setLocations(trips);
-      filterTripsWithinRadius(trips, 1000, 5);
     } catch (error) {
       console.error("Error fetching trips:", error);
-      await logErrorToFile(error); // Log the error
       Alert.alert("Error", "Failed to fetch trips. Please try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  const filterTripsWithinRadius = (trips, initialRadius, targetCount) => {
-    let radius = initialRadius;
-    let foundTrips = [];
-
-    while (foundTrips.length < targetCount && radius <= 10000) {
-      foundTrips = trips.filter((trip) => {
-        // Implement actual filtering logic based on distance
-        return true; // Placeholder for filtering logic
-      });
-      radius += 1000;
-    }
-
-    setFilteredTrips(foundTrips);
   };
 
   const handlePress = (location) => {
@@ -158,8 +168,8 @@ const DriverNewOrderList = () => {
 
     setMarker(destination);
     getDirections(origin, destination);
-    fitMapToCoordinates([origin, destination]);
     setSelectedTrip(location);
+    fitMapToCoordinates([origin, destination]);
 
     if (mapRef.current) {
       mapRef.current.animateToRegion(
@@ -174,11 +184,6 @@ const DriverNewOrderList = () => {
         1000
       );
     }
-  };
-
-  const handleBackToList = () => {
-    setSelectedTrip(null);
-    setRoute(null);
   };
 
   const fitMapToCoordinates = (coordinates) => {
@@ -217,11 +222,10 @@ const DriverNewOrderList = () => {
       }
     } catch (error) {
       console.error("Error fetching directions:", error);
-      await logErrorToFile(error); // Log the error
     }
   };
 
-  const decode = (t, n = 5) => {
+  const decode = (t) => {
     const coordinates = [];
     let index = 0,
       len = t.length;
@@ -265,7 +269,6 @@ const DriverNewOrderList = () => {
       return;
     }
 
-    await AsyncStorage.setItem("driver", JSON.stringify(driverId));
     try {
       const response = await fetch(
         `${APILINK}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
@@ -281,21 +284,7 @@ const DriverNewOrderList = () => {
         }
       );
 
-      const text = await response.text();
-      console.log("Raw response:", text);
-
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (err) {
-        console.error("Failed to parse JSON:", err);
-        await logErrorToFile(err); // Log the error
-        Alert.alert(
-          "Error",
-          "Received an unexpected response from the server."
-        );
-        return;
-      }
+      const result = await response.json();
 
       if (response.ok) {
         Alert.alert("Success", result.message || "Trip accepted successfully.");
@@ -306,7 +295,6 @@ const DriverNewOrderList = () => {
       }
     } catch (error) {
       console.error("Error accepting trip:", error);
-      await logErrorToFile(error); // Log the error
       Alert.alert("Error", "An error occurred while accepting the trip.");
     }
   };
@@ -321,38 +309,12 @@ const DriverNewOrderList = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.viewTop}>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={[styles.menuIcon, { marginRight: 10 }]}>
-            <FontAwesome5 name="bell" size={20} color="#595959" />
-            <View
-              style={[
-                styles.notificationView,
-                {
-                  backgroundColor: "red",
-                  position: "absolute",
-                  top: -4,
-                  right: -6,
-                },
-              ]}
-            >
-              <Text
-                style={{ color: "white", fontSize: 12, fontWeight: "bold" }}
-              >
-                5
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuIcon}>
-            <FontAwesome5 name="bars" size={20} color="#595959" />
-          </TouchableOpacity>
-        </View>
+      <TopView
+        profileImage="https://example.com/profile.jpg"
+        customerType="Customer"
+        notificationCount={5}
+      />
 
-        <View style={styles.nameContainer}>
-          <Text style={styles.firstName}>KING</Text>
-          <Text style={styles.surname}>Driver</Text>
-        </View>
-      </View>
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -375,7 +337,6 @@ const DriverNewOrderList = () => {
             <Marker coordinate={marker} title="Destination" />
           </>
         )}
-
         {routePoints && routePoints.length > 0 && (
           <Polyline
             coordinates={routePoints}
@@ -384,24 +345,23 @@ const DriverNewOrderList = () => {
           />
         )}
       </MapView>
+
       <View style={styles.card}>
         {selectedTrip ? (
           <>
             <Text style={styles.title}>Trip Details</Text>
-            <Text>{selectedTrip.detail}</Text>
-            <Text>{selectedTrip.weight} KG</Text>
-            <Text>${selectedTrip.cost}</Text>
-            <Text>Contact: {selectedTrip.contact}</Text>
+            <Text style={{paddingVertical: 10}}>{selectedTrip.detail}</Text>
+            <Text style={{fontSize: 20, fontWeight: 700, color: "green"}}>${selectedTrip.cost}</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                onPress={handleBackToList}
-                style={styles.button} // Default button style
+                onPress={() => setSelectedTrip(null)}
+                style={styles.button}
               >
-                <Text style={styles.buttonText}>Back to Trip List</Text>
+                <Text style={styles.buttonText}>Back to List</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleAcceptTrip}
-                style={styles.acceptButton} // Specific style for Accept Trip button
+                style={styles.acceptButton}
               >
                 <Text style={styles.acceptButtonText}>Accept Trip</Text>
               </TouchableOpacity>
@@ -421,21 +381,26 @@ const DriverNewOrderList = () => {
                 />
               }
             >
-              {filteredTrips.map((location) => (
-                <TouchableOpacity
-                  key={location.trip_id}
-                  onPress={() => handlePress(location)}
-                  style={styles.listItem}
-                >
-                  <View style={styles.listItemContent}>
-                    <Text style={styles.listItemDetail}>{location.detail}</Text>
-                    <Text style={styles.listItemCost}>${location.cost}</Text>
-                  </View>
-                  <Text style={styles.listItemWeight}>
-                    {location.weight} KG
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {locations.length > 0 ? (
+                locations.map((location) => (
+                  <TouchableOpacity
+                    key={location.trip_id}
+                    onPress={() => handlePress(location)}
+                    style={styles.listItem}
+                  >
+                    <View style={styles.listItemContent}>
+                      <Text style={styles.listItemDetail}>
+                        {location.detail}
+                      </Text>
+                    </View>
+                    <Text style={styles.listItemWeight}>
+                    ${location.cost}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noTripsText}>No trips available</Text>
+              )}
             </ScrollView>
           </>
         )}
@@ -445,7 +410,195 @@ const DriverNewOrderList = () => {
 };
 
 const styles = StyleSheet.create({
-  // Your existing styles...
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    flex: 1,
+  },
+  viewTop: {
+    height: 60,
+    flexDirection: "row",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "100%",
+    marginTop: 32,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  nameContainer: {
+    flexDirection: "column",
+    flex: 1,
+  },
+  notificationView: {
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  firstName: {
+    fontSize: 13,
+    color: "#595959",
+    fontWeight: "bold",
+  },
+  surname: {
+    fontSize: 13,
+    color: "#595959",
+    fontWeight: "bold",
+  },
+  menuIcon: {
+    padding: 10,
+  },
+  iconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  nameContainer: {
+    alignItems: "flex-end", // Align text to the right
+    flex: 1, // Allow it to take up remaining space
+    marginLeft: 10, // Optional: Add space between icons and name
+  },
+  firstName: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  surname: {
+    fontSize: 14,
+    color: "#595959", // Adjust color as needed
+  },
+  menuIcon: {
+    padding: 10, // Add padding around icons
+  },
+  notificationView: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    height: 20,
+    width: 20,
+  },
+  iconContainer: {
+    flexDirection: "row",
+  },
+  menuIcon: {
+    marginHorizontal: 5,
+  },
+  notificationView: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  nameContainer: {
+    justifyContent: "center",
+    alignItems: "flex-start",
+  },
+  firstName: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  surname: {
+    fontSize: 14,
+    color: "#888",
+  },
+  map: {
+    flex: 1,
+  },
+  card: {
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    margin: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  button: {
+    backgroundColor: "green",
+    borderRadius: 50,
+    padding: 14,
+    width: "50%",
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  acceptButton: {
+    backgroundColor: "green",
+    borderRadius: 50,
+    padding: 14,
+    width: "50%",
+    alignItems: "center",
+    marginLeft: 5
+  },
+  acceptButtonText: {
+    fontSize: 16,
+    color: "black",
+  },
+  selectTripContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  selectTripTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  scrollView: {
+    maxHeight: 200,
+  },
+  listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  listItemContent: {
+    flex: 1,
+  },
+  listItemDetail: {
+    fontSize: 16,
+  },
+  listItemCost: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  listItemWeight: {
+    alignSelf: "center",
+  },
+  noTripsText: {
+    textAlign: "center",
+    padding: 10,
+    color: "#888",
+  },
 });
 
 export default DriverNewOrderList;

@@ -10,7 +10,8 @@ const BottomBar = ({ onTripSelect }) => {
 
   const getData = async () => {
     try {
-      const response = await fetch(`${APILINK}/trip/dash/notify/`);
+      let status = "InTransit"
+      const response = await fetch(`${APILINK}/trip/tripsbystatus/${status}`);
       const data = await response.json();
       setTripData(data);
     } catch (error) {

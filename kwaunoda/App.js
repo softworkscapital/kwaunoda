@@ -39,10 +39,16 @@ import Toast from "react-native-toast-message";
 import MapViewComponent from "./src/screens/MapViewComponent"; // Import the MapViewComponent
 import LocationTracker from "./src/screens/locationTracker"; //
 import DriverNewOrderList from "./src/screens/DriverNewOrderList"; //
-import InTransitTrip from "./src/screens/InTransitTrip"; 
+import InTransitTrip from "./src/screens/InTransitTrip";
 import OTPDriver from "./src/screens/OTPDriver";
 import OTPCustomer from "./src/screens/OTPCustomer";
 import Welcome from "./src/screens/Welcome";
+import AccountInError from "./src/screens/AccountInError.js";
+import DriverChat from "./src/screens/DriverChat.js";
+import CustomerChat from "./src/screens/CustomerChat.js";
+import CustomerAdminChat from "./src/screens/CustomerAdminChat.js";
+import Wallet from "./src/screens/Wallet.js";
+import Invite from "./src/screens/Invite.js";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -50,29 +56,34 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
+        <Stack.Screen
+          name="DriverNewOrderList"
+          component={DriverNewOrderList}
+        />
+        <Stack.Screen name="InTransitTrip" component={InTransitTrip} />
+        <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
+        <Stack.Screen name="Invite" component={Invite} />
+        <Stack.Screen name="DriverChat" component={DriverChat} />
+        <Stack.Screen name="CustomerChat" component={CustomerChat} />
+        <Stack.Screen name="Wallet" component={Wallet} />
+        <Stack.Screen name="CustomerAdminChat" component={CustomerAdminChat} />
+        <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
         <Stack.Screen name="OTPCustomer" component={OTPCustomer} />
-      <Stack.Screen name="Welcome" component={Welcome} />
-      <Stack.Screen name="OTPDriver" component={OTPDriver} />
+        <Stack.Screen name="Welcome" component={Welcome} />
+        <Stack.Screen name="OTPDriver" component={OTPDriver} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="MapView" component={MapViewComponent} />
         <Stack.Screen name="HomeDriver" component={HomeDriver} />
-        <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
         <Stack.Screen name="LocationTracker" component={LocationTracker} />
         <Stack.Screen name="SignUpCustomer" component={SignUpCustomer} />
         <Stack.Screen name="SignUpCustomer2" component={SignUpCustomer2} />
         <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="DeliveryNotice" component={DeliveryNotice} />
         <Stack.Screen
-          name="DriverNewOrderList"
-          component={DriverNewOrderList}
-        />
-        <Stack.Screen name="InTransitTrip" component={InTransitTrip} />
-        <Stack.Screen
           name="ProfileInformation"
           component={ProfileInformation}
         />
         <Stack.Screen name="DriverEndTrip" component={DriverEndTrip} />
-        <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
         <Stack.Screen name="Complaint" component={Complaint} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="Home" component={Home} />
@@ -99,6 +110,7 @@ const App = () => {
         <Stack.Screen name="AboutUs" component={AboutUs} />
         <Stack.Screen name="Safety" component={Safety} />
         <Stack.Screen name="History" component={History} />
+        <Stack.Screen name="AccountInError" component={AccountInError} />
         <Stack.Screen name="MapViewComponent" component={MapViewComponent} />
         {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>

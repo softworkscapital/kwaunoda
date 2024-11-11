@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   modalHeader: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     padding: 10,
     alignItems: "center",
   },
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   button: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",

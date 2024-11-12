@@ -15,15 +15,15 @@ import BottomFooter2 from "./BottomFooter2"; // Ensure this is the correct foote
 import { API_URL } from "./config";
 import Toast from "react-native-toast-message"; // Import Toast
 
-const CustomerEndTrip = () => {
+const DriverEndTrip = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const navigation = useNavigation();
   const route = useRoute();
-  const tripId = route.params?.trip_id;
+  const tripId = route.params?.tripId;
 
   const redirectHome = () => {
-    navigation.navigate("HomeDriver");
+    navigation.navigate("DriverNewOrderList");
   };
 
   const handleRatingPress = (value) => {
@@ -53,11 +53,10 @@ const CustomerEndTrip = () => {
       });
       return;
     }
-
+    console.log(tripId);
     const User = await AsyncStorage.getItem("userDetails");
     const user = JSON.parse(User);
     const FeedbackData = {
-      driver_id: user.id, // Adjust this as necessary
       driver_comment: comment,
       customer_stars: rating,
       status: "Trip Ended",
@@ -85,6 +84,7 @@ const CustomerEndTrip = () => {
         });
         redirectHome();
       } else {
+        redirectHome();
         Toast.show({
           text1: "Error",
           text2: result.message || "Failed to submit feedback.",
@@ -120,15 +120,14 @@ const CustomerEndTrip = () => {
         </View>
 
         <View style={styles.feedbackContainer}>
-          {/* Profile Picture Section */}
           <View style={styles.profileContainer}>
             <Image
               style={styles.profilePicture}
               source={require("../../assets/profile.jpeg")} // Adjust the path as necessary
             />
             <View>
-              <Text style={styles.driverName}>Passenger</Text>
-              <Text style={styles.username}>Munashe Mudoti</Text>
+              <Text style={styles.driverName}>Driver</Text>
+              <Text style={styles.username}>King Godo</Text>
             </View>
           </View>
 
@@ -171,14 +170,14 @@ const CustomerEndTrip = () => {
 
           <TouchableOpacity
             style={[styles.submitButton, styles.goldenYellow, styles.textWhite]}
-            onPress={handleFeedback}
+            onPress={handleFeedback} // Fixed here
           >
             <Text style={styles.submitButtonText}>Submit Feedback</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
       <BottomFooter2 />
-      <Toast ref={(ref) => Toast.setRef(ref)} /> {/* Toast reference */}
+      <Toast ref={(ref) => Toast.setRef(ref)} />
     </View>
   );
 };
@@ -194,7 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
   },
   backArrow: {
     padding: 8,
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   goldenYellow: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
   },
   textWhite: {
     color: "#fff",
@@ -280,4 +279,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomerEndTrip;
+export default DriverEndTrip;

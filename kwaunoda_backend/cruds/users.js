@@ -8,8 +8,10 @@ let crudsObj = {};
 
 crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
+    let User = user;
+    console.log("honai user:", User);
     pool.query(
-      "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,employee_id,company_id,branch_id,sync_status,last_logged_account,driver_id,customerid,otp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,sync_status,last_logged_account,driver_id,customerid,otp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
         user.userId, // Make sure this is set correctly
         user.username,
@@ -23,11 +25,8 @@ crudsObj.postUser = (user) => {
         user.approveRequests,
         user.delivery,
         user.status,
-        user.employeeId,
-        user.companyId,
-        user.branchId,
         user.syncStatus,
-        user.lastLoggedAccount,
+        user.last_logged_account,
         user.driverId,
         user.customerId,
         user.otp,
@@ -42,19 +41,19 @@ crudsObj.postUser = (user) => {
   });
 };
 
-
-
 crudsObj.getLastUser = () => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT userid FROM users ORDER BY userid DESC LIMIT 1;", (err, results) => {
-      if (err) {
-        return reject(err);
+    pool.query(
+      "SELECT userid FROM users ORDER BY userid DESC LIMIT 1;",
+      (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(results);
       }
-      return resolve(results);
-    });
+    );
   });
 };
-
 
 crudsObj.postUsernNew = (companyId, username, role, email, password) => {
   console.log(password);
@@ -295,7 +294,6 @@ crudsObj.deleteUser = (id) => {
     });
   });
 };
-
 
 //update usersstatus
 crudsObj.updateUserStatus = (userid, updatedValues) => {

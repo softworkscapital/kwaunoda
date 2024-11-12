@@ -211,6 +211,8 @@ const SignUpCustomer3 = () => {
       const newUserId = incrementId(lastUserId);
       console.log("New User ID:", newUserId); // Debug log
 
+      let last = 'customer'
+      let sync = 'Pending'
       const user = {
         userId: newUserId,
         role: "driver",

@@ -25,7 +25,7 @@ userRouter.post("/", async (req, res, next) => {
       companyId,
       branchId,
       syncStatus,
-      lastLoggedAccount,
+      last_logged_account,
       driverId,
       customerId,
       otp,
@@ -49,7 +49,7 @@ userRouter.post("/", async (req, res, next) => {
       companyId,
       branchId,
       syncStatus,
-      lastLoggedAccount,
+      last_logged_account,
       driverId,
       customerId,
       otp,
@@ -66,8 +66,6 @@ userRouter.post("/", async (req, res, next) => {
   }
 });
 
-
-
 // Get All Users
 userRouter.get("/last_user_id", async (req, res, next) => {
   try {
@@ -78,7 +76,6 @@ userRouter.get("/last_user_id", async (req, res, next) => {
     res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
-
 
 // Get All Users
 userRouter.get("/", async (req, res, next) => {
@@ -99,7 +96,7 @@ userRouter.get("/:id", async (req, res, next) => {
 
     // Check if user was found
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(user); // Respond with user details
@@ -153,8 +150,6 @@ userRouter.put("/update_status/:id", async (req, res, next) => {
   }
 });
 
-
-
 // Delete User by ID
 userRouter.delete("/:id", async (req, res, next) => {
   try {
@@ -166,6 +161,5 @@ userRouter.delete("/:id", async (req, res, next) => {
     res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
-
 
 module.exports = userRouter; // Export the userRouter

@@ -22,6 +22,7 @@ const DriverNewOrderList = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { driverId } = route.params || {};
+  const [driver, setDriver] = useState(null);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [routePoints, setRoute] = useState(null);
@@ -87,9 +88,13 @@ const DriverNewOrderList = () => {
   useEffect(() => {
     const fetchData = async () => {
       const storedIds = await AsyncStorage.getItem("theIds");
+      console.log("hipiiiiiiii", storedIds);
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
         await fetchDriverDetails(parsedIds.driver_id);
+        setDriver(parsedIds.driver_id);
+        console.log(name);
+        console.log(pic);
       } else {
         Alert.alert("Driver ID not found", "Please log in again.");
         setLoading(false);
@@ -100,6 +105,7 @@ const DriverNewOrderList = () => {
 
     const intervalId = setInterval(() => {
       fetchTrips();
+      fetchData();
     }, 30000);
 
     return () => clearInterval(intervalId);
@@ -107,10 +113,23 @@ const DriverNewOrderList = () => {
 
   const fetchDriverDetails = async (driverId) => {
     try {
-      const response = await fetch(`${APILINK}/driver/${AAA-10002}`);
+      const response = await fetch(`${APILINK}/driver/${driverId}`);
       const result = await response.json();
-      await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-      await fetchTrips(driverId);
+
+      // Ensure you are checking if result is not empty or undefined
+      if (result && result.length > 0) {
+        await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
+        setPic(`${APILINK}${result[0].profilePic}`);
+        console.log(`${APILINK}${result[0].profilePic}`);
+        console.log("user", result);
+        setType(result[0].account_type); // Set the driver type (role)
+        setName(result[0].username);
+
+        await fetchTrips(driverId);
+      } else {
+        Alert.alert("Error", "Driver details not found.");
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error fetching driver details:", error);
       Alert.alert("Error", "Failed to fetch driver details. Please try again.");
@@ -124,7 +143,7 @@ const DriverNewOrderList = () => {
       const response = await fetch(`${APILINK}/trip/driver/notify/`);
       const data = await response.json();
 
-      console.log("Fetched trips data:", data); // Log the fetched data
+      // console.log("Fetched trips data:", data); // Log the fetched data
 
       if (Array.isArray(data) && data.length > 0) {
         const trips = data.map((trip) => ({
@@ -134,7 +153,7 @@ const DriverNewOrderList = () => {
           destination_lat: parseFloat(trip.destination_lat),
           destination_long: parseFloat(trip.destination_long),
           weight: trip.weight,
-          detail: trip.deliveray_details, 
+          detail: trip.deliveray_details,
           contact: trip.delivery_contact_details,
           cost: trip.delivery_cost_proposed,
         }));
@@ -264,7 +283,7 @@ const DriverNewOrderList = () => {
   };
 
   const handleAcceptTrip = async () => {
-    if (!driverId) {
+    if (!driver) {
       Alert.alert("Error", "Driver ID is not available.");
       return;
     }
@@ -278,7 +297,7 @@ const DriverNewOrderList = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            driver_id: driverId,
+            driver_id: driver,
             status: "InTransit",
           }),
         }
@@ -288,7 +307,7 @@ const DriverNewOrderList = () => {
 
       if (response.ok) {
         Alert.alert("Success", result.message || "Trip accepted successfully.");
-        fetchTrips(driverId);
+        fetchTrips(driver);
         navigation.navigate("InTransitTrip");
       } else {
         Alert.alert("Error", result.message || "Failed to accept trip.");
@@ -310,11 +329,11 @@ const DriverNewOrderList = () => {
   return (
     <View style={styles.container}>
       <TopView
-        profileImage="https://example.com/profile.jpg"
-        customerType="Customer"
-        notificationCount={5}
+        profileImage={pic} // "https://example.com/profile.jpg"
+        customerType={type} // Pass the type to TopView
+        notificationCount={notificationCount} // Ensure this is set correctly
+        name={name}
       />
-
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -350,8 +369,10 @@ const DriverNewOrderList = () => {
         {selectedTrip ? (
           <>
             <Text style={styles.title}>Trip Details</Text>
-            <Text style={{paddingVertical: 10}}>{selectedTrip.detail}</Text>
-            <Text style={{fontSize: 20, fontWeight: 700, color: "green"}}>${selectedTrip.cost}</Text>
+            <Text style={{ paddingVertical: 10 }}>{selectedTrip.detail}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 700, color: "green" }}>
+              ${selectedTrip.cost}
+            </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={() => setSelectedTrip(null)}
@@ -360,7 +381,7 @@ const DriverNewOrderList = () => {
                 <Text style={styles.buttonText}>Back to List</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleAcceptTrip}
+                onPress={handleAcceptTrip(driver)}
                 style={styles.acceptButton}
               >
                 <Text style={styles.acceptButtonText}>Accept Trip</Text>
@@ -393,9 +414,7 @@ const DriverNewOrderList = () => {
                         {location.detail}
                       </Text>
                     </View>
-                    <Text style={styles.listItemWeight}>
-                    ${location.cost}
-                    </Text>
+                    <Text style={styles.listItemWeight}>${location.cost}</Text>
                   </TouchableOpacity>
                 ))
               ) : (
@@ -557,7 +576,7 @@ const styles = StyleSheet.create({
     padding: 14,
     width: "50%",
     alignItems: "center",
-    marginLeft: 5
+    marginLeft: 5,
   },
   acceptButtonText: {
     fontSize: 16,

@@ -14,65 +14,50 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
 import { FontAwesome5 } from "@expo/vector-icons";
 import TopView from "../components/TopView";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const InTransitTrip = ({ navigation }) => {
   const mapRef = useRef(null);
+
   const [route, setRoute] = useState([]);
   const [loading, setLoading] = useState(true);
   const [driverLocation, setDriverLocation] = useState(null);
   const [pickUpLocation, setPickUpLocation] = useState(null);
   const [destinationLocation, setDestinationLocation] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [driverId, setDriverId] = useState(null);
   const [currentTrip, setCurrentTrip] = useState(null);
+  const [tripId, setTripId] = useState(null);
+  const [name, setName] = useState();
+  const [type, setType] = useState();
+  const [pic, setPic] = useState();
+
+  const APILINK = API_URL;
 
   useEffect(() => {
-    const fetchDriverId = async () => {
-      const storedDriverId = await AsyncStorage.getItem("driver");
-      if (storedDriverId) {
-        setDriverId("AAA-100002");
-      } else {
-        Alert.alert("Error", "Driver ID not found in storage.");
-      }
-    };
+    // const fetchDriverId = async () => {
+    //   const storedDriverId = await AsyncStorage.getItem("driver");
+    //   if (storedDriverId) {
+    //     setDriverId("AAA-100002");
+    //   } else {
+    //     Alert.alert("Error", "Driver ID not found in storage.");
+    //   }
+    // };
+    const fetchData = async () => {
+      const storedIds = await AsyncStorage.getItem("theIds");
+      console.log("hipiiiiiiii", storedIds);
+      const parsedIds = JSON.parse(storedIds);
+      console.log(parsedIds.driver_id);
+      setDriverId(parsedIds.driver_id);
+      console.log("driver", driverId);
 
-    fetchDriverId();
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
   useEffect(() => {
-    // const fetchDriverLocation = async () => {
-    //   try {
-    //     const netInfo = await NetInfo.fetch();
-    //     if (!netInfo.isConnected) {
-    //       throw new Error("No internet connection. Please check your network.");
-    //     }
-
-    //     const response = await fetch(`${API_URL}/driver/${driverId}`);
-    //     if (!response.ok) {
-    //       throw new Error(`HTTP error! status: ${response.status}`);
-    //     }
-
-    //     const result = await response.json();
-    //     if (result.length > 0) {
-    //       const driverCoords = {
-    //         latitude: parseFloat(result[0].lat_cordinates),
-    //         longitude: parseFloat(result[0].long_cordinates),
-    //       };
-    //       if (!isNaN(driverCoords.latitude) && !isNaN(driverCoords.longitude)) {
-    //         setDriverLocation(driverCoords);
-    //         await AsyncStorage.setItem("driverLocation", JSON.stringify(driverCoords));
-    //       } else {
-    //         Alert.alert("Error", "Invalid driver location coordinates.");
-    //       }
-    //     } else {
-    //       Alert.alert("No Driver Found", "Driver details are not available.");
-    //     }
-    //   } catch (error) {
-    //     Alert.alert("Error", error.message || "Failed to fetch driver location. Please try again.");
-    //   }
-    // };
-
     if (driverId) {
-    
     }
   }, [driverId]);
 
@@ -85,11 +70,14 @@ const InTransitTrip = ({ navigation }) => {
         }
 
         const trips = await response.json();
-        const inTransitTrips = trips.filter(trip => trip.driver_id === driverId && trip.status === "InTransit");
+        const inTransitTrips = trips.filter(
+          (trip) => trip.driver_id === driverId && trip.status === "InTransit"
+        );
 
         if (inTransitTrips.length > 0) {
           const trip = inTransitTrips[0];
           setCurrentTrip(trip);
+          setTripId(trip.trip_id);
 
           const startCoords = {
             latitude: parseFloat(trip.origin_location_lat),
@@ -121,9 +109,36 @@ const InTransitTrip = ({ navigation }) => {
         setLoading(false);
       }
     };
+    const fetchDriverDetails = async (driverId) => {
+      try {
+        const response = await fetch(`${APILINK}/driver/${driverId}`);
+        const result = await response.json();
+
+        // Ensure you are checking if result is not empty or undefined
+        if (result && result.length > 0) {
+          await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
+          setPic(`${APILINK}${result[0].profilePic}`);
+          console.log(`${APILINK}${result[0].profilePic}`);
+          console.log("user", result);
+          setType(result[0].account_type); // Set the driver type (role)
+          setName(result[0].username);
+        } else {
+          Alert.alert("Error", "Driver details not found.");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching driver details:", error);
+        Alert.alert(
+          "Error",
+          "Failed to fetch driver details. Please try again."
+        );
+        setLoading(false);
+      }
+    };
 
     if (driverId) {
       fetchTripData(driverId);
+      fetchDriverDetails(driverId);
     }
   }, [driverId]);
 
@@ -157,7 +172,10 @@ const InTransitTrip = ({ navigation }) => {
         Alert.alert("Error", "No route found. Please check the locations.");
       }
     } catch (error) {
-      Alert.alert("Error", error.message || "Unable to fetch directions. Please try again.");
+      Alert.alert(
+        "Error",
+        error.message || "Unable to fetch directions. Please try again."
+      );
     }
   };
 
@@ -168,7 +186,9 @@ const InTransitTrip = ({ navigation }) => {
     let lng = 0;
 
     while (index < t.length) {
-      let b, shift = 0, result = 0;
+      let b,
+        shift = 0,
+        result = 0;
       do {
         b = t.charCodeAt(index++) - 63;
         result |= (b & 0x1f) << shift;
@@ -198,9 +218,10 @@ const InTransitTrip = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <TopView
-        profileImage="https://example.com/profile.jpg"
-        customerType="Customer"
-        notificationCount={5}
+        profileImage={pic}
+        customerType={type} // Pass the type to TopView
+        notificationCount={notificationCount} // Ensure this is set correctly
+        name={name}
       />
 
       <MapView
@@ -210,17 +231,29 @@ const InTransitTrip = ({ navigation }) => {
         provider={MapView.PROVIDER_GOOGLE}
       >
         {driverLocation && (
-          <Marker coordinate={driverLocation} title="Driver's Location" pinColor="blue" />
+          <Marker
+            coordinate={driverLocation}
+            title="Driver's Location"
+            pinColor="blue"
+          />
         )}
         {pickUpLocation && (
-          <Marker coordinate={pickUpLocation} title="Pick-Up Location" pinColor="red" />
+          <Marker
+            coordinate={pickUpLocation}
+            title="Pick-Up Location"
+            pinColor="red"
+          />
         )}
         {destinationLocation && (
-          <Marker coordinate={destinationLocation} title="Destination" pinColor="green" />
+          <Marker
+            coordinate={destinationLocation}
+            title="Destination"
+            pinColor="green"
+          />
         )}
         {route.length > 0 && <Polyline coordinates={route} strokeWidth={4} />}
       </MapView>
-      
+
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
@@ -231,20 +264,19 @@ const InTransitTrip = ({ navigation }) => {
         <Text style={styles.infoText}>Route</Text>
 
         <TouchableOpacity
-              style={styles.chatButton}
-              onPress={() => navigation.navigate("DriverChat")}
-            >
-              <Text style={[styles.chatButtonText]}>Chat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.chatButton}
-              onPress={() => navigation.navigate("CustomerEndTrip")}
-            >
-              <Text style={styles.chatButtonText}>End Trip</Text>
-            </TouchableOpacity>
+          style={styles.chatButton}
+          onPress={() => navigation.navigate("DriverChat")}
+        >
+          <Text style={[styles.chatButtonText]}>Chat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => navigation.navigate("DriverEndTrip", { tripId })}
+        >
+          <Text style={styles.chatButtonText}>End Trip</Text>
+        </TouchableOpacity>
         {currentTrip && (
           <View style={styles.fixedCurrentTripContainer}>
-            
             <Text style={styles.currentTripText}>
               Current Trip: {currentTrip.trip_id}
             </Text>
@@ -306,14 +338,13 @@ const styles = StyleSheet.create({
   fixedCurrentTripContainer: {
     marginTop: 10,
     backgroundColor: "lightgreen",
-
   },
   chatButton: {
     padding: 10,
     backgroundColor: "lightgreen",
     borderRadius: 5,
     alignItems: "center",
-    marginBottom:10
+    marginBottom: 10,
   },
   chatButtonText: {
     fontWeight: "bold",

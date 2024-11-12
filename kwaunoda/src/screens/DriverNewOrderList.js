@@ -105,7 +105,6 @@ const DriverNewOrderList = () => {
 
     const intervalId = setInterval(() => {
       fetchTrips();
-      fetchData();
     }, 30000);
 
     return () => clearInterval(intervalId);
@@ -161,10 +160,10 @@ const DriverNewOrderList = () => {
         setLocations(trips); // Set all trips directly
       } else {
         console.log("No trips available");
-        Alert.alert(
-          "No trips available",
-          "There are currently no trips to show."
-        );
+        // Alert.alert(
+        //   "No trips available",
+        //   "There are currently no trips to show."
+        // );
       }
     } catch (error) {
       console.error("Error fetching trips:", error);
@@ -536,8 +535,8 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  card: {
-    padding: 10,
+ card: {
+    padding: 20, // Increased padding for a larger card
     backgroundColor: "#fff",
     borderRadius: 8,
     margin: 10,
@@ -549,6 +548,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 2,
     elevation: 3,
+    minHeight: 200, // Set a minimum height for the card
   },
   title: {
     fontSize: 18,

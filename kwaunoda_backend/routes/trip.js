@@ -140,7 +140,7 @@ tripRouter.get("/byStatus/driver_id/status", async (req, res, next) => {
   }
   try {
     // Fetch trips with the given driver_id and status
-    let results = await tripDbOperations.getTripByStatus(driver_id, status);
+    let results = await tripDbOperations.getTripByDriverAndStatus(driver_id, status);
 
     // Check if any results were found
     if (results.length === 0) {
@@ -152,6 +152,32 @@ tripRouter.get("/byStatus/driver_id/status", async (req, res, next) => {
     res.sendStatus(500); // Send a 500 error if something goes wrong
   }
 });
+
+
+
+tripRouter.get("/byStatus/customer/:cust_id/:status", async (req, res, next) => {
+  const { cust_id, status } = req.params; // Extract parameters from the query
+  if (!cust_id || !status) {
+    return res
+      .status(400)
+      .json({ error: "Driver ID and status are required." });
+  }
+  try {
+    // Fetch trips with the given driver_id and status
+    let results = await tripDbOperations.getTripByCustomerIdAndStatus(cust_id, status);
+
+    // Check if any results were found
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No trips found." });
+    }
+    res.json(results); // Return the list of trips in a JSON response
+  } catch (e) {
+    console.error(e);
+    res.sendStatus(500); // Send a 500 error if something goes wrong
+  }
+});
+
+
 
 tripRouter.get("/driver/notify/", async (req, res, next) => {
   try {

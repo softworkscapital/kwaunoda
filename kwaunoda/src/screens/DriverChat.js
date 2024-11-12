@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import { API_URL } from "./config";
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation for navigation
 
 const DriverChat = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]); // To hold the chat history
   const tripId = 7; // Hardcoded trip ID
   const driver_id = 1; // Hardcoded driver ID
+
+  const navigation = useNavigation(); // Get navigation object
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -83,8 +86,13 @@ const DriverChat = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.topView}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.chatTitle}>Chat</Text>
+      </View>
 
-      
       <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
         {chatHistory.map((chat, index) => (
           <View
@@ -99,6 +107,7 @@ const DriverChat = () => {
           </View>
         ))}
       </ScrollView>
+      
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -120,6 +129,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  topView: {
+    height: 60,
+    backgroundColor: 'green',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: 'black',
+  },
+  chatTitle: {
+    fontSize: 20,
+    color: 'black',
+    textAlign: 'center',
+    flex: 1, // Allow title to be centered
   },
   chatContainer: {
     flex: 1,

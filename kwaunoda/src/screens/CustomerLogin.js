@@ -23,6 +23,7 @@ import { API_URL } from "./config";
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [customerID, setCustomerID] = useState(0);
   const navigation = useNavigation();
 
   const redirectSignUpCustomer = () => {
@@ -91,7 +92,7 @@ const CustomerLogin = () => {
         });
       }
     } else if (type === "customer") {
-      navigation.navigate("Home", { customerId });
+      navigation.navigate("Home", { customerID });
     } else {
       Toast.show({
         text1: "Please Input the Correct Data",
@@ -120,37 +121,44 @@ const CustomerLogin = () => {
 
   const fetchUserDetails = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/login/${email}/${password}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
+      const response = await fetch(
+        `${API_URL}/users/login/${email}/${password}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       const result = await response.json();
       console.log("User Response:", result);
-      
+
       // Access the customerid from the result
       const customerId = result[0]?.customerid; // Safely access customerid
-  
+      setCustomerID(customerId);
       console.log("Customer ID:", customerId); // Log customer ID
-  
+
       if (response.ok && result.length > 0) {
         const userStatus = result[0].status; // Assuming the user status is in the response
         console.log(result);
-  
+
         const ids = {
           driver_id: result[0].driver_id,
-          customerId: customerId, // Store as customerId
+          customerId: result[0]?.customerid, // Store as customerId
           last_logged_account: result[0].last_logged_account,
         };
-  
+        console.log("ids", ids);
+
         // Store driver ID and customer ID in AsyncStorage
-        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
+        await AsyncStorage.setItem(
+          "driver",
+          JSON.stringify(result[0].driver_id)
+        );
         await AsyncStorage.setItem("theIds", JSON.stringify(ids));
         await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId)); // Store as customerId
         await AsyncStorage.setItem("userStatus", userStatus); // Store user status
-  
+
         if (userStatus === "Pending Verification") {
           navigation.navigate("Welcome");
         } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {

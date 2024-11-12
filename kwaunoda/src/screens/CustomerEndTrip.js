@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomFooter2 from "./BottomFooter2"; // Ensure this is the correct footer
 import { API_URL } from "./config";
@@ -19,9 +19,11 @@ const CustomerEndTrip = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const navigation = useNavigation();
+  const route = useRoute();
+  const trip = route.params?.trip;
 
   const redirectHome = () => {
-    navigation.navigate("HomeDriver");
+    navigation.navigate("Home");
   };
 
   const handleRatingPress = (value) => {
@@ -51,24 +53,26 @@ const CustomerEndTrip = () => {
       });
       return;
     }
-
+    console.log(trip.trip_id);
     const User = await AsyncStorage.getItem("userDetails");
     const user = JSON.parse(User);
     const FeedbackData = {
-      driver_id: user.id,
-      customer_comment: comment,
-      driver_stars: rating,
-      status: "Awaiting Driver Rating",
+      driver_comment: comment,
+      customer_stars: rating,
+      status: "Trip Ended",
     };
 
     try {
-      const response = await fetch(`${API_URL}/trip/${user.trip_id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(FeedbackData),
-      });
+      const response = await fetch(
+        `${API_URL}/trip/customerComment/${trip.trip_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(FeedbackData),
+        }
+      );
 
       const result = await response.json();
 
@@ -83,6 +87,7 @@ const CustomerEndTrip = () => {
         });
         redirectHome();
       } else {
+        redirectHome();
         Toast.show({
           text1: "Error",
           text2: result.message || "Failed to submit feedback.",
@@ -109,7 +114,7 @@ const CustomerEndTrip = () => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backArrow} onPress={redirectHome()}>
+          <TouchableOpacity style={styles.backArrow} onPress={redirectHome}>
             <MaterialIcons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
           <View style={styles.topBarContent}>
@@ -168,14 +173,14 @@ const CustomerEndTrip = () => {
 
           <TouchableOpacity
             style={[styles.submitButton, styles.goldenYellow, styles.textWhite]}
-            onPress={handleFeedback()}
+            onPress={handleFeedback} // Fixed here
           >
             <Text style={styles.submitButtonText}>Submit Feedback</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
       <BottomFooter2 />
-      {/* <Toast ref={(ref) => Toast.setRef(ref)} /> Toast reference */}
+      <Toast ref={(ref) => Toast.setRef(ref)} />
     </View>
   );
 };
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
   },
   backArrow: {
     padding: 8,
@@ -211,9 +216,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profilePicture: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 60, // Adjusted size
+    height: 60, // Adjusted size
+    borderRadius: 30, // Half of width/height for a circular image
     marginRight: 10,
   },
   driverName: {
@@ -265,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   goldenYellow: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "green",
   },
   textWhite: {
     color: "#fff",
@@ -276,5 +281,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
 export default CustomerEndTrip;

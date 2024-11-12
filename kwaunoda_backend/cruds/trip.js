@@ -109,6 +109,8 @@ crudsObj.getTripById = (trip_id) => {
   });
 };
 
+
+
 crudsObj.getTripByStatusToDriver = () => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -138,7 +140,7 @@ crudsObj.getTripByStatusToDriverEnd = (driver_id) => {
   });
 };
 
-crudsObj.getTripByStatus = (driver_id, status) => {
+crudsObj.getTripByDriverAndStatus = (driver_id, status) => {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM trip WHERE driver_id = ? AND status = ?";
     pool.query(query, [driver_id, status], (err, results) => {
@@ -149,6 +151,22 @@ crudsObj.getTripByStatus = (driver_id, status) => {
     });
   });
 };
+
+
+crudsObj.getTripByCustomerIdAndStatus = (cust_id, status) => {
+  return new Promise((resolve, reject) => {
+    const query = "SELECT * FROM trip WHERE cust_id = ? AND status = ?";
+    pool.query(query, [cust_id, status], (err, results) => {
+      if (err) {
+        return reject(err); // Reject the promise if an error occurs
+      }
+      return resolve(results); // Resolve with the results
+    });
+  });
+};
+
+
+
 
 crudsObj.getNumberofTrips = (driver_id, status) => {
   return new Promise((resolve, reject) => {
@@ -165,10 +183,13 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
   });
 };
 
+
+
+
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE cust_id = ? AND status = "InTransit" OR status = "Arrived At Destination"',
+      'SELECT * FROM trip WHERE cust_id = ? AND status = "InTransit" OR status = "Arrived At Destination" OR status = "New Order"',
       [cust_id],
       (err, results) => {
         if (err) {

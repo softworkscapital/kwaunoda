@@ -37,32 +37,54 @@ const NewDelivery = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [parcelDescription, setParcelDescription] = useState("");
   const [weight, setWeight] = useState("");
-  const [from, setFrom] = useState(""); // From location set from AsyncStorage
-  const [to, setTo] = useState(""); // To location set from AsyncStorage
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [price, setPrice] = useState(""); // User sets this
-  const [contact, setContact] = useState(""); // User sets this
-  const [code, setCode] = useState(""); // User sets this
-  const [cid, setCid] = useState(""); // User sets this
+  const [price, setPrice] = useState("");
+  const [balance, setBalance] = useState();
+  const [contact, setContact] = useState("");
+  const [code, setCode] = useState("");
+  const [cid, setCid] = useState("");
   const [payingWhen, setPayingWhen] = useState("");
   const [duration, setDur] = useState("");
   const [distance, setDist] = useState("");
-  const [startLocationLat, setStartLocationLat] = useState(""); // Set from AsyncStorage
-  const [startLocationLong, setStartLocationLong] = useState(""); // Set from AsyncStorage
-  const [endLocationLat, setEndLocationLat] = useState(""); // Set from AsyncStorage
-  const [endLocationLong, setEndLocationLong] = useState(""); // Set from AsyncStorage
+  const [startLocationLat, setStartLocationLat] = useState("");
+  const [startLocationLong, setStartLocationLong] = useState("");
+  const [endLocationLat, setEndLocationLat] = useState("");
+  const [endLocationLong, setEndLocationLong] = useState("");
 
   const navigation = useNavigation();
+  const hardCodedBalance = 100; // Example balance value
 
   const fetchData = async () => {
     const storedIds = await AsyncStorage.getItem("theIds");
-    console.log("hipiiiiiiii", storedIds);
     const parsedIds = JSON.parse(storedIds);
-    console.log(parsedIds.cust_id_id);
-    setDriverId(parsedIds.cust_id);
-    console.log("driver", CustomerId);
+    console.log("hiiiii", parsedIds.customerId);
+    console.log("0000", parsedIds.customerId);
+    console.log("0000", parsedIds.customerId);
+    setCid(parsedIds.customerId);
+    let me = parsedIds.customerId;
+    console.log("0000", me);
+    try {
+      const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    setLoading(false);
+      const result = await resp.json();
+      console.log("kkkkkk", result);
+      if (result) {
+        setBalance(result[0].balance);
+        console.log("suiiiii", result[0].balance);
+      } else {
+        Alert.alert("Error", "Failed to fetch History.");
+      }
+    } catch (error) {
+      // console.error("Error fetching History:", error);
+      Alert.alert("Error", "An error occurred while fetching History.");
+    }
   };
 
   const pickImage = async () => {
@@ -87,14 +109,20 @@ const NewDelivery = () => {
         const deliveries = lastTripData ? JSON.parse(lastTripData) : [];
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
-          setFrom(lastDelivery.startingLocation || ""); // Set 'from' from AsyncStorage
-          setTo(lastDelivery.destinationLocation || ""); // Set 'to' from AsyncStorage
+          setFrom(lastDelivery.startingLocation || "");
+          setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
           setDist(lastDelivery.distance || "");
-          setStartLocationLat(parseFloat(lastDelivery.startCoords.latitude || ""));
-          setStartLocationLong(parseFloat(lastDelivery.startCoords.longitude || ""));
+          setStartLocationLat(
+            parseFloat(lastDelivery.startCoords.latitude || "")
+          );
+          setStartLocationLong(
+            parseFloat(lastDelivery.startCoords.longitude || "")
+          );
           setEndLocationLat(parseFloat(lastDelivery.destCoords.latitude || ""));
-          setEndLocationLong(parseFloat(lastDelivery.destCoords.longitude || ""));
+          setEndLocationLong(
+            parseFloat(lastDelivery.destCoords.longitude || "")
+          );
         } else {
           console.warn("No deliveries found");
         }
@@ -102,8 +130,34 @@ const NewDelivery = () => {
         console.error("Error fetching deliveries:", error);
       }
     };
+    const fetchTopUpHistory = async (id) => {
+      let me = id;
+      console.log("0000", id);
+      try {
+        const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const result = await resp.json();
+        console.log("kkkkkk", result);
+        if (result) {
+          setBalance(result[0].balance);
+          console.log("suiiiii", result[0].balance);
+        } else {
+          Alert.alert("Error", "Failed to fetch History.");
+        }
+      } catch (error) {
+        console.error("Error fetching History:", error);
+        Alert.alert("Error", "An error occurred while fetching History.");
+      }
+    };
 
     fetchDeliveries();
+    fetchData();
+    fetchTopUpHistory(cid);
   }, []);
 
   const validateFields = () => {
@@ -118,27 +172,38 @@ const NewDelivery = () => {
     return true;
   };
 
+  const checkBalance = (price) => {
+    const priceValue = parseFloat(price);
+    console.log(balance);
+    if (priceValue > balance) {
+      Toast.show({
+        type: "error",
+        text1: "Insufficient Balance",
+        text2: `Your balance is insufficient. Available balance: $${balance}. Required: $${priceValue}.`,
+      });
+      return false; // Not enough balance
+    }
+    return true; // Sufficient balance
+  };
+
   const handleSignUp = async () => {
     if (!validateFields()) return;
 
+    // Check balance before proceeding
+    if (!checkBalance(price)) return;
+
     try {
-      // Retrieve user details
       const userDetails = await AsyncStorage.getItem("userDetails");
       const user = userDetails ? JSON.parse(userDetails) : {};
 
-      // Retrieve the customer ID from AsyncStorage
-      const customerIdData = await AsyncStorage.getItem("theIds");
-      const customerIds = customerIdData ? JSON.parse(customerIdData) : {};
-      const customerId = customerIds.customerId || ""; // Assuming theId stores an object with customerId
-
       const deliveryData = {
-        driver_id: "", // You might want to set the driver ID here if available
-        cust_id: customerId, // Use the customer ID from theIds
+        driver_id: "",
+        cust_id: cid,
         request_start_datetime: new Date().toISOString(),
         order_start_datetime: "",
         order_end_datetime: "",
         status: "New Order",
-        deliveray_details: "default_value", // Provide a default value instead of null
+        deliveray_details: "default_value",
         delivery_notes: deliverynotes || null,
         weight: weight || null,
         delivery_contact_details: contact,
@@ -219,7 +284,9 @@ const NewDelivery = () => {
       <ScrollView>
         <View style={styles.formContainer}>
           <View>
-            <Text style={{ alignSelf: "center", fontSize: 14, marginBottom: 10 }}>
+            <Text
+              style={{ alignSelf: "center", fontSize: 14, marginBottom: 10 }}
+            >
               New Delivery
             </Text>
           </View>
@@ -230,11 +297,7 @@ const NewDelivery = () => {
               size={12}
               style={styles.icon}
             />
-            <TextInput
-              style={styles.input}
-              value={from} // Display 'from' location
-              editable={false} // Non-editable
-            />
+            <TextInput style={styles.input} value={from} editable={false} />
           </View>
 
           <View style={styles.inputContainer}>
@@ -243,11 +306,7 @@ const NewDelivery = () => {
               size={12}
               style={styles.icon}
             />
-            <TextInput
-              style={styles.input}
-              value={to} // Display 'to' location
-              editable={false} // Non-editable
-            />
+            <TextInput style={styles.input} value={to} editable={false} />
           </View>
 
           <View style={styles.inputContainer}>
@@ -256,11 +315,7 @@ const NewDelivery = () => {
               size={12}
               style={styles.icon}
             />
-            <TextInput
-              style={styles.input}
-              value={duration}
-              editable={false} // Non-editable
-            />
+            <TextInput style={styles.input} value={duration} editable={false} />
           </View>
 
           <View style={styles.inputContainer}>
@@ -269,11 +324,7 @@ const NewDelivery = () => {
               size={12}
               style={styles.icon}
             />
-            <TextInput
-              style={styles.input}
-              value={distance}
-              editable={false} // Non-editable
-            />
+            <TextInput style={styles.input} value={distance} editable={false} />
           </View>
 
           <View style={styles.inputContainer}>
@@ -293,8 +344,14 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPayingWhen(itemValue)}
             >
               <Picker.Item label="Paying When" value="" />
-              <Picker.Item label="Pay Before Delivery" value="Pay Before Delivery" />
-              <Picker.Item label="Pay After Delivery" value="Pay After Delivery" />
+              <Picker.Item
+                label="Pay Before Delivery"
+                value="Pay Before Delivery"
+              />
+              <Picker.Item
+                label="Pay After Delivery"
+                value="Pay After Delivery"
+              />
             </Picker>
           </View>
 
@@ -315,7 +372,6 @@ const NewDelivery = () => {
 
           <View style={{ flexDirection: "row" }}>
             <View style={[styles.inputContainer, { width: "55%" }]}>
-              <Text>{cid} </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Proposed Price"
@@ -325,13 +381,15 @@ const NewDelivery = () => {
               />
             </View>
 
-            <View style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}>
+            <View
+              style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}
+            >
               <Picker
                 selectedValue={code}
                 style={[styles.picker, { fontSize: 10, color: "#666" }]}
                 onValueChange={(itemValue) => setCode(itemValue)}
               >
-                <Picker.Item label="CURRENCY" value="" />
+                <Picker.Item label="CURRENCY" value="USD" />
                 <Picker.Item label="USD" value="USD" />
                 <Picker.Item label="ZIG" value="ZIG" />
                 <Picker.Item label="RAND" value="ZAR" />

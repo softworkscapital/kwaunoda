@@ -14,7 +14,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import TopView from "../components/TopView";
 
 const DriverNewOrderList = () => {
@@ -32,69 +31,18 @@ const DriverNewOrderList = () => {
   const APILINK = API_URL;
   const GOOGLE_MAPS_API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"; // Replace with your actual API key
 
-  //////////////////////////////////////////////////////
-
   const [name, setName] = useState();
   const [type, setType] = useState();
   const [pic, setPic] = useState();
-  // const [driver, setDriverId] = useState();
-  const [menuRequests, setMenuRequests] = useState([]);
-  const [menuModalVisible, setMenuModalVisible] = useState(false);
-  const [notificationModalVisible, setNotificationModalVisible] =
-    useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [tripDetails, setTripDetails] = useState([]);
-  const [deliveryCount, setDeliveryCount] = useState(0);
-
-  /////////////////////////////////////////////////////////////
-
-  const menuOptions = [
-    {
-      id: "1",
-      title: "Profile Info",
-      onPress: () => navigation.navigate("ProfileInformation"),
-    },
-    { id: "2", title: "FAQ", onPress: () => navigation.navigate("FAQ") },
-    { id: "3", title: "Safety", onPress: () => navigation.navigate("Safety") },
-    {
-      id: "4",
-      title: "Feedback",
-      onPress: () => navigation.navigate("Feedback"),
-    },
-    {
-      id: "5",
-      title: "About Us",
-      onPress: () => navigation.navigate("AboutUs"),
-    },
-    {
-      id: "6",
-      title: "Complaint",
-      onPress: () => navigation.navigate("Complaint"),
-    },
-    {
-      id: "7",
-      title: "History",
-      onPress: () => navigation.navigate("History"),
-    },
-    {
-      id: "8",
-      title: "Settings",
-      onPress: () => navigation.navigate("settings"),
-    },
-  ];
-
-  /////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     const fetchData = async () => {
       const storedIds = await AsyncStorage.getItem("theIds");
-      console.log("hipiiiiiiii", storedIds);
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
         await fetchDriverDetails(parsedIds.driver_id);
         setDriver(parsedIds.driver_id);
-        console.log(name);
-        console.log(pic);
       } else {
         Alert.alert("Driver ID not found", "Please log in again.");
         setLoading(false);
@@ -104,26 +52,22 @@ const DriverNewOrderList = () => {
     fetchData();
 
     const intervalId = setInterval(() => {
-      fetchTrips();
+      fetchTrips(driverId);
     }, 30000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [driverId]); // Ensure driverId is included in dependencies
 
   const fetchDriverDetails = async (driverId) => {
     try {
       const response = await fetch(`${APILINK}/driver/${driverId}`);
       const result = await response.json();
 
-      // Ensure you are checking if result is not empty or undefined
       if (result && result.length > 0) {
         await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
         setPic(`${APILINK}${result[0].profilePic}`);
-        console.log(`${APILINK}${result[0].profilePic}`);
-        console.log("user", result);
-        setType(result[0].account_type); // Set the driver type (role)
+        setType(result[0].account_type);
         setName(result[0].username);
-
         await fetchTrips(driverId);
       } else {
         Alert.alert("Error", "Driver details not found.");
@@ -142,8 +86,6 @@ const DriverNewOrderList = () => {
       const response = await fetch(`${APILINK}/trip/driver/notify/`);
       const data = await response.json();
 
-      // console.log("Fetched trips data:", data); // Log the fetched data
-
       if (Array.isArray(data) && data.length > 0) {
         const trips = data.map((trip) => ({
           trip_id: trip.trip_id,
@@ -151,19 +93,12 @@ const DriverNewOrderList = () => {
           origin_long: parseFloat(trip.origin_location_long),
           destination_lat: parseFloat(trip.destination_lat),
           destination_long: parseFloat(trip.destination_long),
-          weight: trip.weight,
           detail: trip.deliveray_details,
-          contact: trip.delivery_contact_details,
           cost: trip.delivery_cost_proposed,
         }));
-
-        setLocations(trips); // Set all trips directly
+        setLocations(trips);
       } else {
         console.log("No trips available");
-        // Alert.alert(
-        //   "No trips available",
-        //   "There are currently no trips to show."
-        // );
       }
     } catch (error) {
       console.error("Error fetching trips:", error);
@@ -306,7 +241,7 @@ const DriverNewOrderList = () => {
 
       if (response.ok) {
         Alert.alert("Success", result.message || "Trip accepted successfully.");
-        fetchTrips(driver);
+        fetchTrips(driver); // Fetch trips after accepting the trip
         navigation.navigate("InTransitTrip");
       } else {
         Alert.alert("Error", result.message || "Failed to accept trip.");
@@ -328,9 +263,9 @@ const DriverNewOrderList = () => {
   return (
     <View style={styles.container}>
       <TopView
-        profileImage={pic} // "https://example.com/profile.jpg"
-        customerType={type} // Pass the type to TopView
-        notificationCount={notificationCount} // Ensure this is set correctly
+        profileImage={pic}
+        customerType={type}
+        notificationCount={notificationCount}
         name={name}
       />
       <MapView
@@ -369,7 +304,7 @@ const DriverNewOrderList = () => {
           <>
             <Text style={styles.title}>Trip Details</Text>
             <Text style={{ paddingVertical: 10 }}>{selectedTrip.detail}</Text>
-            <Text style={{ fontSize: 20, fontWeight: 700, color: "green" }}>
+            <Text style={{ fontSize: 20, fontWeight: "700", color: "green" }}>
               ${selectedTrip.cost}
             </Text>
             <View style={styles.buttonContainer}>
@@ -380,7 +315,7 @@ const DriverNewOrderList = () => {
                 <Text style={styles.buttonText}>Back to List</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleAcceptTrip(driver)}
+                onPress={handleAcceptTrip} // Correctly reference the function
                 style={styles.acceptButton}
               >
                 <Text style={styles.acceptButtonText}>Accept Trip</Text>
@@ -436,107 +371,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  viewTop: {
-    height: 60,
-    flexDirection: "row",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    width: "100%",
-    marginTop: 32,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  nameContainer: {
-    flexDirection: "column",
-    flex: 1,
-  },
-  notificationView: {
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  firstName: {
-    fontSize: 13,
-    color: "#595959",
-    fontWeight: "bold",
-  },
-  surname: {
-    fontSize: 13,
-    color: "#595959",
-    fontWeight: "bold",
-  },
-  menuIcon: {
-    padding: 10,
-  },
-  iconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  nameContainer: {
-    alignItems: "flex-end", // Align text to the right
-    flex: 1, // Allow it to take up remaining space
-    marginLeft: 10, // Optional: Add space between icons and name
-  },
-  firstName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  surname: {
-    fontSize: 14,
-    color: "#595959", // Adjust color as needed
-  },
-  menuIcon: {
-    padding: 10, // Add padding around icons
-  },
-  notificationView: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    height: 20,
-    width: 20,
-  },
-  iconContainer: {
-    flexDirection: "row",
-  },
-  menuIcon: {
-    marginHorizontal: 5,
-  },
-  notificationView: {
-    position: "absolute",
-    top: -4,
-    right: -6,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  nameContainer: {
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
-  firstName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  surname: {
-    fontSize: 14,
-    color: "#888",
-  },
   map: {
     flex: 1,
   },
- card: {
-    padding: 20, // Increased padding for a larger card
+  card: {
+    padding: 20,
     backgroundColor: "#fff",
     borderRadius: 8,
     margin: 10,
@@ -548,7 +387,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 2,
     elevation: 3,
-    minHeight: 200, // Set a minimum height for the card
+    minHeight: 200,
   },
   title: {
     fontSize: 18,
@@ -605,10 +444,6 @@ const styles = StyleSheet.create({
   },
   listItemDetail: {
     fontSize: 16,
-  },
-  listItemCost: {
-    fontSize: 16,
-    fontWeight: "bold",
   },
   listItemWeight: {
     alignSelf: "center",

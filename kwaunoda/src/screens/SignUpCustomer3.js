@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
 
+
 const SignUpCustomer3 = () => {
   const [username, setUsername] = useState("");
   const [profileImage, setProfileImage] = useState(null);
@@ -27,6 +28,7 @@ const SignUpCustomer3 = () => {
   const [user1, setUser1] = useState(null);
   const [otp, setOtp] = useState(0);
   const navigation = useNavigation();
+  
 
   // Fetch user details from AsyncStorage
   const fetchUserDetails = async () => {
@@ -219,7 +221,7 @@ const SignUpCustomer3 = () => {
         username: username.trim(),
         email: userDetails.email.trim(),
         password: userDetails.password,
-        otp: "",
+        otp: otp,
         notify: false,
         activesession: false,
         addproperty: false,
@@ -239,7 +241,7 @@ const SignUpCustomer3 = () => {
 
       await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
       Alert.alert("Success", "User signed up successfully.");
-      navigation.navigate("OTPCustomer");
+      navigation.navigate("OTPCustomer", { userId: newUserId });
     } catch (error) {
       console.error("Sign-up error:", error);
       Alert.alert(

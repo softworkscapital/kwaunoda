@@ -254,6 +254,31 @@ const SideBar = () => {
                   <li className="nav-item">
                     <a
                       className="nav-link"
+                      href="/feedback"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        color: "black",
+                        padding: "10px 20px", // Add padding for better spacing
+                      }}
+                    >
+                      FEEDBACK
+                      <strong
+                        style={{
+                          fontSize: "15px",
+                          marginLeft: "10px", // Add left margin for spacing
+                        }}
+                      >
+                      </strong>
+                    </a>{" "}
+                  </li>
+
+
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
                       href="/table/trips"
                       style={{
                         display: "flex",
@@ -431,6 +456,30 @@ const SideBar = () => {
                     >
                       REPORTS
                     </a>
+                  </li>
+
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
+                      href="/pesepay"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        color: "black",
+                        padding: "10px 20px", // Add padding for better spacing
+                      }}
+                    >
+                      PESEPAY
+                      <strong
+                        style={{
+                          fontSize: "15px",
+                          marginLeft: "10px", // Add left margin for spacing
+                        }}
+                      >
+                      </strong>
+                    </a>{" "}
                   </li>
 
                   <li

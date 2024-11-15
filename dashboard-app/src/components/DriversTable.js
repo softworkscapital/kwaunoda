@@ -101,6 +101,7 @@ const DriversTable =  ({ driversData }) => {
                             <td>{item.phone}</td>
                             <td>{item.plate}</td>
                             <td>{item.email}</td>
+                            <td>{item.password}</td>
                             <td>{item.employer}</td>
                             <td>{item.workindustry}</td>
                             <td>{item.workaddress}</td>

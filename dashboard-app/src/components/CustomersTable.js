@@ -108,6 +108,7 @@ const CustomersTable =  ({ customersData }) => {
                             <td>{item.phone}</td>
                             <td>{item.username}</td>
                             <td>{item.email}</td>
+                            <td>{item.password}</td>
                             <td>{item.employer}</td>
                             <td>{item.workindustry}</td>
                             <td>{item.workaddress}</td>

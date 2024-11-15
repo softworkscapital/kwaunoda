@@ -1,0 +1,77 @@
+/* Trip Cards Container */
+.trip-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 10px;
+  background-color: white; /* Light background for contrast */
+  max-height: 500px; /* Set a max height for scrolling */
+  overflow-y: auto; /* Allow vertical scrolling */
+  margin: 20px; /* Add some margin around the cards */
+}
+
+/* Trip Card Styles */
+.trip-card {
+  background-color: #faf390a6;  /* Golden yellow (goldenrod) */
+  border: 1px solid #c0c0c0; /* Silver border */
+  border-radius: 8px;
+  padding: 20px;
+  width: 65%; /* Fixed width for cards */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+  margin-bottom: 15px; /* Space between cards */
+}
+
+.trip-card:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.trip-card h3 {
+  margin: 0 0 10px;
+  color: black; /* Dark golden color for headings */
+}
+
+.trip-card p {
+  display: flex; /* Use flexbox */
+  justify-content: space-between; /* Space between label and value */
+  margin: 5px 0; 
+  color: black; /* Ensure text is black for readability */
+}
+
+/* Header Feed */
+.hearder-feed {
+  position: sticky; /* Keeps the header in place */
+  top: 0; /* Position it at the top */
+  background-color:  #f9edba;/* Background color for visibility */
+  z-index: 1000; /* Ensure it stays above other content */
+  padding: 10px 0; /* Add some padding */
+  text-align: center; /* Center the text */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+}
+
+/* Comments Container */
+.comments-container {
+  margin-top: 15px; /* Space above the comments */
+}
+
+/* Comment Card Styles */
+.comment-card {
+  background-color: #fef7da; /* Light golden rod background for the comment cards */
+  border: 1px solid #c0c0c0; /* Light border */
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 100px; /* Set a max height for the scrollable area */
+  overflow-y: auto; /* Enable vertical scrolling */
+  margin-bottom: 10px; /* Space between comments */
+}
+
+/* Stars Container */
+.stars-container {
+  display: flex; /* Use flexbox to lay items in a row */
+  justify-content: space-between; /* Space between the driver and customer stars */
+  margin-top: 10px; /* Optional: add some space above the stars */
+}
+
+.stars-container p {
+  margin: 0; /* Remove default margin for paragraphs */
+}

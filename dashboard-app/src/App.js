@@ -18,6 +18,8 @@ import Broadcast from './components/Broadcast';
 import Reports from './components/Reports';
 import CustomerAdminChat from './components/CustomerAdminChat';
 import ChatHome from './components/ChatHome';
+import Feedback from './components/feedback';
+import PesepayPayment from './components/PesepayPayment';
 
 function App() {
     const [tripData, setTripData] = useState([]);
@@ -82,6 +84,8 @@ function App() {
                     <Route path="/searchTrip" element={<SearchTrip />} />
                     <Route path="/chatNow/:tripId" element={<CustomerAdminChat />} />
                     <Route path="/chatHome" element={<ChatHome />} />
+                    <Route path="/feedback" element={<Feedback />} />
+                    <Route path="/pesepay" element={<PesepayPayment />} />
                 </Routes>
             </div>
         </Router>

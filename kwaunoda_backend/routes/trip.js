@@ -83,6 +83,17 @@ tripRouter.get("/", async (req, res, next) => {
   }
 });
 
+
+tripRouter.get("/getlasttwentyfeedback", async (req, res, next) => {
+  try {
+    let results = await tripDbOperations.getLast20Trips();
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
 tripRouter.get("/driver_id/status", async (req, res, next) => {
   const { driver_id, status } = req.query; // Extract parameters from the query
 
@@ -247,6 +258,7 @@ tripRouter.get('/mylastTwentyTripsById/:customer_id/:driver_id', async (req, res
         res.sendStatus(500);
     }
 });
+
 
 tripRouter.put("/customerComment/:id", async (req, res, next) => {
   try {

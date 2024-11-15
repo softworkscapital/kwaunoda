@@ -4,8 +4,9 @@ import SideBar from "./SideBar";
 import { Link } from "react-router-dom";
 import { Col, Row, Container } from "react-bootstrap";
 import Navbar from "./Navbar";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-const APILINK = API_URL;
 
 const Reports = ({ customersData }) => {
   const [account_type, setAccount_type] = useState();
@@ -21,6 +22,8 @@ const Reports = ({ customersData }) => {
   const [topUpList, setTopUpList] = useState([]);
   const [isAdmin, setIsAdmin] = useState("");
   const [usage, setUsage] = useState("0");
+  const [selectedOption1, setSelectedOption1] = useState("");
+  const [selectedOption2, setSelectedOption2] = useState("");
   const APILINK = API_URL;
 
   useEffect(() => {
@@ -141,16 +144,50 @@ const Reports = ({ customersData }) => {
                 <h1>REPORTS</h1>
                 <div className="col-xl-12">
                   <div className="card">
-                    <h2 className="card-header">
-                      Reports
-                      <Link
-                        className="btn btn-primary btnAdd"
-                        style={{ float: "right", marginRight: "40px" }}
-                        to="/searchTrip"
-                      >
-                        Search Trip
-                      </Link>
-                    </h2>
+                  <h2 className="card-header">
+  Reports
+  
+  {/* Dropdowns */}
+  <div style={{ display: "flex", alignItems: "center", marginLeft: "auto", marginRight: "40px" }}>
+    <select 
+      value={selectedOption1} 
+      onChange={(e) => setSelectedOption1(e.target.value)} 
+      className="form-control"
+      style={{ 
+        float:"right",
+        marginRight: "10px", 
+        backgroundColor: "goldenrod", 
+        color: "white", 
+        width: "150px", 
+        border: "1px solid gold" 
+        
+      }}
+    >
+      <option value="">Select Option 1</option>
+      <option value="option1">Option 1</option>
+      <option value="option2">Option 2</option>
+      <option value="option3">Option 3</option>
+    </select>
+
+    <select 
+      value={selectedOption2} 
+      onChange={(e) => setSelectedOption2(e.target.value)} 
+      className="form-control"
+      style={{ 
+        alignSelf: "right",
+        backgroundColor: "goldenrod", 
+        color: "white", 
+        width: "150px", 
+        border: "1px solid gold" 
+      }}
+    >
+      <option value="">Select Option 2</option>
+      <option value="optionA">Option A</option>
+      <option value="optionB">Option B</option>
+      <option value="optionC">Option C</option>
+    </select>
+  </div>
+</h2>
                     <div className="card-body">
                       <div
                         className="table-responsive"

@@ -185,6 +185,24 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
 
 
 
+crudsObj.getLast20Trips = () => {
+  return new Promise((resolve, reject) => {
+    console.log("Executing getLast20Trips query");
+    pool.query(
+      'SELECT trip_id, driver_id, cust_id, status, driver_comment, customer_comment, driver_stars, customer_stars FROM trip ORDER BY trip_id DESC LIMIT 20',
+      (err, results) => {
+        if (err) {
+          console.error('Database query error:', err); // Log the error
+          return reject(err);
+        }
+        console.log('Query results:', results); // Log the results
+        return resolve(results);
+      }
+    );
+  });
+};
+
+
 
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {

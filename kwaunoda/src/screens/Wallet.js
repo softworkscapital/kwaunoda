@@ -5,6 +5,9 @@ import { useNavigation } from "@react-navigation/native";
 import BottomFooter from './BottomFooter';
 import { API_URL } from './config';
 import { Picker } from '@react-native-picker/picker'; // Import Picker
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Swal from 'sweetalert2';
+
 
 const Wallet = () => {
   const [topUpHistory, setTopUpHistory] = useState([]);
@@ -14,10 +17,10 @@ const Wallet = () => {
   const [oldbalance, setBalance] = useState();
   const [debit, setDebit] = useState();
   const [credit, setCredit] = useState(0);
-  const [date, setDate] = useState();
+  const [date, setDate] = useState(); 
   const [exchangeRate, setExchangeRate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [currency, setCurrency] = useState('');
+  const [currencyCode, setCurrencyCode] = useState('');
   const [driver, setDriver] = useState();
   
   const APILINK = API_URL;
@@ -28,11 +31,21 @@ const Wallet = () => {
   };
 
   useEffect(() => {
-    const fetchDriver = async() =>{
-      const response = await AsyncStorage.getItem("userDetails");
-      const driver = JSON.parse(response);
-      setDriver(driver);
-    }
+    const fetchDriver = async () => {
+      try {
+          const response = await AsyncStorage.getItem("userDetails");
+          const driverData = JSON.parse(response);
+          if (driverData) {
+              setDriver(driverData);
+              console.log("Driver email:", driverData.email); // Check if email is available
+          } else {
+              console.log("No driver data found.");
+          }
+      } catch (error) {
+          console.error("Error fetching driver data:", error);
+      }
+  };
+
     const fetchTopUpHistory = async () => {
       let me = 1003;
       try {
@@ -64,6 +77,7 @@ const Wallet = () => {
 
 
     fetchTopUpHistory();
+    fetchDriver();
    
 
     const interval = setInterval(() => {
@@ -74,37 +88,86 @@ const Wallet = () => {
 
 
 
-  const handleAddTopUp = (e) => {
-      e.preventDefault();
 
-      let balance = oldbalance + debit;
-      let client_profile_id = 1003;
-      let exchange_rate = 1;
-      const userObj = { currency, exchange_rate, date, credit, debit, balance, description, client_profile_id };
-      console.log(userObj);
 
+  const initiatePayment = async (paymentDetails) => {
+    try {
+        const response = await fetch(`${API_URL}/initiate-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(paymentDetails),
+        });
+
+        const data = await response.json();
+        if (data.referenceNumber) {
+            // Redirect user to the payment URL (Pesepay will handle the redirect)
+            // Set the result and return URLs in your Pesepay integration
+            pesepay.resultUrl = 'https://localhost:3011/payment-result'; // URL for payment result processing
+            pesepay.returnUrl = 'https://192.168.135.97:8081/Wallet'; // URL to redirect user after payment
+
+            // Here, you would typically navigate to the payment URL provided by the response
+            // For example, if you have a redirect URL in the response: 
+            // navigation.navigate('PaymentScreen', { url: data.redirectUrl });
+        } else {
+            // Handle error (e.g., show an error message to the user)
+            console.error('Error initiating payment:', data.message);
+        }
+    } catch (error) {
+        console.error('Payment initiation error:', error);
+    }
+};
+
+
+
+const handleAddTopUp = (e) => {
+  e.preventDefault();
+
+  let balance = oldbalance + debit;
+  let client_profile_id = 1003;
+  let exchange_rate = 1;
+  let currency = currencyCode;
+  let amount = debit;
+
+  // Check if driver is defined before accessing properties
+  if (!driver) {
+      console.error("Driver data is not available.");
+      return; // Early return or handle as needed
+  }
+
+  const userObj = { currency, exchange_rate, date, credit, debit, balance, description, client_profile_id };
+  let paymentReason = "TopUp";
+  let customerEmail = driver.email || ""; // Fallback to an empty string
+  let customerPhone = driver.phone || ""; // Fallback to an empty string
+  let customerName = driver.name || ""; // Fallback to an empty string
+
+  const topupDetails = {
+      currencyCode, paymentMethod, customerEmail, customerPhone, customerName, amount, paymentReason
+  };
+  console.log("Topup Details:", topupDetails);
+
+  const peseCall = initiatePayment(topupDetails);
+
+  if (peseCall) {
       fetch(`${API_URL}/TopUp`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(userObj)
-
       }).then(res => {
-          console.log(res)
+          console.log(res);
           if (res.status === 200) {
-              Swal.fire({                                            
-                  text: "saved successfully!",
-                  icon: "success"
-                });
-              navigate('/Wallet')
+              // Display success message
+              Swal.fire({ text: "Saved successfully!", icon: "success" });
+              navigation.navigate('/Wallet');
           }
-
       }).catch((err) => {
-          console.log(err.message)
-      })
-  
-    // Logic to handle adding a top-up can go here
-    setModalVisible(false);
-  };
+          console.log(err.message);
+      });
+  }
+
+  setModalVisible(false);
+};
 
   const renderTopUpItem = ({ item }) => (
     <TouchableOpacity style={styles.deliveryItem}>
@@ -230,8 +293,8 @@ const Wallet = () => {
 
     <View style={styles.pickerContainer}>
       <Picker
-        selectedValue={currency}
-        onValueChange={(itemValue) => setCurrency(itemValue)}
+        selectedValue={currencyCode}
+        onValueChange={(itemValue) => setCurrencyCode(itemValue)}
         style={styles.picker}
       >
         <Picker.Item label="Select Currency" value="" />

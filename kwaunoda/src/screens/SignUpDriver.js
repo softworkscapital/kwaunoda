@@ -151,7 +151,7 @@ const SignUpDriver = () => {
 
       navigation.navigate("SignUpDriver1");
     } catch (error) {
-      console.log("Error:", error);
+      console.error("Error:", error);
       Alert.alert("Error", "Failed to sign up. Please try again.");
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     StyleSheet,
     View,
@@ -13,85 +13,44 @@ import Toast from 'react-native-toast-message';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { API_URL } from './config'; // Adjust the path as necessary
-import { useRoute } from '@react-navigation/native';
 
 const OTPCustomer = ({ navigation }) => {
     const route = useRoute(); // Access route parameters
-    const { userId } = route.params; 
-    console.log(userId);
-    // Destructure userId from route parameters
+    const { userId } = route.params; // Destructure userId from route parameters
   
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [loading, setLoading] = useState(true);
     const [fetchedOtp, setFetchedOtp] = useState("");
 
-    useEffect(() => {
-        console.log("Passed userId:", userId); // Log the passed userId
-        fetchDetails(userId); // Pass userId to fetchDriverDetails
-      }, [userId]);
-    
-      const fetchDetails = async (userId) => {
+    const handleVerifyOtp = async () => {
+        const otpString = otp.join('');
+        setLoading(true);
         try {
-          if (!userId) {
-            Toast.show({
-              text1: "Error",
-              text2: "User ID not found.",
-              type: "error",
-              position: "top",
-            });
-            return;
-          }
-    
-          // Fetch OTP based on userId
-          const response = await fetch(`${API_URL}/USERS/${userId}`);
-          if (response.ok) {
-            const user = await response.json();
-            if (user.length > 0 && user[0].otp) {
-              setFetchedOtp(user[0].otp.toString()); // Convert OTP to string
-              console.log("Fetched User Details:", user[0]);
-              console.log("Fetched OTP:", user[0].otp); // Log the fetched OTP
+            // Fetch user details using the hardcoded user ID
+            const response = await fetch(`${API_URL}/USERS/${userId}`);
+            const userDetails = await response.json();
+            console.log("Fetched User Details:", userDetails);
+
+            if (userDetails && userDetails.length > 0) {
+                const fetchedOtp = userDetails[0].otp.toString(); // Assuming OTP is in user details
+                console.log("Fetched OTP from database:", fetchedOtp); // Log the fetched OTP
+                if (otpString === fetchedOtp) {
+                    Alert.alert("Success", "OTP verified successfully.");
+                    navigation.navigate('CustomerLogin'); // Navigate to CustomerLogin.js
+                } else {
+                    Alert.alert("Error", "Invalid OTP. Please try again.");
+                }
             } else {
-              Toast.show({
-                text1: "Error",
-                text2: "No OTP found for this user.",
-                type: "error",
-                position: "top",
-              });
+                Alert.alert("Error", "User details not found.");
             }
-          } else {
-            const errorResponse = await response.json();
-            console.error("Error fetching user data:", errorResponse);
-            Toast.show({
-              text1: "Error Fetching Data",
-              text2: "Failed to fetch user data. Please try again.",
-              type: "error",
-              position: "top",
-            });
-          }
         } catch (error) {
-          console.error("Network Error:", error);
-          Toast.show({
-            text1: "Network Error",
-            text2: "Could not fetch user data. Please check your connection.",
-            type: "error",
-            position: "top",
-          });
+            console.error("Error fetching user details:", error);
+            Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
-    
-      const handleVerifyOtp = () => {
-        const otpString = otp.join("");
-        console.log("ziString", otpString);
-        if (otpString === fetchedOtp) {
-          Alert.alert("Success", "OTP verified successfully.");
-          navigation.navigate("CustomerLogin");
-        } else {
-          Alert.alert("Error", "Invalid OTP. Please try again.");
-        }
-      };
-    
+    };
+
     const handleChange = (text, index) => {
         const newOtp = [...otp];
         newOtp[index] = text;
@@ -130,9 +89,13 @@ const OTPCustomer = ({ navigation }) => {
                     />
                 ))}
             </View>
-            <TouchableOpacity style={styles.btnVerify} onPress={handleVerifyOtp}>
-        <Text style={styles.txtVerify}>Verify OTP</Text>
-      </TouchableOpacity>
+            <TouchableOpacity style={styles.btnVerify} onPress={handleVerifyOtp} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator size="small" color="black" />
+                ) : (
+                    <Text style={styles.txtVerify}>Verify OTP</Text>
+                )}
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={handleResendOtp} style={styles.resendContainer}>
                 <Text style={styles.txtResend}>Resend OTP</Text>

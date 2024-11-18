@@ -315,9 +315,9 @@ crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
             // Calculate new balances
             const usageIncrease = dr * 0.1;
             const dr_f = dr - usageIncrease;
-            const newClientBalance = clientBalance + dr_f; // Update client balance
-            const newTotalBalance = oldTotalBalance + dr_f; // Update total balance
-            const newTotalUsage = oldTotalUsage + usageIncrease; // Update total usage
+            const newClientBalance = clientBalance + dr; // Update client balance
+            const newTotalBalance = oldTotalBalance + dr; // Update total balance
+            const newTotalUsage = oldTotalUsage; // Update total usage
             const newEscroll = parseFloat(oldEscroll) - dr; // Updated escroll decreases by dr
             const currentDate = new Date()
               .toISOString()
@@ -349,8 +349,8 @@ crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
                 1.0,
                 currentDate,
                 0, // No credit in debit transaction
-                dr_f,
-                dr_f, // Initial balance is just the top-up amount
+                dr,
+                dr, // Initial balance is just the top-up amount
                 desc,
                 client_profile_id,
                 newTotalBalance, // Updated total balance
@@ -365,7 +365,7 @@ crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
                 1.0,
                 currentDate,
                 0, // No credit in debit transaction
-                dr_f,
+                dr,
                 newClientBalance, // Client's new balance
                 desc,
                 client_profile_id,
@@ -386,6 +386,33 @@ crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
                 { status: "200", message: "Saving successful." },
               ]);
             });
+
+            pool.query(
+              "INSERT INTO top_up (currency, exchange_rate, date, credit, debit, balance, description, client_profile_id, total_balance, total_usage, escroll, trip_id, trxn_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)",
+              [
+                "USD",
+                1.0,
+                currentDate,
+                usageIncrease,
+                0,
+                newClientBalance - usageIncrease,
+                "Service Commission",
+                client_profile_id,
+                newTotalBalance - usageIncrease,
+                oldTotalUsage + usageIncrease, // Keep oldTotalUsage as it is
+                newEscroll,
+                trip_id, // Updated total usage
+                "comm", //
+              ],
+              (err, insertResults) => {
+                if (err) {
+                  return reject(err);
+                }
+                return resolve([
+                  { status: "200", message: "Saving successful." },
+                ]);
+              }
+            );
           }
         );
       }

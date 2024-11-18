@@ -89,7 +89,7 @@ const DriverNewOrderList = () => {
       if (Array.isArray(data) && data.length > 0) {
         const trips = data.map((trip) => ({
           trip_id: trip.trip_id,
-          customer: trip.customerId,
+          customer: trip.cust_id,
           origin_lat: parseFloat(trip.origin_location_lat),
           origin_long: parseFloat(trip.origin_location_long),
           destination_lat: parseFloat(trip.destination_lat),
@@ -219,18 +219,20 @@ const DriverNewOrderList = () => {
   };
 
   const handleAcceptTrip = async () => {
+    console.log(selectedTrip);
     if (
-      (!driver,
-      !selectedTrip.cost,
-      !selectedTrip.trip_id,
-      !selectedTrip.customer,
-      !selectedTrip.destination)
+      !driver ||
+      !selectedTrip.cost ||
+      !selectedTrip.trip_id ||
+      !selectedTrip.customer ||
+      !selectedTrip.destination
     ) {
       Alert.alert("Error", "Some values are missing.");
       return;
     }
 
     try {
+      // Step 1: Credit the customer
       const topUpResponse = await fetch(`${APILINK}/topUp/topupcr/`, {
         method: "POST",
         headers: {
@@ -249,28 +251,32 @@ const DriverNewOrderList = () => {
 
       if (!topUpResponse.ok) {
         throw new Error(topUpResult.message || "Failed to deduct amount.");
-      } else {
-        const debitResponse = await fetch(`${APILINK}/topUp/topupdr/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            dr: selectedTrip.cost,
-            trip_id: selectedTrip.trip_id,
-            client_profile_id: driver,
-            desc: selectedTrip.destination,
-            trxn_code: "CTR",
-          }),
-        });
-        const debitResult = await debitResponse.json();
-        if (!debitResponse.ok) {
-          throw new Error(debitResult.message || "Failed to send amount.");
-        }
-        Alert.alert("Success", debitResult.message || "Amount sent");
       }
       Alert.alert("Success", topUpResult.message || "Amount deducted");
 
+      // Step 2: Debit the driver
+      const debitResponse = await fetch(`${APILINK}/topUp/topupdr/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dr: selectedTrip.cost,
+          trip_id: selectedTrip.trip_id,
+          client_profile_id: driver,
+          desc: selectedTrip.destination,
+          trxn_code: "CTR",
+        }),
+      });
+
+      const debitResult = await debitResponse.json();
+
+      if (!debitResponse.ok) {
+        throw new Error(debitResult.message || "Failed to send amount.");
+      }
+      Alert.alert("Success", debitResult.message || "Amount sent");
+
+      // Step 3: Update trip status
       const statusResponse = await fetch(
         `${APILINK}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
         {
@@ -284,7 +290,9 @@ const DriverNewOrderList = () => {
           }),
         }
       );
+
       const statusResult = await statusResponse.json();
+
       if (!statusResponse.ok) {
         throw new Error(statusResult.message || "Failed to accept trip.");
       }
@@ -292,7 +300,9 @@ const DriverNewOrderList = () => {
         "Success",
         statusResult.message || "Trip accepted successfully."
       );
-      fetchTrips(driver); // Fetch trips after accepting the trip
+
+      // Fetch trips and navigate after successful status update
+      fetchTrips(driver);
       navigation.navigate("InTransitTrip");
     } catch (error) {
       console.error("Error accepting trip:", error);
@@ -302,7 +312,6 @@ const DriverNewOrderList = () => {
       );
     }
   };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>

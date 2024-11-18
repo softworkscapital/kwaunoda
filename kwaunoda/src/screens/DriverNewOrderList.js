@@ -323,10 +323,6 @@ const DriverNewOrderList = () => {
   return (
     <View style={styles.container}>
       <TopView
-        profileImage={pic}
-        customerType={type}
-        notificationCount={notificationCount}
-        name={name}
       />
       <MapView
         ref={mapRef}
@@ -405,7 +401,7 @@ const DriverNewOrderList = () => {
                   >
                     <View style={styles.listItemContent}>
                       <Text style={styles.listItemDetail}>
-                        {location.detail}
+                        {location.destination}
                       </Text>
                     </View>
                     <Text style={styles.listItemWeight}>${location.cost}</Text>

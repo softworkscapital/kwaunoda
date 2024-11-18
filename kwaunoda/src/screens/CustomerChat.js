@@ -3,11 +3,14 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 
 import { API_URL } from "./config";
 import { MaterialIcons } from '@expo/vector-icons'; // Import the MaterialIcons for the back arrow
 
-const CustomerChat = () => {
+const CustomerChat = ({ route, navigation }) => {
+  const { tripId } = route.params; // Get tripId from route parameters
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const tripId = 7; // Hardcoded trip ID
-  const customerid = 4; // Hardcoded customer ID for comparison
+  
+  useEffect(() => {
+    console.log('Passed trip ID:', tripId);
+  }, [tripId]);
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -55,11 +58,11 @@ const CustomerChat = () => {
       const newMessage = {
         date_chat: dateChat,
         time_chat: timeChat,
-        trip_id: tripId,
-        driver_id: 1, // Hardcoded for demonstration
-        customerid: customerid, // Hardcoded customer ID
+        trip_id: tripId, 
+        driver_id: 1, 
+        customerid: 1,
         message: message.trim(),
-        origin: customerid, // Use customerid as origin for sent messages
+        origin: 1,  
       };
 
       try {
@@ -92,12 +95,12 @@ const CustomerChat = () => {
         <Text style={styles.headerText}>Let's Chat</Text>
       </View>
       <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
-        {chatHistory.map((chat, index) => (
+        {chatHistory.reverse().map((chat, index) => (
           <View
             key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
             style={[
               styles.messageContainer,
-              chat.origin === customerid ? styles.sentMessage : styles.receivedMessage,
+              chat.origin === 1 ? styles.sentMessage : styles.receivedMessage, // Adjust according to your origin identifier
             ]}
           >
             <Text style={styles.messageText}>{chat.message}</Text>
@@ -135,7 +138,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     paddingLeft: 20
-
   },
   headerText: {
     fontSize: 20,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -9,23 +9,82 @@ import {
   FlatList,
   ScrollView,
   Dimensions,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome } from "@expo/vector-icons"; // Ensure you have this package installed
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Ensure AsyncStorage is installed
 import defaultprofpic from "../../assets/defaultprofpic.webp";
+import { API_URL } from "../screens/config";
 
 const { height } = Dimensions.get("window"); // Get device height
 
-const TopView = ({ profileImage, customerType, notificationCount, name }) => {
+const TopView = ({}) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
+  const [profileImage, setPic] = useState();
+  const [customerType, setType] = useState("");
+  const [name, setName] = useState("");
+  const [notificationCount, setNotificationCount] = useState(0);
+  const APILINK = API_URL;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const storedIds = await AsyncStorage.getItem("theIds");
+        if (storedIds) {
+         const parsedIds = JSON.parse(storedIds);
+          let acc; // Use let to define acc here
+
+          if (parsedIds.last_logged_account === "driver") {
+            acc = parsedIds.driver_id;
+          } else {
+            acc = parsedIds.customerId;
+          }
+
+          await fetchUserDetails(acc, parsedIds.last_logged_account);
+         
+        } else {
+          Alert.alert("Driver ID not found", "Please log in again.");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        Alert.alert("Error", "An error occurred while fetching data.");
+        setLoading(false);
+      }
+    };
+    fetchData();
+    const fetchUserDetails = async (id, type) => {
+      try {
+        const endpoint =
+          type === "driver" ? `driver/${id}` : `customerdetails/${id}`;
+        const response = await fetch(`${APILINK}/${endpoint}`);
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
+          console.log(result);
+          setPic(`${APILINK}${result[0].profilePic}`);
+          setType(result[0].account_type);
+          setName(result[0].username);
+        } else {
+          Alert.alert(
+            "Error",
+            `${type === "driver" ? "Driver" : "Customer"} details not found.`
+          );
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to fetch details. Please try again.");
+      }
+    };
+  });
 
   const menuOptions = [
     {
       id: "0",
       title: "Standard Account",
       onPress: () => handleMenuPress("StandardAccount"),
-      color: "blue",
     },
     {
       id: "1",
@@ -34,7 +93,7 @@ const TopView = ({ profileImage, customerType, notificationCount, name }) => {
     },
     { id: "9", title: "Wallet", onPress: () => handleMenuPress("Wallet") },
     { id: "7", title: "History", onPress: () => handleMenuPress("History") },
-    { id: "8", title: "Settings", onPress: () => handleMenuPress("settings") },
+    { id: "8", title: "Settings", onPress: () => handleMenuPress("Settings") },
     { id: "2", title: "FAQ", onPress: () => handleMenuPress("FAQ") },
     { id: "3", title: "Safety", onPress: () => handleMenuPress("Safety") },
     {
@@ -54,24 +113,36 @@ const TopView = ({ profileImage, customerType, notificationCount, name }) => {
       title: "Tell A Friend",
       onPress: () => handleMenuPress("Invite"),
     },
+    {
+      id: "11",
+      title: "Log Out",
+      onPress: () => handleLogout(),
+    },
   ];
 
   const handleMenuPress = (screen) => {
-    setModalVisible(false); // Close the menu
-    navigation.navigate(screen); // Navigate to the selected screen
+    setModalVisible(false);
+    navigation.navigate(screen, { userId: id });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear(); // Clear all items from AsyncStorage
+      navigation.navigate("CustomerLogin"); // Navigate to the login screen
+    } catch (error) {
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
         <Image
-          source={{
-            uri: profileImage,
-          }}
+          source={{ uri: profileImage }}
           style={[styles.profileImage, { marginTop: 10 }]}
         />
         <View>
-          <Text style={{ fontWeight: "800" }}>{name}</Text>
+          <Text style={styles.profileName}>{name}</Text>
           <Text>{customerType}</Text>
         </View>
       </View>
@@ -86,7 +157,7 @@ const TopView = ({ profileImage, customerType, notificationCount, name }) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
-          style={[styles.menuButton, { marginLeft: 25 }]}
+          style={styles.menuButton}
         >
           <FontAwesome name="bars" size={24} color="black" />
         </TouchableOpacity>
@@ -148,9 +219,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  customerType: {
-    fontSize: 16,
-    fontWeight: "bold",
+  profileName: {
+    fontWeight: "800",
   },
   notificationContainer: {
     flexDirection: "row",
@@ -159,11 +229,11 @@ const styles = StyleSheet.create({
   },
   notificationCount: {
     position: "absolute",
-    right: -8, // Adjusted position
-    top: -8, // Adjusted position
+    right: -8,
+    top: -8,
     backgroundColor: "red",
     borderRadius: 10,
-    padding: 3, // Adjusted size
+    padding: 3,
     minWidth: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -185,11 +255,10 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: "90%",
     height: "100%",
-    backgroundColor: "white", // Set background to white
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
     elevation: 5,
-    top: "fixed",
   },
   scrollView: {
     width: "100%",
@@ -207,7 +276,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "green",
     borderRadius: 5,
-    marginTop: 10, // Space above close button
+    marginTop: 10,
   },
   closeText: {
     fontSize: 16,

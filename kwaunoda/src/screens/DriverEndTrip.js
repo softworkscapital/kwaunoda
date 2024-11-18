@@ -82,9 +82,9 @@ const DriverEndTrip = () => {
           visibilityTime: 3000,
           autoHide: true,
         });
-        redirectHome();
+        redirectHome()
       } else {
-        redirectHome();
+        // redirectHome();
         Toast.show({
           text1: "Error",
           text2: result.message || "Failed to submit feedback.",

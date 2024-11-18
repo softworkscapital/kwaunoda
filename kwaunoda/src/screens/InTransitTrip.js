@@ -16,7 +16,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 const InTransitTrip = () => {
   const mapRef = useRef(null);
   const navigation = useNavigation();
-
+  const [driver, setdriver] = useState([]);
   const [route, setRoute] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickUpLocation, setPickUpLocation] = useState(null);
@@ -61,6 +61,7 @@ const InTransitTrip = () => {
     if (parsedIds && parsedIds.driver_id) {
       fetchTripData(parsedIds.driver_id);
       fetchDriverDetails(parsedIds.driver_id);
+      setdriver(parsedIds.driver_id);
     } else {
       Alert.alert("Error", "Driver ID not found in storage.");
       setLoading(false);
@@ -106,6 +107,7 @@ const InTransitTrip = () => {
 
         await getDirections(startCoords, destCoords);
       } else {
+        navigator.navigate("CustomerLogin");
         Alert.alert("Error", "No in-transit trips found.");
       }
     } catch (error) {
@@ -209,7 +211,7 @@ const InTransitTrip = () => {
 
   return (
     <View style={styles.container}>
-      <TopView profileImage={pic} customerType={type} name={name} />
+      <TopView id={driver} type={type} />
 
       <MapView
         ref={mapRef}

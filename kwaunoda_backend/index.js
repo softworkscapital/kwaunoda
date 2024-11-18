@@ -5,10 +5,15 @@ const multer = require("multer");
 const https = require("https");
 const path = require("path");
 const fs = require("fs");
+require('dotenv').config();
 const { Pesepay } = require('pesepay');
 
 
-const pesepay = new Pesepay("86fd6b75-89ea-41c5-90c5-3561bb46af0b", "be6b7b38e29549d094bf52423c1de4d2");
+
+const pesepay = new Pesepay(
+  process.env.PESEPAY_INTERGRATION_KEY,
+  process.env.PESEPAY_ENCRYPTION_KEY
+);
 const PORT = process.env.APPPORT || 3011;
 // Route path
 const tripRouter = require("./routes/trip");
@@ -88,25 +93,28 @@ app.use("/billingtarrifs", BillingTarrifRouter);
 
 
 pesepay.resultUrl = 'https://localhost:3011/payment-result';
-pesepay.returnUrl = 'https://192.168.135.97:8081/Wallet';
+pesepay.returnUrl = 'https://192.168.241.97:8081';
 
 
 app.post('/initiate-payment', async (req, res) => {
   const { currencyCode, paymentMethodCode, customerEmail, customerPhone, customerName, amount, paymentReason } = req.body;
 
-  // Create the payment
-  const payment = pesepay.createPayment(currencyCode, paymentMethodCode, customerEmail, customerPhone, customerName);
+  const transaction = pesepay.createTransaction(amount, currencyCode, paymentReason);
   
-  // Send off the payment
-  pesepay.makeSeamlessPayment(payment, paymentReason, amount).then(response => {
+  try {
+      const response = await pesepay.initiateTransaction(transaction);
+      console.log("our response", response);
+
       if (response.success) {
-          const referenceNumber = response.referenceNumber;
-          const pollUrl = response.pollUrl;
-          res.json({ referenceNumber, pollUrl });
+          const redirectUrl = response.redirectUrl;
+          return res.json({ success: true, redirectUrl });
       } else {
-          res.status(400).json({ message: response.message });
+          return res.status(400).json({ success: false, message: response.message });
       }
-  });
+  } catch (error) {
+      console.log(error);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 });
 
 

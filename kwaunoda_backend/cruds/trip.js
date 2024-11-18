@@ -109,8 +109,6 @@ crudsObj.getTripById = (trip_id) => {
   });
 };
 
-
-
 crudsObj.getTripByStatusToDriver = () => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -152,7 +150,6 @@ crudsObj.getTripByDriverAndStatus = (driver_id, status) => {
   });
 };
 
-
 crudsObj.getTripByCustomerIdAndStatus = (cust_id, status) => {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM trip WHERE cust_id = ? AND status = ?";
@@ -164,9 +161,6 @@ crudsObj.getTripByCustomerIdAndStatus = (cust_id, status) => {
     });
   });
 };
-
-
-
 
 crudsObj.getNumberofTrips = (driver_id, status) => {
   return new Promise((resolve, reject) => {
@@ -183,13 +177,10 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
   });
 };
 
-
-
-
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE cust_id = ? AND status = "InTransit" OR status = "Arrived At Destination" OR status = "New Order"',
+      'SELECT * FROM trip WHERE cust_id = ? AND (status = "InTransit" OR status = "Arrived At Destination" OR status = "New Order")',
       [cust_id],
       (err, results) => {
         if (err) {
@@ -379,7 +370,7 @@ crudsObj.updateDriverComment = (trip_id, updatedValues) => {
 crudsObj.getTripToDash = (status) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE status = ?',
+      "SELECT * FROM trip WHERE status = ?",
       [status],
       (err, results) => {
         if (err) {

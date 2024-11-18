@@ -33,7 +33,6 @@ import ChangePassword from "./src/screens/ChangePassword";
 import Dashboard from "./src/screens/Dashboard";
 import SignUpCustomer2 from "./src/screens/SignUpCustomer2";
 import SignUpCustomer3 from "./src/screens/SignUpCustomer3";
-import SignUpCustomer_3 from "./src/screens/SignUpCustomer_3.js";
 import SignUpDriver1 from "./src/screens/SignUpDriver1";
 import DriverDeliveryAccepted from "./src/screens/DriverDeliveryAccepted";
 import Toast from "react-native-toast-message";
@@ -50,6 +49,7 @@ import CustomerChat from "./src/screens/CustomerChat.js";
 import CustomerAdminChat from "./src/screens/CustomerAdminChat.js";
 import Wallet from "./src/screens/Wallet.js";
 import Invite from "./src/screens/Invite.js";
+import PesePaymentScreen from "./src/screens/Pesepay.js";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -69,16 +69,12 @@ const App = () => {
         <Stack.Screen name="Wallet" component={Wallet} />
         <Stack.Screen name="CustomerAdminChat" component={CustomerAdminChat} />
         <Stack.Screen name="SignUpCustomer3" component={SignUpCustomer3} />
-
-        <Stack.Screen name="SignUpCustomer_3" component={SignUpCustomer_3} />
-
         <Stack.Screen name="OTPCustomer" component={OTPCustomer} />
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="OTPDriver" component={OTPDriver} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="MapView" component={MapViewComponent} />
         <Stack.Screen name="HomeDriver" component={HomeDriver} />
-
         <Stack.Screen name="LocationTracker" component={LocationTracker} />
         <Stack.Screen name="SignUpCustomer" component={SignUpCustomer} />
         <Stack.Screen name="SignUpCustomer2" component={SignUpCustomer2} />
@@ -117,7 +113,7 @@ const App = () => {
         <Stack.Screen name="History" component={History} />
         <Stack.Screen name="AccountInError" component={AccountInError} />
         <Stack.Screen name="MapViewComponent" component={MapViewComponent} />
-        {/* Add the MapViewComponent to the stack navigator */}
+        <Stack.Screen name="PesepayView" component={PesePaymentScreen} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

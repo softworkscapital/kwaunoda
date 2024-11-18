@@ -53,7 +53,7 @@ const Home = ({ navigation }) => {
   }, []);
 
   const fetchUserTrips = async (userId) => {
-    try {
+    try {``
       const response = await fetch(`${API_URL}/trip/customer/notify/${userId}`);
       const userTrips = await response.json();
 
@@ -71,13 +71,12 @@ const Home = ({ navigation }) => {
     navigation.navigate("MapViewComponent"); // Navigate to MapViewComponent
   };
 
-  const redirectToChat = () => {
-    navigation.navigate("CustomerChat"); // Navigate to CustomerChat
+  const redirectToChat = (tripId) => {
+    navigation.navigate("CustomerChat", { tripId }); // Pass tripId to CustomerChat
   };
 
   const cancelTrip = (tripId) => {
     console.log(`Cancelling trip with ID: ${tripId}`);
-    // Implement cancellation logic here
   };
 
   const endTrip = (tripId) => {
@@ -98,12 +97,7 @@ const Home = ({ navigation }) => {
     >
       <View style={styles.overlay} />
       <SafeAreaView style={styles.container}>
-        <TopView
-          profileImage="https://example.com/profile.jpg"
-          customerType="Customer"
-          notificationCount={5}
-          style={styles.topView} // Ensure TopView spans full width
-        />
+      <TopView id={userId} />
 
         {/* Fixed Bottom Card for Current Trip Details */}
         <View style={styles.fixedCurrentTripContainer}>
@@ -178,7 +172,7 @@ const Home = ({ navigation }) => {
                     )}
                     <TouchableOpacity
                       style={styles.chatButton}
-                      onPress={redirectToChat}
+                      onPress={() => redirectToChat(trip.trip_id)}
                     >
                       <Text style={styles.chatText}>Chat</Text>
                     </TouchableOpacity>

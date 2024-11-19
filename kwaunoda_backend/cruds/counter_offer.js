@@ -3,7 +3,7 @@ const pool = require('./poolfile');
 
 let crudsObj = {};
 
-crudsObj.postCounter = (
+crudsObj.postCounterOffer = (
     counter_offer_id,
     customerid,
     driver_id,
@@ -11,22 +11,30 @@ crudsObj.postCounter = (
     date_time,
     offer_value,
     counter_offer_value,
-    status,
+    currency,
+    status	
 ) => {
     return new Promise((resolve, reject) => {
         pool.query(
             `INSERT INTO counter_offer (
-                customerid, driver_id, trip_id, date_time, offer_value, counter_offer_value, status
-            ) VALUES ( ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                counter_offer_id,
                 customerid,
                 driver_id,
                 trip_id,
                 date_time,
                 offer_value,
                 counter_offer_value,
-                status,
+                currency,
+                status	
+            ) VALUES ( ?, ?, ?, ?, ?, ?, ?,?)`,
+            [
+                customerid,
+                driver_id,
+                trip_id,
+                date_time,
+                offer_value,
+                counter_offer_value,
+                currency,
+                status	
             ],
             (err, result) => {
                 if (err) {
@@ -38,7 +46,7 @@ crudsObj.postCounter = (
     });
 };
 
-crudsObj.getCounters = () => {
+crudsObj.getCounterOffers = () => {
     return new Promise((resolve, reject) => {
         pool.query('SELECT * FROM counter_offer', (err, results) => {
             if (err) {
@@ -49,7 +57,20 @@ crudsObj.getCounters = () => {
     });
 };
 
-crudsObj.getCounterById = (counter_offer_id) => {
+
+crudsObj.getCounterOffers = (customerid, status) => {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM counter_offer WHERE customerid = ? AND status = ?';
+        pool.query(query, [customerid, status], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+};
+
+crudsObj.getCounterOfferById = (counter_offer_id) => {
     return new Promise((resolve, reject) => {
         pool.query('SELECT * FROM counter_offer WHERE counter_offer_id = ?', [counter_offer_id], (err, results) => {
             if (err) {
@@ -60,7 +81,7 @@ crudsObj.getCounterById = (counter_offer_id) => {
     });
 };
 
-crudsObj.updateCounter = (counter_offer_id, updatedValues) => {
+crudsObj.updateCounterOffer = (counter_offer_id, updatedValues) => {
     const {
         customerid,
         driver_id,
@@ -68,14 +89,21 @@ crudsObj.updateCounter = (counter_offer_id, updatedValues) => {
         date_time,
         offer_value,
         counter_offer_value,
-        status,
+        currency,
+        status	
     } = updatedValues;
 
     return new Promise((resolve, reject) => {
         pool.query(
             `UPDATE counter_offer SET  
-                customerid = ?, driver_id = ?, trip_id = ?, date_time = ?, 
-                offer_value = ?, counter_offer_value = ?, status = ? 
+                customerid =?,
+                driver_id =?,
+                trip_id =?,
+                date_time =?,
+                offer_value =?,
+                counter_offer_value =?,
+                currency =?,
+                status	=?
             WHERE counter_offer_id = ?`,
             [
                 customerid,
@@ -84,7 +112,8 @@ crudsObj.updateCounter = (counter_offer_id, updatedValues) => {
                 date_time,
                 offer_value,
                 counter_offer_value,
-                status,
+                currency,
+                status	,
                 counter_offer_id, // Include counter_offer_id here
             ],
             (err, result) => {
@@ -97,7 +126,28 @@ crudsObj.updateCounter = (counter_offer_id, updatedValues) => {
     });
 };
 
-crudsObj.deleteCounter = (counter_offer_id) => {
+
+crudsObj.updateCounterOfferStatus = (counter_offer_id, status) => {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            `UPDATE counter_offer SET  
+                status = ?
+            WHERE counter_offer_id = ?`,
+            [status, counter_offer_id],
+            (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (result.affectedRows === 0) {
+                    return resolve({ status: '404', message: 'Counter offer not found' });
+                }
+                return resolve({ status: '200', message: 'Update successful' });
+            }
+        );
+    });
+};
+
+crudsObj.deleteCounterOffer = (counter_offer_id) => {
     return new Promise((resolve, reject) => {
         pool.query('DELETE FROM counter_offer WHERE counter_offer_id = ?', [counter_offer_id], (err, results) => {
             if (err) {

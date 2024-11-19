@@ -27,7 +27,10 @@ const CustomerDriverChatRouter = require("./routes/customer_driver_chats");
 const CustomerAdminChatRouter = require("./routes/customer_admin_chats");
 const sentMessagesRouter = require("./routes/sent_messages");
 const topUpRouter = require("./routes/topUp");
-const BillingTarrifRouter = require("./routes/billing_tarrifs");
+const TarrifRouter = require("./routes/tarrifs");
+const CounterOfferRouter = require("./routes/counter_offer");
+
+
 const pool = require("./cruds/poolfile");
 const bodyParser = require("body-parser");
 
@@ -89,7 +92,10 @@ app.use("/customer_driver_chats", CustomerDriverChatRouter);
 app.use("/customer_admin_chats", CustomerAdminChatRouter);
 app.use("/sentmessages", sentMessagesRouter);
 app.use("/topUp", topUpRouter);
-app.use("/billingtarrifs", BillingTarrifRouter);
+app.use("/tarrifs", TarrifRouter);
+app.use("/counter_offer", CounterOfferRouter);
+
+
 
 
 pesepay.resultUrl = 'https://localhost:3011/payment-result';

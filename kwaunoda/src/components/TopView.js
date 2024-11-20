@@ -25,6 +25,7 @@ const TopView = ({}) => {
   const [profileImage, setPic] = useState();
   const [customerType, setType] = useState("");
   const [name, setName] = useState("");
+  const [id, setid] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
   const APILINK = API_URL;
 
@@ -38,6 +39,7 @@ const TopView = ({}) => {
 
           if (parsedIds.last_logged_account === "driver") {
             acc = parsedIds.driver_id;
+            setid(parsedIds.driver_id);
           } else {
             acc = parsedIds.customerId;
           }

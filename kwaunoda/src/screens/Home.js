@@ -24,15 +24,13 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      // Retrieve customer_id from AsyncStorage
       const storedIds = await AsyncStorage.getItem("theIds");
       const parsedIds = JSON.parse(storedIds);
       setUserId(parsedIds.customerId);
       const intervalId = setInterval(() => {
         fetchUserTrips(parsedIds.customerId);
       }, 1000);
-      // Pass customer ID to fetch trips
-      intervalId();
+      
       Animated.loop(
         Animated.sequence([
           Animated.timing(carAnimation, {
@@ -53,7 +51,7 @@ const Home = ({ navigation }) => {
   }, []);
 
   const fetchUserTrips = async (userId) => {
-    try {``
+    try {
       const response = await fetch(`${API_URL}/trip/customer/notify/${userId}`);
       const userTrips = await response.json();
 
@@ -69,6 +67,10 @@ const Home = ({ navigation }) => {
 
   const redirectNewDelivery = () => {
     navigation.navigate("MapViewComponent"); // Navigate to MapViewComponent
+  };
+
+  const redirectCustomerNewDelivery = () => {
+    navigation.navigate("DeliveryMap"); // Navigate to MapViewComponent
   };
 
   const redirectToChat = (tripId) => {
@@ -97,25 +99,33 @@ const Home = ({ navigation }) => {
     >
       <View style={styles.overlay} />
       <SafeAreaView style={styles.container}>
-      <TopView id={userId} />
+        <TopView id={userId} />
 
         {/* Fixed Bottom Card for Current Trip Details */}
         <View style={styles.fixedCurrentTripContainer}>
           {/* Animated Car */}
-          <Animated.View
+          {/* <Animated.View
             style={[
               styles.carIconContainer,
               { transform: [{ translateY: carTranslateY }] },
             ]}
           >
             <FontAwesome name="car" size={30} color="#000" />
-          </Animated.View>
+          </Animated.View> */}
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
           <TouchableOpacity
             style={styles.requestTripButton}
             onPress={redirectNewDelivery} // Updated to navigate to MapViewComponent
           >
             <Text style={styles.requestTripText}>Request Trip</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.requestTripButton}
+            onPress={redirectCustomerNewDelivery} // Updated to navigate to MapViewComponent
+          >
+            <Text style={styles.requestTripText}>Request Delivery</Text>
+          </TouchableOpacity>
+          </View>
 
           {/* Scrollable Card Showing All Trips */}
           <ScrollView
@@ -125,12 +135,13 @@ const Home = ({ navigation }) => {
             <Text style={styles.tripHeaderText}>Trips</Text>
             {trips.length > 0 ? (
               trips.map((trip) => (
-                <View
+                <TouchableOpacity
                   key={trip.trip_id}
                   style={[
                     styles.tripDetailsView,
-                    { backgroundColor: "rgba(255, 255, 255, 0.3)" }, // Transparent background
+                    { backgroundColor: "rgba(255, 255, 255, 0.3)" },
                   ]}
+                  onPress={() => navigation.navigate('TripTrack', { trip })} // Navigate to MapScreen
                 >
                   <Text style={[styles.tripDetailsText, styles.statusText]}>
                     {trip.status}
@@ -177,7 +188,7 @@ const Home = ({ navigation }) => {
                       <Text style={styles.chatText}>Chat</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))
             ) : (
               <Text style={styles.noTripText}>
@@ -209,15 +220,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     width: "100%",
-  },
-  topView: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: "100%", // Ensure full width
-    padding: 10, // Optional padding
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Optional background for visibility
   },
   fixedCurrentTripContainer: {
     position: "absolute", // Fix position to bottom

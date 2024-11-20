@@ -1,301 +1,150 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Alert,
-  ActivityIndicator,
-  TouchableOpacity,
-} from "react-native"; // Add TouchableOpacity here
-import MapView, { Marker, Polyline } from "react-nativme-maps";
-import NetInfo from "@react-native-community/netinfo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ActivityIndicator, Animated } from "react-native";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import polyline from "@mapbox/polyline";
 import { API_URL } from "./config";
-import { FontAwesome5 } from "@expo/vector-icons"; // Ensure you import FontAwesome5 if not already
-const InTransitTrip = () => {
-  const mapRef = useRef(null);
-  const [route, setRoute] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [driverLocation, setDriverLocation] = useState(null);
-  const [pickUpLocation, setPickUpLocation] = useState(null);
-  const [destinationLocation, setDestinationLocation] = useState(null);
-  const [customerId, setcustomerId] = useState(null);
+
+const AnimatedMarker = ({ coordinate }) => {
+  const [animation] = useState(new Animated.Value(0));
 
   useEffect(() => {
-    const fetchcustomerId = async () => {
-      const storedcustomerId = await AsyncStorage.getItem("driver");
-      console.log("Stored Driver ID:", storedcustomerId);
-      if (storedcustomerId) {
-        setcustomerId(storedcustomerId);
-      } else {
-        Alert.alert("Error", "Driver ID not found in storage.");
+    const startAnimation = () => {
+      animation.setValue(0);
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(animation, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: false,
+          }),
+          Animated.timing(animation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+    };
+
+    startAnimation();
+  }, [animation]);
+
+  const interpolatedColor = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["blue", "lightblue"]
+  });
+
+  return (
+    <Marker coordinate={coordinate}>
+      <Animated.View style={{ backgroundColor: interpolatedColor, padding: 10, borderRadius: 15 }}>
+        <View style={styles.carIcon} />
+      </Animated.View>
+    </Marker>
+  );
+};
+
+const TripTrack = ({ route }) => {
+  const { trip } = route.params;
+  const [decodedPath, setDecodedPath] = useState([]);
+  const [driverLocation, setDriverLocation] = useState(null);
+  const [loadingDriver, setLoadingDriver] = useState(true);
+  const [loadingRoute, setLoadingRoute] = useState(true);
+  const driverId = trip.driver_id;
+  const APILINK = API_URL;
+
+  const origin = {
+    latitude: trip.origin_location_lat,
+    longitude: trip.origin_location_long,
+  };
+
+  const destination = {
+    latitude: trip.destination_lat,
+    longitude: trip.destination_long,
+  };
+
+  useEffect(() => {
+    const fetchRoute = async () => {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE`
+        );
+        const data = await response.json();
+
+        if (data.routes.length > 0) {
+          const points = data.routes[0].overview_polyline.points;
+          const path = polyline.decode(points).map(([latitude, longitude]) => ({
+            latitude,
+            longitude,
+          }));
+          setDecodedPath(path);
+        }
+      } catch (error) {
+        console.error("Error fetching directions:", error);
+      } finally {
+        setLoadingRoute(false);
       }
     };
 
-    fetchcustomerId();
-  }, []);
-
-  useEffect(() => {
     const fetchDriverLocation = async () => {
       try {
-        const netInfo = await NetInfo.fetch();
-        console.log("Network Info:", netInfo);
-        if (!netInfo.isConnected) {
-          throw new Error("No internet connection. Please check your network.");
-        }
-
-        const response = await fetch(`${API_URL}/driver/${customerId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        console.log("Driver Location Response:", response);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.length > 0) {
-          const driverCoords = {
-            latitude: parseFloat(result[0].lat_cordinates),
-            longitude: parseFloat(result[0].long_cordinates),
-          };
-          if (!isNaN(driverCoords.latitude) && !isNaN(driverCoords.longitude)) {
-            setDriverLocation(driverCoords);
-            await AsyncStorage.setItem(
-              "driverLocation",
-              JSON.stringify(driverCoords)
-            );
-          } else {
-            Alert.alert("Error", "Invalid driver location coordinates.");
+        const response = await fetch(`${APILINK}/driver/${driverId}`);
+        const driverArray = await response.json();
+    
+        if (Array.isArray(driverArray) && driverArray.length > 0) {
+          const driver = driverArray[0];
+          if (driver.lat_cordinates !== undefined && driver.long_cordinates !== undefined) {
+            setDriverLocation({
+              latitude: driver.lat_cordinates,
+              longitude: driver.long_cordinates,
+            });
           }
         } else {
-          Alert.alert("No Driver Found", "Driver details are not available.");
+          console.error("No driver data found or unexpected format");
         }
       } catch (error) {
         console.error("Error fetching driver location:", error);
-        Alert.alert(
-          "Error",
-          error.message || "Failed to fetch driver location. Please try again."
-        );
+      } finally {
+        setLoadingDriver(false);
       }
     };
 
-    if (customerId) {
-      fetchDriverLocation();
-    }
-  }, [customerId]);
+    fetchDriverLocation(); 
+    fetchRoute(); 
 
-  const fetchTripData = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/trip/byStatus/driver_id/status?driver_Id=${customerId}&status=InTransit`
-      );
+    // const intervalId = setInterval(fetchDriverLocation, 5000);
 
-      console.log("Trip Data Response:", response);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    // return () => clearInterval(intervalId);
+  }, [origin, destination, driverId, APILINK]);
 
-      const tripData = await response.json();
-      console.log("Trip Data:", tripData);
-
-      if (tripData.length > 0) {
-        const trip = tripData[0];
-        const startCoords = {
-          latitude: parseFloat(trip.origin_location_lat),
-          longitude: parseFloat(trip.origin_location_long),
-        };
-        const destCoords = {
-          latitude: parseFloat(trip.destination_lat),
-          longitude: parseFloat(trip.destination_long),
-        };
-
-        console.log("Parsed Start Coordinates:", startCoords);
-        console.log("Parsed Destination Coordinates:", destCoords);
-
-        if (!isNaN(startCoords.latitude) && !isNaN(startCoords.longitude)) {
-          setPickUpLocation(startCoords);
-        } else {
-          Alert.alert("Error", "Invalid pick-up location coordinates.");
-        }
-        if (!isNaN(destCoords.latitude) && !isNaN(destCoords.longitude)) {
-          setDestinationLocation(destCoords);
-        } else {
-          Alert.alert("Error", "Invalid destination coordinates.");
-        }
-
-        await getDirections(startCoords, destCoords);
-      } else {
-        Alert.alert("Error", "No trip data found.");
-      }
-    } catch (error) {
-      console.error("Error fetching trip data:", error);
-      Alert.alert("Error", error.message || "Unable to fetch route details.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (customerId) {
-      fetchTripData();
-    }
-  }, [customerId]);
-
-  const getDirections = async (origin, destination) => {
-    console.log("Fetching directions from:", origin, "to:", destination);
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE`
-      );
-
-      console.log("Directions Response:", response);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      if (data.routes && data.routes.length > 0) {
-        const points = decodePolyline(data.routes[0].overview_polyline.points);
-        console.log("Decoded Points:", points);
-        setRoute(points);
-
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(
-            {
-              latitude: points[0].latitude,
-              longitude: points[0].longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            },
-            1000
-          );
-        }
-      } else {
-        Alert.alert("Error", "No route found. Please check the locations.");
-      }
-    } catch (error) {
-      console.error("Error fetching directions:", error);
-      Alert.alert(
-        "Error",
-        error.message || "Unable to fetch directions. Please try again."
-      );
-    }
-  };
-
-  const decodePolyline = (t) => {
-    const points = [];
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
-
-    while (index < t.length) {
-      let b,
-        shift = 0,
-        result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlat = (result >> 1) ^ -(result & 1);
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlng = (result >> 1) ^ -(result & 1);
-      lng += dlng;
-
-      points.push({
-        latitude: lat / 1e5,
-        longitude: lng / 1e5,
-      });
-    }
-    console.log("Decoded Polyline Points:", points);
-    return points;
-  };
+  if (loadingDriver) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.viewTop}>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={[styles.menuIcon, { marginRight: 10 }]}>
-            <FontAwesome5 name="bell" size={20} color="#595959" />
-            <View
-              style={[
-                styles.notificationView,
-                {
-                  backgroundColor: "red",
-                  position: "absolute",
-                  top: -4,
-                  right: -6,
-                },
-              ]}
-            >
-              <Text
-                style={{ color: "white", fontSize: 12, fontWeight: "bold" }}
-              >
-                5
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuIcon}>
-            <FontAwesome5 name="bars" size={20} color="#595959" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.nameContainer}>
-          <Text style={styles.firstName}>KING</Text>
-          <Text style={styles.surname}>Driver</Text>
-        </View>
-      </View>
       <MapView
-        ref={mapRef}
         style={styles.map}
-        showsUserLocation={true}
-        provider={MapView.PROVIDER_GOOGLE}
+        initialRegion={{
+          latitude: (origin.latitude + destination.latitude) / 2,
+          longitude: (origin.longitude + destination.longitude) / 2,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }}
       >
+        <Marker coordinate={origin} title="Origin" />
+        <Marker coordinate={destination} title="Destination" />
         {driverLocation && (
-          <Marker
-            coordinate={driverLocation}
-            title="Driver's Location"
-            pinColor="blue"
+          <AnimatedMarker coordinate={driverLocation} />
+        )}
+        {decodedPath.length > 0 && (
+          <Polyline
+            coordinates={decodedPath}
+            strokeColor="#000"
+            strokeWidth={3}
           />
         )}
-        {pickUpLocation && (
-          <Marker
-            coordinate={pickUpLocation}
-            title="Pick-Up Location"
-            pinColor="red"
-          />
-        )}
-        {destinationLocation && (
-          <Marker
-            coordinate={destinationLocation}
-            title="Destination"
-            pinColor="green"
-          />
-        )}
-        {route.length > 0 && <Polyline coordinates={route} strokeWidth={4} />}
       </MapView>
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-        </View>
-      )}
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Route</Text>
-      </View>
+      {loadingRoute && <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />}
     </View>
   );
 };
@@ -303,69 +152,23 @@ const InTransitTrip = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFCC00", // Background color set to #FFCC00
   },
   map: {
     flex: 1,
   },
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Semi-transparent background
+  loader: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -20,
+    marginTop: -20,
   },
-  infoContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#FFCC00", // Background color set to #FFCC00
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    elevation: 5,
-  },
-  infoText: {
-    fontSize: 16,
-    color: "#333", // Dark text for contrast
-  },
-  viewTop: {
-    flexDirection: "row",
-    justifyContent: "space-between", // Distributes space between items
-    alignItems: "center",
-    padding: 10, // Add some padding if needed
-  },
-  iconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  nameContainer: {
-    alignItems: "flex-end", // Align text to the right
-    flex: 1, // Allow it to take up remaining space
-    marginLeft: 10, // Optional: Add space between icons and name
-  },
-  firstName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  surname: {
-    fontSize: 14,
-    color: "#595959", // Adjust color as needed
-  },
-  menuIcon: {
-    padding: 10, // Add padding around icons
-  },
-  notificationView: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    height: 20,
-    width: 20,
+  carIcon: {
+    height: 30,
+    width: 30,
+    backgroundColor: 'blue',
+    borderRadius: 15,
   },
 });
 
-export default InTransitTrip;
+export default TripTrack;

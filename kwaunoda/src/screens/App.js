@@ -49,7 +49,9 @@ import CustomerChat from "./src/screens/CustomerChat.js";
 import CustomerAdminChat from "./src/screens/CustomerAdminChat.js";
 import Wallet from "./src/screens/Wallet.js";
 import Invite from "./src/screens/Invite.js";
-import PesePaymentScreen from "./src/screens/Pesepay.js";
+import TripTrack from "./src/screens/TripTrack.js";
+import CustomerNewDelivery from "./src/screens/CustomerNewDelivery.js";
+import DeliveryMap from "./src/screens/DeliveryMap.js";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -63,8 +65,11 @@ const App = () => {
         />
         <Stack.Screen name="InTransitTrip" component={InTransitTrip} />
         <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
+        <Stack.Screen name="CustomerNewDelivery" component={CustomerNewDelivery} />
+        <Stack.Screen name="DeliveryMap" component={DeliveryMap} />
         <Stack.Screen name="Invite" component={Invite} />
         <Stack.Screen name="DriverChat" component={DriverChat} />
+        <Stack.Screen name="TripTrack" component={TripTrack} />
         <Stack.Screen name="CustomerChat" component={CustomerChat} />
         <Stack.Screen name="Wallet" component={Wallet} />
         <Stack.Screen name="CustomerAdminChat" component={CustomerAdminChat} />
@@ -113,7 +118,7 @@ const App = () => {
         <Stack.Screen name="History" component={History} />
         <Stack.Screen name="AccountInError" component={AccountInError} />
         <Stack.Screen name="MapViewComponent" component={MapViewComponent} />
-        <Stack.Screen name="PesepayView" component={PesePaymentScreen} />
+        {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

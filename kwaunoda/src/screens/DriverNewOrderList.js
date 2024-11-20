@@ -8,7 +8,10 @@ import {
   ScrollView,
   Alert,
   RefreshControl,
+  TextInput,
+  Modal,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
@@ -27,6 +30,9 @@ const DriverNewOrderList = () => {
   const [routePoints, setRoute] = useState(null);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [counterOffer, setCounterOffer] = useState(null);
+  const [showCounterOfferModal, setShowCounterOfferModal] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Added state
   const mapRef = useRef(null);
   const APILINK = API_URL;
   const GOOGLE_MAPS_API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"; // Replace with your actual API key
@@ -56,7 +62,7 @@ const DriverNewOrderList = () => {
     }, 30000);
 
     return () => clearInterval(intervalId);
-  }, [driverId]); // Ensure driverId is included in dependencies
+  }, [driverId]);
 
   const fetchDriverDetails = async (driverId) => {
     try {
@@ -312,6 +318,49 @@ const DriverNewOrderList = () => {
       );
     }
   };
+
+  const handleCounterOffer = async (trip) => {
+    if (!counterOffer) {
+      Alert.alert("Error", "Please enter a valid counter offer amount.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${APILINK}/counter_offer/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerid:trip.customerId,
+          driver_id: driver,
+          trip_id: trip.trip_id,
+          date_time: currentdate,
+          offer_value: trip.cost,
+          counter_offer_value:counterOffer,
+          currency: selectedCurrency,
+          status: 'Unread'	,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to send counter offer.");
+      }
+
+      Alert.alert(
+        "Success",
+        result.message || "Counter offer sent successfully."
+      );
+      setShowCounterOfferModal(false);
+      fetchTrips(driver); // Refresh trip list
+    } catch (error) {
+      console.error("Error sending counter offer:", error);
+      Alert.alert("Error", error.message || "An error occurred.");
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -322,8 +371,7 @@ const DriverNewOrderList = () => {
 
   return (
     <View style={styles.container}>
-      <TopView
-      />
+      <TopView />
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -365,13 +413,21 @@ const DriverNewOrderList = () => {
             </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
+                onPress={() => setShowCounterOfferModal(true)}
+                style={styles.counterOfferButton}
+              >
+                <Text style={styles.counterOfferButtonText}>
+                  Make Counter Offer
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => setSelectedTrip(null)}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>Back to List</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleAcceptTrip} // Correctly reference the function
+                onPress={handleAcceptTrip}
                 style={styles.acceptButton}
               >
                 <Text style={styles.acceptButtonText}>Accept Trip</Text>
@@ -414,10 +470,54 @@ const DriverNewOrderList = () => {
           </>
         )}
       </View>
+
+      {showCounterOfferModal && (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={showCounterOfferModal}
+          onRequestClose={() => setShowCounterOfferModal(false)}
+        >
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Enter Counter Offer</Text>
+            <View style={styles.counterOfferContainer}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Enter amount"
+                keyboardType="numeric"
+                value={counterOffer}
+                onChangeText={setCounterOffer}
+              />
+              <Picker
+                selectedValue={selectedCurrency}
+                style={styles.currencyPicker}
+                onValueChange={(itemValue) => setSelectedCurrency(itemValue)}
+              >
+                <Picker.Item label="USD" value="USD" />
+                <Picker.Item label="EUR" value="EUR" />
+                <Picker.Item label="GBP" value="GBP" />
+                <Picker.Item label="AUD" value="AUD" />
+                {/* Add more currencies as needed */}
+              </Picker>
+            </View>
+            <TouchableOpacity
+              onPress={() => handleCounterOffer(selectedTrip.trip_id)}
+              style={styles.modalButton}
+            >
+              <Text style={styles.modalButtonText}>Send Counter Offer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setShowCounterOfferModal(false)}
+              style={styles.modalCloseButton}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -457,25 +557,35 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "green",
     borderRadius: 50,
-    padding: 14,
-    width: "50%",
+    padding: 10, // Reduced padding for smaller buttons
+    width: "30%", // Adjusted width for better fit
     alignItems: "center",
   },
   buttonText: {
-    fontSize: 16,
-    color: "#333",
+    fontSize: 14, // Reduced font size
+    color: "#fff",
   },
   acceptButton: {
     backgroundColor: "green",
     borderRadius: 50,
-    padding: 14,
-    width: "50%",
+    padding: 10, // Reduced padding for smaller buttons
+    width: "30%", // Adjusted width for better fit
     alignItems: "center",
-    marginLeft: 5,
   },
   acceptButtonText: {
-    fontSize: 16,
-    color: "black",
+    fontSize: 14, // Reduced font size
+    color: "white",
+  },
+  counterOfferButton: {
+    backgroundColor: "green",
+    borderRadius: 50,
+    padding: 10, // Reduced padding for smaller buttons
+    width: "30%", // Adjusted width for better fit
+    alignItems: "center",
+  },
+  counterOfferButtonText: {
+    fontSize: 14, // Reduced font size
+    color: "white",
   },
   selectTripContainer: {
     alignItems: "center",
@@ -508,6 +618,67 @@ const styles = StyleSheet.create({
     textAlign: "center",
     padding: 10,
     color: "#888",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+
+  modalInput: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginRight: 10, // Space between input and picker
+    backgroundColor: "#fff",
+  },
+  currencyPicker: {
+    // Keep the height the same as input
+    flex: 1, // Make it flexible to match the input width
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    marginLeft: 10, // Add space if needed
+  },
+  counterOfferContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "80%",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 20,
+    color: "#fff",
+  },
+  modalInput: {
+    width: "80%",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 20,
+    backgroundColor: "#fff",
+  },
+  modalButton: {
+    backgroundColor: "green",
+    borderRadius: 5,
+    padding: 10,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "white",
+  },
+  modalCloseButton: {
+    marginTop: 10,
+  },
+  modalCloseButtonText: {
+    color: "red",
   },
 });
 

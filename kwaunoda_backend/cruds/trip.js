@@ -31,7 +31,12 @@ crudsObj.postTrip = (
   customer_comment,
   driver_comment,
   driver_stars,
-  customer_stars
+  customer_stars,
+  pascel_pic1,
+  pascel_pic2,
+  pascel_pic3,
+  trip_priority_type
+
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -41,8 +46,9 @@ crudsObj.postTrip = (
              delivery_contact_details, dest_location, origin_location, 
              origin_location_lat, origin_location_long, destination_lat, 
              destination_long, distance, delivery_cost_proposed, 
-             accepted_cost, paying_when, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment, driver_stars, customer_stars
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             accepted_cost, paying_when, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment,
+              driver_stars, customer_stars, pascel_pic1, pascel_pic2, pascel_pic3,trip_priority_type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         driver_id,
         cust_id,
@@ -72,6 +78,10 @@ crudsObj.postTrip = (
         driver_comment,
         driver_stars,
         customer_stars,
+        pascel_pic1,
+        pascel_pic2,
+        pascel_pic3,
+        trip_priority_type
       ],
       (err, result) => {
         if (err) {
@@ -192,6 +202,47 @@ crudsObj.getTripByStatusToCustomer = (cust_id) => {
   });
 };
 
+
+//the crud that joins customer, driver, counteroffer,topup,customer driver chat using trip_id
+
+crudsObj.getTripDetailsOfTablesById = (trip_id) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT 
+        trip.*, 
+        customer_details.*, 
+        driver_details.*, 
+        customer_driver_chats.*, 
+        counter_offer.*, 
+        top_up.* 
+      FROM 
+        trip 
+      LEFT JOIN 
+        customer_details ON trip.cust_id = customer_details.customerid 
+      LEFT JOIN 
+        driver_details ON trip.driver_id = driver_details.driver_id 
+      LEFT JOIN 
+        customer_driver_chats ON trip.trip_id = customer_driver_chats.trip_id 
+      LEFT JOIN 
+        counter_offer ON trip.trip_id = counter_offer.trip_id 
+      LEFT JOIN 
+        top_up ON trip.trip_id = top_up.trip_id 
+      WHERE 
+        trip.trip_id = ?
+    `;
+
+    pool.query(query, [trip_id], (err, results) => {
+      if (err) {
+        return reject(err);
+      }
+      // Assuming results contains the joined data
+      return resolve(results);
+    });
+  });
+};
+
+
+
 crudsObj.updateTrip = (trip_id, updatedValues) => {
   const {
     driver_id,
@@ -222,6 +273,10 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
     driver_comment,
     driver_stars,
     customer_stars,
+    pascel_pic1,
+    pascel_pic2,
+    pascel_pic3,
+    trip_priority_type
   } = updatedValues;
 
   return new Promise((resolve, reject) => {
@@ -237,7 +292,8 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
                 accepted_cost = ?, paying_when = ?, payment_type = ?, 
                 currency_id = ?, currency_code = ?,
                 usd_rate = ?, customer_comment = ?, 
-                driver_comment = ?, driver_stars = ?, customer_stars = ? 
+                driver_comment = ?, driver_stars = ?, customer_stars = ? ,
+                pascel_pic1 =?, pascel_pic2 =?, pascel_pic3 =?, trip_priority_type =?
             WHERE trip_id = ?`,
       [
         driver_id,
@@ -268,6 +324,10 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
         driver_comment,
         driver_stars,
         customer_stars,
+        pascel_pic1,
+        pascel_pic2,
+        pascel_pic3,
+        trip_priority_type,
         trip_id, // This is the value for WHERE clause
       ],
       (err, result) => {

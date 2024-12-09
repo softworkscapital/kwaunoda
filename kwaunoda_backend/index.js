@@ -29,6 +29,8 @@ const sentMessagesRouter = require("./routes/sent_messages");
 const topUpRouter = require("./routes/topUp");
 const TarrifRouter = require("./routes/tarrifs");
 const CounterOfferRouter = require("./routes/counter_offer");
+const DriverAnalyticRouter = require("./routes/driver_analytics");
+const TripStatusAnalyticRouter = require("./routes/trip_status_analytics");
 
 
 const pool = require("./cruds/poolfile");
@@ -94,6 +96,9 @@ app.use("/sentmessages", sentMessagesRouter);
 app.use("/topUp", topUpRouter);
 app.use("/tarrifs", TarrifRouter);
 app.use("/counter_offer", CounterOfferRouter);
+app.use("/driver_analytics", DriverAnalyticRouter);
+app.use("/trip_status_analytics", TripStatusAnalyticRouter);
+
 
 
 

@@ -33,6 +33,17 @@ tripRouter.post("/", async (req, res, next) => {
     let driver_comment = postedValues.driver_comment;
     let driver_stars = postedValues.driver_stars;
     let customer_stars = postedValues.customer_stars;
+    let pascel_pic1 = postedValues.parcel_pic1;
+    let pascel_pic2 = postedValues.parcel_pic2;
+    let pascel_pic3 = postedValues.parcel_pic3;
+    let trip_priority_type = postedValues.trip_priority_type;
+
+
+   
+
+
+    console.log(pascel_pic1);
+
 
     console.log(status);
 
@@ -64,8 +75,13 @@ tripRouter.post("/", async (req, res, next) => {
       customer_comment,
       driver_comment,
       driver_stars,
-      customer_stars
+      customer_stars,
+      pascel_pic1,
+      pascel_pic2,
+      pascel_pic3,
+      trip_priority_type
     );
+
     res.json(results);
   } catch (e) {
     console.log(e);
@@ -100,6 +116,32 @@ tripRouter.get("/driver_id/status", async (req, res, next) => {
     res.sendStatus(500);
   }
 });
+
+
+
+//the route that gets customer, driver, counteroffer,topup,customer driver chat using trip_id
+
+tripRouter.get("/getting_joined_tables_using_trip_id/:trip_id", async (req, res, next) => {
+  const tripId = req.params.trip_id;
+
+  try {
+    let results = await tripDbOperations.getTripDetailsOfTablesById(tripId);
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+
+
+
+
+
+
 tripRouter.put("/updateStatusAndDriver/:id", async (req, res, next) => {
   try {
     const trip_id = req.params.id; // Get trip_id from URL parameters

@@ -9,6 +9,7 @@ const MapView = ({ selectedTrip }) => {
   const [route, setRoute] = useState([]);
   const [startLocation, setStartLocation] = useState(null);
   const [endLocation, setEndLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: -17.8252, lng: 31.0335 }); // Initial center
   const APILINK = API_URL;
 
   const getDrivers = async () => {
@@ -113,9 +114,6 @@ const MapView = ({ selectedTrip }) => {
       } else {
         console.error('Invalid coordinates:', origin, destination);
       }
-
-      console.log("horror", startLocation);
-      console.log("kkkkk", endLocation);
     }
   };
 
@@ -127,8 +125,9 @@ const MapView = ({ selectedTrip }) => {
     <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
       <div style={{ width: '100%', height: '100vh' }}>
         <GoogleMap
+          onLoad={(map) => setMapCenter({ lat: map.getCenter().lat(), lng: map.getCenter().lng() })}
           mapContainerStyle={{ width: '100%', height: '100%' }}
-          center={{ lat: -17.8252, lng: 31.0335 }} // Centered on Harare, Zimbabwe
+          center={mapCenter}
           zoom={13}
           options={{
             scrollwheel: true,
@@ -140,7 +139,6 @@ const MapView = ({ selectedTrip }) => {
               key={index} 
               position={marker} 
               onClick={() => setSelectedDriver(marker)}
-              
             />
           ))}
           
@@ -160,9 +158,6 @@ const MapView = ({ selectedTrip }) => {
           {startLocation && (
             <Marker 
               position={startLocation} 
-            //   icon={{
-            //     url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker
-            // }}
             />
           )}
 
@@ -170,9 +165,6 @@ const MapView = ({ selectedTrip }) => {
           {endLocation && (
             <Marker 
               position={endLocation}
-              // icon={{
-              //   url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png", // Green icon for destination
-              // }} 
             />
           )}
 

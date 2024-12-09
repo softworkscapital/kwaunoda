@@ -13,6 +13,7 @@ CustomerAdminChatRouter.post('/', async (req, res, next) => {
             admin_id,
             driver_id,
             message,
+            conversation_id,
             origin
             } = postedValues;
 
@@ -23,6 +24,7 @@ CustomerAdminChatRouter.post('/', async (req, res, next) => {
                 trip_id,
                 admin_id,
                 driver_id,
+                conversation_id,
                 message,
                 origin
         );

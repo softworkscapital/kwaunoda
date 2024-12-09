@@ -10,6 +10,7 @@ crudsObj.postCustomerAdminChat= (
         trip_id,
         admin_id,
         driver_id,
+        conversation_id,
         message,
         origin
 
@@ -22,9 +23,10 @@ crudsObj.postCustomerAdminChat= (
         trip_id,
         admin_id,
         driver_id,
+        conversation_id,
         message,
         origin
-              ) VALUES (?, ?, ?, ?,?,?,?)`,
+              ) VALUES (?, ?, ?, ?, ?,?,?,?)`,
       [
        
         date_chat,
@@ -32,6 +34,7 @@ crudsObj.postCustomerAdminChat= (
         trip_id,
         admin_id,
         driver_id,
+        conversation_id,
         message,
         origin
       ],
@@ -96,6 +99,7 @@ crudsObj.updateCustomerAdminChat = (customer_admin_chat_id, updatedValues) => {
         admin_id,
         driver_id,
         message,
+        conversation_id,
         origin
     } = updatedValues;
 
@@ -110,6 +114,7 @@ crudsObj.updateCustomerAdminChat = (customer_admin_chat_id, updatedValues) => {
                 trip_id =?,
                 admin_id =?,
                 driver_id =?,
+                conversation_id =?,
                 message =?,
                 origin =?
             WHERE customer_admin_chat_id = ?`,
@@ -119,6 +124,7 @@ crudsObj.updateCustomerAdminChat = (customer_admin_chat_id, updatedValues) => {
                 trip_id,
                 admin_id,
                 driver_id,
+                conversation_id,
                 message,
                 origin,
                 customer_admin_chat_id,

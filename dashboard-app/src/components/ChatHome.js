@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import './ChatMessages.css'; // Importing CSS for styles
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";import './ChatMessages.css'; // Importing CSS for styles
 import { API_URL } from './config';
 
 const ChatHome = () => {
@@ -52,7 +53,31 @@ const ChatHome = () => {
 
   return (
     <div className="chat-container">
-      <h2>Chat Messages</h2>
+<h2>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "20px"
+    }}
+  >
+    <button
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "#FFD700", // Golden color for the icon
+        fontSize: "24px",
+        marginRight: "10px", // Space between button and title
+      }}
+      onClick={() => navigate(-1)} // Navigate back to the previous page
+    >
+      <FontAwesomeIcon icon={faArrowLeft} />
+    </button>
+    <span style={{ flexGrow: 1, textAlign: 'center', fontSize: '45px' }}>Chat Messages</span>
+  </div>
+</h2>
       <div className="chat-cards">
         {Object.entries(groupedMessages).length > 0 ? (
           Object.entries(groupedMessages).map(([tripId, { lastMessage }]) => (

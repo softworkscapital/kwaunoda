@@ -6,10 +6,14 @@ import { Col, Row, Container, Button, Form } from "react-bootstrap";
 import Navbar from "./Navbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const APILINK = API_URL;
 
 const Broadcast = ({ customersData }) => {
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [driversData, setDriversData] = useState([]);
 
@@ -95,7 +99,31 @@ const Broadcast = ({ customersData }) => {
       <Container fluid className="d-flex">
         <Row className="w-100">
           <Col md={8} className="mx-auto mt-4 text-center">
-            <h2>Broadcast Message</h2>
+            <h2>
+            <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "20px",
+                }}
+              >
+                <button
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#FFD700", // Golden color for the icon
+                    fontSize: "24px",
+                    marginRight: "10px",
+                    marginTop: "35px" // Space between button and title
+                  }}
+                  onClick={() => navigate(-1)} // Navigate back to the previous page
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} />
+                </button>
+              </div>
+              Broadcast Message</h2>
             <Form onSubmit={handleSend} style={{ marginTop: "35%" }}>
               <Form.Group controlId="messageInput">
                 <Form.Control

@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Kwaunoda",
+    "slug": "Kwaunoda",
+    "scheme": "Kwaunoda",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff",
+      "newArchEnabled": true,
+      "plugins": [
+        [
+          "expo-dev-launcher",
+          {
+            "launchMode": "most-recent"
+          }
+        ]
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d49a9df4-4bdc-4681-a005-7f27a428ace7"
+      }
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.softworkscapital.Kwaunoda"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "owner": "softworkscapital"
+  }
+}

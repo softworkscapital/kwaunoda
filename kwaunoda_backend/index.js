@@ -31,6 +31,9 @@ const TarrifRouter = require("./routes/tarrifs");
 const CounterOfferRouter = require("./routes/counter_offer");
 const DriverAnalyticRouter = require("./routes/driver_analytics");
 const TripStatusAnalyticRouter = require("./routes/trip_status_analytics");
+const ConfigRouter = require("./routes/application_configs");
+const StatisticRouter = require("./routes/application_statistics");
+const WithdrawalRouter = require("./routes/application_withdrawals");
 
 
 const pool = require("./cruds/poolfile");
@@ -98,6 +101,10 @@ app.use("/tarrifs", TarrifRouter);
 app.use("/counter_offer", CounterOfferRouter);
 app.use("/driver_analytics", DriverAnalyticRouter);
 app.use("/trip_status_analytics", TripStatusAnalyticRouter);
+app.use("/application_configs", ConfigRouter);
+app.use("/application_statistics", StatisticRouter);
+app.use("/application_withdrawals", WithdrawalRouter);
+
 
 
 
@@ -159,15 +166,15 @@ app.post("/driver/login", async (req, res) => {
   }
 });
 
-const options = {
-  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-};
+// const options = {
+//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+// };
 
-https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
-  console.log('app is listening to port' + process.env.APPPORT);
-});
-
-// app.listen(PORT, () => {
-//   console.log("app is listening to port" + " " + PORT);
+// https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+//   console.log('app is listening to port' + process.env.APPPORT);
 // });
+
+app.listen(PORT, () => {
+  console.log("app is listening to port" + " " + PORT);
+});

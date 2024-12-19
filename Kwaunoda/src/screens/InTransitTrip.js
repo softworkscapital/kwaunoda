@@ -1,106 +1,227 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   StyleSheet,
   View,
-  TextInput,
-  Alert,
   Text,
-  Modal,
-  FlatList,
+  Alert,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import Geocoder from "react-native-geocoding";
-import { useNavigation } from "@react-navigation/native";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "./config";
+import TopView from "../components/TopView";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import LocationSender from './LocationTracker'; 
+import Geolocation from 'react-native-geolocation-service';
 import { WebView } from "react-native-webview";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
-Geocoder.init("AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"); // Replace with your Google Maps API key
 
 const InTransitTrip = () => {
+  const url = "https://kwaunoda.softworkscapital.com"; 
+  const mapRef = useRef(null);
   const navigation = useNavigation();
-  const url = "https://kwaunoda.softworkscapital.com"; // Your website URL
+  const [driver, setdriver] = useState([]);
+  const [route, setRoute] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pickUpLocation, setPickUpLocation] = useState(null);
+  const [destinationLocation, setDestinationLocation] = useState(null);
+  const [currentTrip, setCurrentTrip] = useState(null);
+  const [tripId, setTripId] = useState(null);
+  const [name, setName] = useState();
+  const [type, setType] = useState();
+  const [pic, setPic] = useState();
 
-  // Location states
-  const [startingLocation, setStartingLocation] = useState("");
-  const [destinationLocation, setDestinationLocation] = useState("");
-  const [modalVisibleStart, setModalVisibleStart] = useState(false);
-  const [modalVisibleDest, setModalVisibleDest] = useState(false);
-  const [modalLocation, setModalLocation] = useState("");
-  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const APILINK = API_URL;
 
-  const redirectHome = () => {
-    navigation.navigate("Home"); // Change this to your desired screen
-  };
+  // Use focus effect to reset data when navigating to this screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const resetData = async () => {
+        // Clear stored user details
+        await AsyncStorage.removeItem("userDetails");
 
-  const fetchCoordinates = async (address) => {
-    const apiKey = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(address)}&key=${apiKey}`;
+        // Reset state variables
+        setRoute([]);
+        setLoading(true);
+        setPickUpLocation(null);
+        setDestinationLocation(null);
+        setCurrentTrip(null);
+        setTripId(null);
+        setName(null);
+        setType(null);
+        setPic(null);
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
+        // Fetch new data
+        fetchData();
+      };
 
-      if (data.status === "OK" && data.results.length > 0) {
-        const { lat, lng } = data.results[0].geometry.location;
-        return { latitude: lat, longitude: lng };
-      } else {
-        throw new Error("No results found.");
-      }
-    } catch (error) {
-      console.error("Error fetching coordinates:", error);
-      Alert.alert("Error", error.message || "Unable to fetch coordinates.");
-    }
-  };
+      resetData();
+    }, [])
+  );
 
-  const handleLocationInput = (location) => {
-    setModalLocation(location);
-    fetchLocationSuggestions(location);
-  };
-
-  const fetchLocationSuggestions = async (query) => {
-    if (query.length < 3) {
-      setLocationSuggestions([]);
-      return;
-    }
-
-    const apiKey = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${apiKey}`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.status === "OK") {
-        setLocationSuggestions(data.predictions);
-      }
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-    }
-  };
-
-  const selectLocation = async (place, isStarting) => {
-    const { description } = place;
-    if (isStarting) {
-      setStartingLocation(description);
-      setModalVisibleStart(false); // Close the starting location modal
+  const fetchData = async () => {
+    const storedIds = await AsyncStorage.getItem("theIds");
+    const parsedIds = JSON.parse(storedIds);
+    if (parsedIds && parsedIds.driver_id) {
+      fetchTripData(parsedIds.driver_id);
+      fetchDriverDetails(parsedIds.driver_id);
+      setdriver(parsedIds.driver_id);
     } else {
-      setDestinationLocation(description);
-      setModalVisibleDest(false); // Close the destination location modal
+      Alert.alert("Error", "Driver ID not found in storage.");
+      setLoading(false);
     }
-    setLocationSuggestions([]);
+  };
+
+  const fetchTripData = async (driverId) => {
+    try {
+      const response = await fetch(`${API_URL}/trip`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const trips = await response.json();
+      const inTransitTrips = trips.filter(
+        (trip) => trip.driver_id === driverId && trip.status === "InTransit"
+      );
+
+      if (inTransitTrips.length > 0) {
+        const trip = inTransitTrips[0];
+        setCurrentTrip(trip);
+        setTripId(trip.trip_id);
+
+        const startCoords = {
+          latitude: parseFloat(trip.origin_location_lat),
+          longitude: parseFloat(trip.origin_location_long),
+        };
+        const destCoords = {
+          latitude: parseFloat(trip.destination_lat),
+          longitude: parseFloat(trip.destination_long),
+        };
+
+        if (!isNaN(startCoords.latitude) && !isNaN(startCoords.longitude)) {
+          setPickUpLocation(startCoords);
+        } else {
+          Alert.alert("Error", "Invalid pick-up location coordinates.");
+        }
+        if (!isNaN(destCoords.latitude) && !isNaN(destCoords.longitude)) {
+          setDestinationLocation(destCoords);
+        } else {
+          Alert.alert("Error", "Invalid destination coordinates.");
+        }
+
+        await getDirections(startCoords, destCoords);
+      } else {
+        navigator.navigate("CustomerLogin");
+        Alert.alert("Error", "No in-transit trips found.");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message || "Unable to fetch trip data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDriverDetails = async (driverId) => {
+    try {
+      const response = await fetch(`${APILINK}/driver/${driverId}`);
+      const result = await response.json();
+      if (result && result.length > 0) {
+        await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
+        setPic(`${APILINK}${result[0].profilePic}`);
+        setType(result[0].account_type);
+        setName(result[0].username);
+      } else {
+        Alert.alert("Error", "Driver details not found.");
+        setLoading(false);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch driver details. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const getDirections = async (origin, destination) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.routes && data.routes.length > 0) {
+        const points = decodePolyline(data.routes[0].overview_polyline.points);
+        setRoute(points);
+
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: points[0].latitude,
+              longitude: points[0].longitude,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            },
+            1000
+          );
+        }
+      } else {
+        Alert.alert("Error", "No route found. Please check the locations.");
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.message || "Unable to fetch directions. Please try again."
+      );
+    }
+  };
+
+  const decodePolyline = (t) => {
+    const points = [];
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+
+    while (index < t.length) {
+      let b,
+        shift = 0,
+        result = 0;
+      do {
+        b = t.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = (result >> 1) ^ -(result & 1);
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = t.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = (result >> 1) ^ -(result & 1);
+      lng += dlng;
+
+      points.push({
+        latitude: lat / 1e5,
+        longitude: lng / 1e5,
+      });
+    }
+    return points;
   };
 
   return (
     <View style={styles.container}>
-      <View style={[styles.topBar, styles.goldenYellow]}>
-        <TouchableOpacity style={styles.backArrow} onPress={redirectHome}>
-          <MaterialIcons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <TopView id={driver} type={type} />
+      <LocationSender driverId={driver} interval={60000} />
 
       <WebView
         source={{ uri: url }}
-        style={styles.webView} // Make WebView occupy less space
+        style={styles.map} // Make WebView occupy less space
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.log("HTTP Error:", nativeEvent);
@@ -112,84 +233,70 @@ const InTransitTrip = () => {
           // Handle messages from WebView here if needed
         }}
       />
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
 
-      <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={() => setModalVisibleStart(true)}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Starting Location"
-            value={startingLocation}
-            editable={false}
-          />
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoText}>Route</Text>
+
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => navigation.navigate("DriverChat")}
+        >
+          <Text style={styles.chatButtonText}>Chat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => navigation.navigate("DriverEndTrip", { tripId })}
+        >
+          <Text style={styles.chatButtonText}>End Trip</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setModalVisibleDest(true)}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Destination Location"
-            value={destinationLocation}
-            editable={false}
-          />
-        </TouchableOpacity>
+        {currentTrip && (
+          <View style={styles.fixedCurrentTripContainer}>
+            <View style={styles.tripCard}>
+              <Text style={styles.statusText}>
+                Status: {currentTrip.status}
+              </Text>
+              <Text style={styles.currentTripText}>
+                Current Trip: {currentTrip.trip_id}
+              </Text>
+              <Text style={styles.tripDetailsText}>
+                Driver ID: {currentTrip.driver_id}
+              </Text>
+              <Text style={styles.tripDetailsText}>
+                Start Time: {currentTrip.request_start_datetime}
+              </Text>
+              <Text style={styles.tripDetailsText}>
+                To: {currentTrip.origin_location}
+              </Text>
+              <Text style={styles.tripDetailsText}>
+                From: {currentTrip.dest_location || "N/A"}
+              </Text>
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Get Directions</Text>
-        </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.endTripButton}
+                  onPress={() =>
+                    navigation.navigate("DriverEndTrip", { tripId })
+                  }
+                >
+                  <Text style={styles.endTripText}>End Trip</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.chatButton}
+                  onPress={() => navigation.navigate("DriverChat")}
+                >
+                  <Text style={styles.chatText}>Chat</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
-
-      {/* Modal for Starting Location */}
-      <Modal visible={modalVisibleStart} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Starting Location</Text>
-          </View>
-          <TextInput
-            style={styles.modalInput}
-            placeholder="Search Location"
-            value={modalLocation}
-            onChangeText={handleLocationInput}
-          />
-          <FlatList
-            data={locationSuggestions}
-            keyExtractor={(item) => item.place_id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => selectLocation(item, true)}
-              >
-                <Text>{item.description}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </Modal>
-
-      {/* Modal for Destination Location */}
-      <Modal visible={modalVisibleDest} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Destination Location</Text>
-          </View>
-          <TextInput
-            style={styles.modalInput}
-            placeholder="Search Location"
-            value={modalLocation}
-            onChangeText={handleLocationInput}
-          />
-          <FlatList
-            data={locationSuggestions}
-            keyExtractor={(item) => item.place_id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => selectLocation(item, false)}
-              >
-                <Text>{item.description}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -197,91 +304,86 @@ const InTransitTrip = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#FFCC00",
   },
-  webView: {
+  map: {
     flex: 1,
-    marginBottom: 150, // Adjust margin to prevent overlap with input container
   },
-  inputContainer: {
+  loadingContainer: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     left: 0,
     right: 0,
-    backgroundColor: "white",
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  fixedCurrentTripContainer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    height: 270,
+    backgroundColor: "green",
+    padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
     elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    paddingBottom: 20,
   },
-  input: {
-    height: 50,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)", // Transparent black background
-    padding: 20,
-    justifyContent: "center",
-  },
-  modalHeader: {
-    backgroundColor: "green",
+  tripCard: {
+    marginVertical: 5,
     padding: 10,
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "black",
-  },
-  modalInput: {
-    height: 50,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 12,
-    marginTop: 20,
-    paddingHorizontal: 10,
     borderRadius: 5,
-    backgroundColor: "white",
-  },
-  suggestionItem: {
-    padding: 10,
-    backgroundColor: "white",
-    borderBottomColor: "gray",
-    borderBottomWidth: 1,
-  },
-  button: {
-    backgroundColor: "green",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "100%",
+    maxHeight: 300,
+    paddingBottom: 10,
     marginBottom: 10,
   },
-  buttonText: {
-    color: "black",
+  statusText: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "red",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  currentTripText: {
     fontWeight: "bold",
     fontSize: 16,
   },
-  topBar: {
+  buttonContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "green",
+    marginTop: 10,
   },
-  backArrow: {
-    padding: 16,
+  endTripButton: {
+    backgroundColor: "#FFA500",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    marginRight: 10,
   },
-  goldenYellow: {
-    backgroundColor: "green", // Adjust the color as needed
+  endTripText: {
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+  chatButton: {
+    backgroundColor: "#007BFF",
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    elevation: 5,
+  },
+  chatText: {
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  tripDetailsText: {
+    fontSize: 14,
+    color: "#595959",
   },
 });
 

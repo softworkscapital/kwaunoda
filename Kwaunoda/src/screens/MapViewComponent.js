@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import Geocoder from "react-native-geocoding";
 import { useNavigation } from "@react-navigation/native";
 
@@ -206,7 +206,7 @@ const MapViewComponent = () => {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        provider={PROVIDER_GOOGLE} // Add this line
         initialRegion={{
           latitude: -17.8292,
           longitude: 31.0522,
@@ -220,7 +220,6 @@ const MapViewComponent = () => {
         {destCoords && <Marker coordinate={destCoords} title="Destination" />}
         {route.length > 0 && <Polyline coordinates={route} strokeWidth={4} />}
       </MapView>
-
       <View style={styles.inputContainer}>
         <TouchableOpacity onPress={() => setModalVisibleStart(true)}>
           <TextInput

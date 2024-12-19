@@ -1,19 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { PermissionsAndroid, Platform, Alert } from "react-native";
-import Geolocation from "react-native-geolocation-service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect } from "react";
+import * as Location from "expo-location";
 import { API_URL } from "./config";
 
-const LocationTracker = ({ driverId }) => {
-  const watchIdRef = useRef(null);
-
+const LocationTracker = ({ userId, userType }) => {
   useEffect(() => {
     const init = async () => {
       const permissionGranted = await requestPermissions();
       if (!permissionGranted) return;
 
-      if (driverId) {
-        startTracking(driverId);
+      if (userId) {
+        startTracking(userId);
       } else {
         console.error("No User ID provided");
       }
@@ -21,85 +17,82 @@ const LocationTracker = ({ driverId }) => {
 
     init();
 
+    // Cleanup function
     return () => {
-      if (watchIdRef.current) {
-        Geolocation.clearWatch(watchIdRef.current);
-        console.log("Location tracking stopped");
-      }
+      console.log("Location tracking stopped");
     };
-  }, [driverId]);
+  }, [userId]);
 
   const requestPermissions = async () => {
-    if (Platform.OS === "android") {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: "Location Permission",
-          message: "This app needs access to your location.",
-          buttonPositive: "OK",
-        }
-      );
-
-      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.error("Location permission denied");
-        return false;
-      }
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.error("Location permission denied");
+      return false; // Permission not granted
     }
-    return true;
+    return true; // Permission granted
   };
 
+  // Send location to API
   const sendLocationToAPI = async (userId, latitude, longitude) => {
-    const API_URL1 = `${API_URL}/driver/${userId}/coordinates`;
+    const endpoint = userType === "driver"
+      ? `${API_URL}/driver/${userId}/coordinates`
+      : `${API_URL}/customer/${userId}/coordinates`; // Change endpoint for customer
+
     console.log("Sending location to API:", { userId, latitude, longitude });
 
     try {
-      const response = await fetch(API_URL1, {
-        method: "POST",
+      const response = await fetch(endpoint, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId,
-          latitude,
-          longitude,
+          lat_cordinates: latitude,
+          long_cordinates: longitude,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update location");
+        const errorMessage = await response.text();
+        throw new Error(`Failed to update location: ${errorMessage}`);
       }
 
       const data = await response.json();
       console.log("Location updated:", data);
     } catch (error) {
       console.error("Error sending location to API:", error);
-      Alert.alert("Error", "Failed to send location. Please try again later.");
     }
   };
 
-  const startTracking = (userId) => {
-    console.log("Starting to watch position...");
-    
-    watchIdRef.current = Geolocation.watchPosition(
+  // Start tracking location
+  const startTracking = async (userId) => {
+    console.log("userid", userId);
+    const subscription = Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        distanceInterval: 0,
+        timeInterval: 10000,
+      },
       (position) => {
+        console.log("Position update received:", position);
         const { latitude, longitude } = position.coords;
-        console.log("Current Coordinates: Latitude:", latitude, "Longitude:", longitude);
+        console.log(
+          "Current Coordinates: Latitude:",
+          latitude,
+          "Longitude:",
+          longitude
+        );
         sendLocationToAPI(userId, latitude, longitude);
       },
       (error) => {
         console.error("Error obtaining location:", error);
-        Alert.alert("Location Error", error.message);
-      },
-      {
-        enableHighAccuracy: true,
-        distanceFilter: 10,
-        interval: 10000,
-        fastestInterval: 5000,
-        showLocationDialog: true, // Optional, prompts user if location services are disabled
       }
     );
-  
-    console.log("Position watching initiated.");
+
+    // Cleanup function
+    return () => {
+      subscription.remove(); // Stop location updates
+    };
   };
 
   return null; // No UI components to render

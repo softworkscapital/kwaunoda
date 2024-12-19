@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
+import LocationSender from './LocationTracker'; 
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -54,7 +55,6 @@ const CustomerLogin = () => {
             autoHide: true,
           });
           // Redirect to DriverNewOrderList
-          navigation.navigate('LocationTracking', { driverId });
           navigation.navigate("DriverNewOrderList", { driverId });
           return; // Exit the function early
         }

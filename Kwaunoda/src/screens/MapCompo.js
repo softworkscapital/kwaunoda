@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
-    marginBottom: 150, // Adjust margin to prevent overlap with input container
+    marginBottom: 200, // Adjust margin to prevent overlap with input container
   },
   inputContainer: {
     position: "absolute",

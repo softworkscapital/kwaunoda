@@ -29,6 +29,7 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
+      signed_on,
     } = postedValues;
 
     // Create the user object
@@ -53,6 +54,7 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
+      signed_on,
     };
 
     // Call the DB operation to insert the user

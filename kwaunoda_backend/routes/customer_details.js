@@ -344,7 +344,23 @@ CustomerRouter.put("/update_status/:id", async (req, res, next) => {
       res.sendStatus(500);
     }
   });
-
+  CustomerRouter.put("/:id/coordinates", async (req, res, next) => {
+    try {
+      let customer_id = req.params.id;
+      const { lat_cordinates, long_cordinates } = req.body;
+  
+      let results = await CustomersDbOperations.updateCustomerCoordinates(
+        customer_id,
+        lat_cordinates,
+        long_cordinates
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  });
+  
 
 
 

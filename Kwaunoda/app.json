@@ -1,8 +1,7 @@
 {
   "expo": {
     "name": "Kwaunoda",
-    "slug": "Kwaunoda",
-    "scheme": "Kwaunoda",
+    "slug": "kwaunoda",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,21 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "newArchEnabled": true,
-      "plugins": [
-        [
-          "expo-dev-launcher",
-          {
-            "launchMode": "most-recent"
-          }
-        ]
-      ]
-    },
-    "extra": {
-      "eas": {
-        "projectId": "d49a9df4-4bdc-4681-a005-7f27a428ace7"
-      }
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true
@@ -33,11 +18,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.softworkscapital.Kwaunoda"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "name": "Kwaunoda",
+        "projectId": "7f41fa86-9983-4ba6-8ec7-8b76dc5a17d4"
+      }
     },
     "owner": "softworkscapital"
   }

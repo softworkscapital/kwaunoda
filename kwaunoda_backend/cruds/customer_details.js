@@ -503,9 +503,29 @@ crudsObj.deleteCustomer = (id) => {
       );
     });
   };
+  crudsObj.updateCustomerCoordinates = (
+    customerid,
+    lat_cordinates,
+    long_cordinates
+  ) => {
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE customer_details SET 
+                  lat_cordinates = ?, long_cordinates = ?
+              WHERE customerid = ?`,
+        [lat_cordinates, long_cordinates, customerid],
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve({
+            status: "200",
+            message: "Coordinates updated successfully",
+          });
+        }
+      );
+    });
+  };
   
-  
-
-
 
 module.exports = crudsObj;

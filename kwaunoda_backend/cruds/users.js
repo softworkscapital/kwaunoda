@@ -11,7 +11,7 @@ crudsObj.postUser = (user) => {
     let User = user;
     console.log("honai user:", User);
     pool.query(
-      "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,sync_status,last_logged_account,driver_id,customerid,otp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,sync_status,last_logged_account,driver_id,customerid,otp,signed_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
         user.userId, // Make sure this is set correctly
         user.username,
@@ -30,6 +30,7 @@ crudsObj.postUser = (user) => {
         user.driverId,
         user.customerId,
         user.otp,
+        user.signed_on,
       ],
       (err, result) => {
         if (err) {
@@ -90,11 +91,12 @@ crudsObj.postUser2 = (
   company_email,
   client_profile_id,
   user_phone,
-  otp
+  otp,
+  signed_on
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO users(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,client_profile_id, OTP) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO users(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,client_profile_id, OTP,signed_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
         company_id,
         branch_id,
@@ -112,6 +114,7 @@ crudsObj.postUser2 = (
         status,
         client_profile_id,
         otp,
+        signed_on,
       ],
       (err, result) => {
         if (err) {

@@ -14,7 +14,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5";
 import { API_URL } from "./config"; // Ensure this imports the correct API_URL
 import TopView from "../components/TopView"; // Import TopView
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
-
+import LocationSender from "./LocationTracker";
 const { height } = Dimensions.get("window");
 
 const Home = ({ navigation }) => {
@@ -30,7 +30,7 @@ const Home = ({ navigation }) => {
       const intervalId = setInterval(() => {
         fetchUserTrips(parsedIds.customerId);
       }, 1000);
-      
+
       Animated.loop(
         Animated.sequence([
           Animated.timing(carAnimation, {
@@ -66,12 +66,11 @@ const Home = ({ navigation }) => {
   };
 
   const redirectNewDelivery = () => {
-    navigation.navigate("MapView"); // Navigate to MapViewComponent
+    navigation.navigate("MapViewComponent"); // Navigate to MapViewComponent
   };
 
-  
   const redirectCustomerNewDelivery = () => {
-    navigation.navigate("MapView"); // Navigate to MapViewComponent
+    navigation.navigate("DeliveryMap"); // Navigate to MapViewComponent
   };
   const redirectOnlineStore = () => {
     navigation.navigate("OnlineStore"); // Navigate to MapViewComponent
@@ -116,26 +115,31 @@ const Home = ({ navigation }) => {
           >
             <FontAwesome name="car" size={30} color="#000" />
           </Animated.View> */}
-          <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <TouchableOpacity
-            style={styles.requestTripButton}
-            onPress={redirectNewDelivery} // Updated to navigate to MapViewComponent
-          >
-            <Text style={styles.requestTripText}>Request Trip</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.requestTripButton}
-            onPress={redirectCustomerNewDelivery} // Updated to navigate to MapViewComponent
-          >
-            <Text style={styles.requestTripText}>Request Delivery</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.requestTripButton}
-            onPress={redirectOnlineStore} 
-          >
-            <Text style={styles.requestTripText}>Online Store</Text>
-          </TouchableOpacity>
+          <View style={{ display: "flex", flexDirection: "row" }}>
+            <TouchableOpacity
+              style={styles.requestTripButton}
+              onPress={redirectNewDelivery} // Updated to navigate to MapViewComponent
+            >
+              <Text style={styles.requestTripText}>Request Trip</Text>
+            </TouchableOpacity>
+            // or for a customer
+            <LocationSender
+              userId={customer}
+              userType="customer"
+              interval={60000}
+            />
+            <TouchableOpacity
+              style={styles.requestTripButton}
+              onPress={redirectCustomerNewDelivery} // Updated to navigate to MapViewComponent
+            >
+              <Text style={styles.requestTripText}>Request Delivery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.requestTripButton}
+              onPress={redirectOnlineStore}
+            >
+              <Text style={styles.requestTripText}>Online Store</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Scrollable Card Showing All Trips */}
@@ -152,7 +156,7 @@ const Home = ({ navigation }) => {
                     styles.tripDetailsView,
                     { backgroundColor: "rgba(255, 255, 255, 0.3)" },
                   ]}
-                  onPress={() => navigation.navigate('TripTrack', { trip })} // Navigate to MapScreen
+                  onPress={() => navigation.navigate("TripTrack", { trip })} // Navigate to MapScreen
                 >
                   <Text style={[styles.tripDetailsText, styles.statusText]}>
                     {trip.status}
@@ -296,8 +300,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // Reduced padding
     marginBottom: 10, // Space between button and trip details
     alignSelf: "center",
-    elevation: 5, 
-    marginLeft: 5
+    elevation: 5,
+    marginLeft: 5,
   },
   requestTripText: {
     fontWeight: "bold",

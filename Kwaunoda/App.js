@@ -55,6 +55,7 @@ import DeliveryMap from "./src/screens/DeliveryMap.js"
 import OnlineStore from "./src/screens/Store.js";
 import StoreCategories from "./src/screens/StoreCatergories.js";
 import StoreInventory from "./src/screens/StoreInventory.js";
+import MapCompo from "./src/screens/MapCompo.js";
 
 
 const Stack = createStackNavigator();
@@ -82,7 +83,7 @@ const App = () => {
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="OTPDriver" component={OTPDriver} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen name="MapView" component={MapViewComponent} />
+        {/* <Stack.Screen name="MapView" component={MapViewComponent} /> */}
         <Stack.Screen name="HomeDriver" component={HomeDriver} />
         <Stack.Screen name="LocationTracker" component={LocationTracker} />
         <Stack.Screen name="SignUpCustomer" component={SignUpCustomer} />
@@ -122,6 +123,7 @@ const App = () => {
         <Stack.Screen name="History" component={History} />
         <Stack.Screen name="AccountInError" component={AccountInError} />
         <Stack.Screen name="MapViewComponent" component={MapViewComponent} />
+        <Stack.Screen name="MapView" component={MapCompo} />
        
         <Stack.Screen name="OnlineStore" component={OnlineStore} />
         <Stack.Screen name="StoreCategories" component={StoreCategories} />

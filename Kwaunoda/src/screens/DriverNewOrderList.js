@@ -8,11 +8,10 @@ import {
   ScrollView,
   Alert,
   RefreshControl,
-  TextInput,
   Modal,
+  TextInput,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import MapView, { Marker, Polyline } from "react-native-maps";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
 import axios from "axios";
@@ -21,28 +20,22 @@ import TopView from "../components/TopView";
 import { WebView } from "react-native-webview";
 
 const DriverNewOrderList = () => {
-  const url = "https://kwaunoda.softworkscapital.com"; 
-  const [marker, setMarker] = useState({ latitude: 51.505, longitude: -0.09 });
+  const url = "https://kwaunoda.softworkscapital.com/map?";
   const navigation = useNavigation();
   const route = useRoute();
   const { driverId } = route.params || {};
   const [driver, setDriver] = useState(null);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [routePoints, setRoute] = useState(null);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [counterOffer, setCounterOffer] = useState(null);
   const [showCounterOfferModal, setShowCounterOfferModal] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Added state
-  const mapRef = useRef(null);
-  const APILINK = API_URL;
-  const GOOGLE_MAPS_API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"; // Replace with your actual API key
-
-  const [name, setName] = useState();
-  const [type, setType] = useState();
-  const [pic, setPic] = useState();
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const webviewRef = useRef(null);
+  const [webViewUrl, setWebViewUrl] = useState(
+    "https://kwaunoda.softworkscapital.com/map?lat1=0&lng1=0&lat2=0&lng2=0"
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +53,9 @@ const DriverNewOrderList = () => {
     fetchData();
 
     const intervalId = setInterval(() => {
-      fetchTrips(driverId);
+      if (driverId) {
+        fetchTrips(driverId);
+      }
     }, 30000);
 
     return () => clearInterval(intervalId);
@@ -68,21 +63,16 @@ const DriverNewOrderList = () => {
 
   const fetchDriverDetails = async (driverId) => {
     try {
-      const response = await fetch(`${APILINK}/driver/${driverId}`);
+      const response = await fetch(`${API_URL}/driver/${driverId}`);
       const result = await response.json();
-
       if (result && result.length > 0) {
-        await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-        setPic(`${APILINK}${result[0].profilePic}`);
-        setType(result[0].account_type);
-        setName(result[0].username);
+        setDriver(result[0].driver_id);
         await fetchTrips(driverId);
       } else {
         Alert.alert("Error", "Driver details not found.");
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching driver details:", error);
       Alert.alert("Error", "Failed to fetch driver details. Please try again.");
       setLoading(false);
     }
@@ -91,27 +81,20 @@ const DriverNewOrderList = () => {
   const fetchTrips = async (driverId) => {
     setRefreshing(true);
     try {
-      const response = await fetch(`${APILINK}/trip/driver/notify/`);
+      const response = await fetch(`${API_URL}/trip/driver/notify/`);
       const data = await response.json();
-
       if (Array.isArray(data) && data.length > 0) {
-        const trips = data.map((trip) => ({
+        setLocations(data.map((trip) => ({
           trip_id: trip.trip_id,
-          customer: trip.cust_id,
           origin_lat: parseFloat(trip.origin_location_lat),
           origin_long: parseFloat(trip.origin_location_long),
           destination_lat: parseFloat(trip.destination_lat),
           destination_long: parseFloat(trip.destination_long),
           detail: trip.deliveray_details,
           cost: trip.delivery_cost_proposed,
-          destination: trip.dest_location,
-        }));
-        setLocations(trips);
-      } else {
-        console.log("No trips available");
+        })));
       }
     } catch (error) {
-      console.error("Error fetching trips:", error);
       Alert.alert("Error", "Failed to fetch trips. Please try again.");
     } finally {
       setLoading(false);
@@ -129,281 +112,93 @@ const DriverNewOrderList = () => {
       longitude: parseFloat(location.destination_long),
     };
 
-    setMarker(destination);
-    getDirections(origin, destination);
-    setSelectedTrip(location);
-    fitMapToCoordinates([origin, destination]);
-
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: (origin.latitude + destination.latitude) / 2,
-          longitude: (origin.longitude + destination.longitude) / 2,
-          latitudeDelta:
-            Math.abs(origin.latitude - destination.latitude) + 0.01,
-          longitudeDelta:
-            Math.abs(origin.longitude - destination.longitude) + 0.01,
-        },
-        1000
-      );
-    }
-  };
-
-  const fitMapToCoordinates = (coordinates) => {
-    if (mapRef.current) {
-      mapRef.current.fitToCoordinates(coordinates, {
-        edgePadding: {
-          right: 50,
-          left: 50,
-          top: 50,
-          bottom: 50,
-        },
-        animated: true,
-      });
-    }
-  };
-
-  const getDirections = async (origin, destination) => {
-    try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/directions/json`,
-        {
-          params: {
-            origin: `${origin.latitude},${origin.longitude}`,
-            destination: `${destination.latitude},${destination.longitude}`,
-            key: GOOGLE_MAPS_API_KEY,
-            mode: "driving",
-          },
-        }
-      );
-
-      if (response.data.routes.length > 0) {
-        const points = decode(response.data.routes[0].overview_polyline.points);
-        setRoute(points);
-      } else {
-        console.log("No routes found");
-      }
-    } catch (error) {
-      console.error("Error fetching directions:", error);
-    }
-  };
-
-  const decode = (t) => {
-    const coordinates = [];
-    let index = 0,
-      len = t.length;
-    let lat = 0,
-      lng = 0;
-
-    while (index < len) {
-      let b,
-        shift = 0,
-        result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlat = (result >> 1) ^ -(result & 1);
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlng = (result >> 1) ^ -(result & 1);
-      lng += dlng;
-
-      coordinates.push({
-        latitude: lat / 1e5,
-        longitude: lng / 1e5,
-      });
-    }
-
-    return coordinates;
-  };
-  const handleCounterOffer = async (trip) => {
-    console.log(trip);
-
-    const currentdate = new Date().toISOString();
-    console.log(
-      trip.customerId,
-      driver,
-      trip.trip_id,
-      currentdate,
-      trip.cost,
-      counterOffer,
-      selectedCurrency
+    setWebViewUrl(
+      `https://kwaunoda.softworkscapital.com/map?lat1=${origin.latitude}&lng1=${origin.longitude}&lat2=${destination.latitude}&lng2=${destination.longitude}`
     );
+    setSelectedTrip(location);
+  };
+
+  const handleCounterOffer = async () => {
+    const currentdate = new Date().toISOString();
     try {
-      // Step 1: Credit the customer
-      const response = await fetch(`${APILINK}/counter_offer/`, {
+      const response = await fetch(`${API_URL}/counter_offer/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          customerid: trip.customer, // Customer ID
-          driver_id: driver, // Driver ID
-          trip_id: trip.trip_id, // Trip ID
-          date_time: currentdate, // Current date and time
-          offer_value: trip.cost, // Original offer value
-          counter_offer_value: counterOffer, // Counter offer value
-          currency: selectedCurrency, // Currency
-          status: "Unseen", // Initial status
+          customerid: selectedTrip.customer,
+          driver_id: driver,
+          trip_id: selectedTrip.trip_id,
+          date_time: currentdate,
+          offer_value: selectedTrip.cost,
+          counter_offer_value: counterOffer,
+          currency: selectedCurrency,
+          status: "Unseen",
         }),
       });
-      // Parse the JSON response
       const result = await response.json();
-      // Check if the response is not OK
       if (!response.ok) {
         throw new Error(result.message || "Failed to send counter offer.");
       }
-
-      // Success alert
-      Alert.alert(
-        "Success",
-        result.message || "Counter offer sent successfully."
-      );
-      setShowCounterOfferModal(false); // Close modal
-      fetchTrips(driver); // Refresh trip list
+      Alert.alert("Success", result.message || "Counter offer sent successfully.");
+      setShowCounterOfferModal(false);
+      fetchTrips(driver);
     } catch (error) {
-      // Log and alert on error
-      console.error("Error sending counter offer:", error);
       Alert.alert("Error", error.message || "An error occurred.");
     }
   };
 
   const handleAcceptTrip = async () => {
-    console.log(selectedTrip);
-    if (
-      !driver ||
-      !selectedTrip.cost ||
-      !selectedTrip.trip_id ||
-      !selectedTrip.customer ||
-      !selectedTrip.destination
-    ) {
+    if (!driver || !selectedTrip) {
       Alert.alert("Error", "Some values are missing.");
       return;
     }
 
+    const currentdate = new Date().toISOString();
     try {
-      // Step 1: Credit the customer
-      const topUpResponse = await fetch(`${APILINK}/topUp/topupcr/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await fetch(`${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          cr: selectedTrip.cost,
+          customerid: selectedTrip.customer,
+          driver_id: driver,
           trip_id: selectedTrip.trip_id,
-          client_profile_id: selectedTrip.customer,
-          desc: selectedTrip.destination,
-          trxn_code: "NTR",
+          date_time: currentdate,
+          offer_value: selectedTrip.cost,
+          counter_offer_value: counterOffer,
+          currency: selectedCurrency,
+          status: "Unread",
         }),
       });
-
-      const topUpResult = await topUpResponse.json();
-
-      if (!topUpResponse.ok) {
-        throw new Error(topUpResult.message || "Failed to deduct amount.");
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to accept trip.");
       }
-      Alert.alert("Success", topUpResult.message || "Amount deducted");
-
-      // Step 2: Debit the driver
-      const debitResponse = await fetch(`${APILINK}/topUp/topupdr/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dr: selectedTrip.cost,
-          trip_id: selectedTrip.trip_id,
-          client_profile_id: driver,
-          desc: selectedTrip.destination,
-          trxn_code: "CTR",
-        }),
-      });
-
-      const debitResult = await debitResponse.json();
-
-      if (!debitResponse.ok) {
-        throw new Error(debitResult.message || "Failed to send amount.");
-      }
-      Alert.alert("Success", debitResult.message || "Amount sent");
-
-      // Step 3: Update trip status
-      const statusResponse = await fetch(
-        `${APILINK}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            customerid: trip.customerId, // Customer ID
-            driver_id: driver, // Driver ID
-            trip_id: trip.trip_id, // Trip ID
-            date_time: currentdate, // Current date and time
-            offer_value: trip.cost, // Original offer value
-            counter_offer_value: counterOffer, // Counter offer value
-            currency: selectedCurrency, // Currency
-            status: "Unread", // Initial status
-          }),
-        }
-      );
-
-      const statusResult = await statusResponse.json();
-
-      if (!statusResponse.ok) {
-        throw new Error(statusResult.message || "Failed to accept trip.");
-      }
-      Alert.alert(
-        "Success",
-        statusResult.message || "Trip accepted successfully."
-      );
-
-      // Fetch trips and navigate after successful status update
+      Alert.alert("Success", result.message || "Trip accepted successfully.");
       fetchTrips(driver);
       navigation.navigate("InTransitTrip");
     } catch (error) {
-      console.error("Error accepting trip:", error);
-      Alert.alert(
-        "Error",
-        error.message || "An error occurred while accepting the trip."
-      );
+      Alert.alert("Error", error.message || "An error occurred while accepting the trip.");
     }
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
+    return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   return (
     <View style={styles.container}>
       <TopView />
-   <WebView
-          source={{ uri: url }}
-          style={styles.map} // Make WebView occupy less space
-          onHttpError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.log("HTTP Error:", nativeEvent);
-            alert("Unable to load the page.");
-          }}
-          onMessage={(event) => {
-            const data = event.nativeEvent.data;
-            console.log("Message from WebView:", data);
-            // Handle messages from WebView here if needed
-          }}
-        />
-
+      <WebView
+        ref={webviewRef}
+        source={{ uri: webViewUrl }}
+        style={styles.map}
+        onHttpError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          alert("Unable to load the page.");
+        }}
+      />
       <View style={styles.card}>
         {selectedTrip ? (
           <>

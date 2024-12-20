@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -7,32 +7,24 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./config";
 import TopView from "../components/TopView";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import LocationSender from './LocationTracker'; 
-import Geolocation from 'react-native-geolocation-service';
-import { WebView } from "react-native-webview";
-
+import LocationSender from "./LocationTracker";
 
 const InTransitTrip = () => {
-  const url = "https://kwaunoda.softworkscapital.com"; 
-  const mapRef = useRef(null);
   const navigation = useNavigation();
-  const [driver, setdriver] = useState([]);
-  const [route, setRoute] = useState([]);
+  const [driverLocation, setDriverLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pickUpLocation, setPickUpLocation] = useState(null);
   const [destinationLocation, setDestinationLocation] = useState(null);
   const [currentTrip, setCurrentTrip] = useState(null);
   const [tripId, setTripId] = useState(null);
-  const [name, setName] = useState();
-  const [type, setType] = useState();
-  const [pic, setPic] = useState();
-
+  const [driverId, setDriverId] = useState(null);
   const APILINK = API_URL;
+  const driver2 = 'driver';
 
   // Use focus effect to reset data when navigating to this screen
   useFocusEffect(
@@ -42,15 +34,12 @@ const InTransitTrip = () => {
         await AsyncStorage.removeItem("userDetails");
 
         // Reset state variables
-        setRoute([]);
         setLoading(true);
         setPickUpLocation(null);
         setDestinationLocation(null);
         setCurrentTrip(null);
         setTripId(null);
-        setName(null);
-        setType(null);
-        setPic(null);
+        setDriverId(null);
 
         // Fetch new data
         fetchData();
@@ -64,9 +53,8 @@ const InTransitTrip = () => {
     const storedIds = await AsyncStorage.getItem("theIds");
     const parsedIds = JSON.parse(storedIds);
     if (parsedIds && parsedIds.driver_id) {
+      setDriverId(parsedIds.driver_id);
       fetchTripData(parsedIds.driver_id);
-      fetchDriverDetails(parsedIds.driver_id);
-      setdriver(parsedIds.driver_id);
     } else {
       Alert.alert("Error", "Driver ID not found in storage.");
       setLoading(false);
@@ -109,10 +97,8 @@ const InTransitTrip = () => {
         } else {
           Alert.alert("Error", "Invalid destination coordinates.");
         }
-
-        await getDirections(startCoords, destCoords);
       } else {
-        navigator.navigate("CustomerLogin");
+        navigation.navigate("CustomerLogin");
         Alert.alert("Error", "No in-transit trips found.");
       }
     } catch (error) {
@@ -122,121 +108,57 @@ const InTransitTrip = () => {
     }
   };
 
-  const fetchDriverDetails = async (driverId) => {
+  const fetchDriverLocation = async (driverId) => {
     try {
       const response = await fetch(`${APILINK}/driver/${driverId}`);
-      const result = await response.json();
-      if (result && result.length > 0) {
-        await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-        setPic(`${APILINK}${result[0].profilePic}`);
-        setType(result[0].account_type);
-        setName(result[0].username);
-      } else {
-        Alert.alert("Error", "Driver details not found.");
-        setLoading(false);
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to fetch driver details. Please try again.");
-      setLoading(false);
-    }
-  };
+      const driverArray = await response.json();
 
-  const getDirections = async (origin, destination) => {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.routes && data.routes.length > 0) {
-        const points = decodePolyline(data.routes[0].overview_polyline.points);
-        setRoute(points);
-
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(
-            {
-              latitude: points[0].latitude,
-              longitude: points[0].longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            },
-            1000
-          );
+      if (Array.isArray(driverArray) && driverArray.length > 0) {
+        const driver = driverArray[0];
+        if (driver.lat_cordinates !== undefined && driver.long_cordinates !== undefined) {
+          setDriverLocation({
+            latitude: driver.lat_cordinates,
+            longitude: driver.long_cordinates,
+          });
         }
       } else {
-        Alert.alert("Error", "No route found. Please check the locations.");
+        console.error("No driver data found or unexpected format");
       }
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error.message || "Unable to fetch directions. Please try again."
-      );
+      console.error("Error fetching driver location:", error);
     }
   };
 
-  const decodePolyline = (t) => {
-    const points = [];
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
+  // Fetch driver's location at regular intervals
+  useEffect(() => {
+    if (driverId) {
+      fetchDriverLocation(driverId);
+      const intervalId = setInterval(() => {
+        fetchDriverLocation(driverId);
+      }, 60000); // Update every minute
 
-    while (index < t.length) {
-      let b,
-        shift = 0,
-        result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlat = (result >> 1) ^ -(result & 1);
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlng = (result >> 1) ^ -(result & 1);
-      lng += dlng;
-
-      points.push({
-        latitude: lat / 1e5,
-        longitude: lng / 1e5,
-      });
+      return () => clearInterval(intervalId);
     }
-    return points;
-  };
+  }, [driverId]);
+
+  const webViewUrl =
+    driverLocation && pickUpLocation && destinationLocation
+      ? `https://kwaunoda.softworkscapital.com/mapWithDriver?latDriver=${driverLocation.latitude}&lngDriver=${driverLocation.longitude}&lat1=${pickUpLocation.latitude}&lng1=${pickUpLocation.longitude}&lat2=${destinationLocation.latitude}&lng2=${destinationLocation.longitude}`
+      : null;
 
   return (
     <View style={styles.container}>
-      <TopView id={driver} type={type} />
-      <LocationSender driverId={driver} interval={60000} />
+      <TopView id={driverId} />
+      <LocationSender user Id={driverId} userType={driver2} interval={60000} />
 
-      <WebView
-        source={{ uri: url }}
-        style={styles.map} // Make WebView occupy less space
-        onHttpError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.log("HTTP Error:", nativeEvent);
-          alert("Unable to load the page.");
-        }}
-        onMessage={(event) => {
-          const data = event.nativeEvent.data;
-          console.log("Message from WebView:", data);
-          // Handle messages from WebView here if needed
-        }}
-      />
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
+      )}
+
+      {webViewUrl && (
+        <WebView source={{ uri: webViewUrl }} style={styles.webview} />
       )}
 
       <View style={styles.infoContainer}>
@@ -306,7 +228,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFCC00",
   },
-  map: {
+  webview: {
     flex: 1,
   },
   loadingContainer: {

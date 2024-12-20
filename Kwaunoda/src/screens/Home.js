@@ -124,7 +124,7 @@ const Home = ({ navigation }) => {
             </TouchableOpacity>
             // or for a customer
             <LocationSender
-              userId={customer}
+              userId={userId}
               userType="customer"
               interval={60000}
             />

@@ -19,6 +19,10 @@ import Reports from './components/Reports';
 import CustomerAdminChat from './components/CustomerAdminChat';
 import ChatHome from './components/ChatHome';
 import Feedback from './components/feedback';
+import AddConfig from './components/AddConfig';
+import AppStatistics from './components/AppStatistics';
+import ViewConfig from './components/ViewConfig';
+import Configurations from './components/Configurations';
 
 function App() {
     const [tripData, setTripData] = useState([]);
@@ -84,6 +88,12 @@ function App() {
                     <Route path="/chatNow/:tripId" element={<CustomerAdminChat />} />
                     <Route path="/chatHome" element={<ChatHome />} />
                     <Route path="/feedback" element={<Feedback />} />
+                    <Route path="/AddConfig" element={<AddConfig />} />
+                    <Route path="/AppStatistics" element={<AppStatistics />} />
+                    <Route path="/ViewConfig" element={<ViewConfig />} />
+                    <Route path="/Configurations" element={<Configurations />} />
+
+
                 </Routes>
             </div>
         </Router>

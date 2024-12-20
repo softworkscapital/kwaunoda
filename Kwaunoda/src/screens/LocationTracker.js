@@ -36,7 +36,7 @@ const LocationTracker = ({ userId, userType }) => {
   const sendLocationToAPI = async (userId, latitude, longitude) => {
     const endpoint = userType === "driver"
       ? `${API_URL}/driver/${userId}/coordinates`
-      : `${API_URL}/customer/${userId}/coordinates`; // Change endpoint for customer
+      : `${API_URL}/customerdetails/${userId}/coordinates`; // Change endpoint for customer
 
     console.log("Sending location to API:", { userId, latitude, longitude });
 

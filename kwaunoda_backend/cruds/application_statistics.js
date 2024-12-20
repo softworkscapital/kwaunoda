@@ -145,11 +145,23 @@ crudsObj.postStatistic = (application_statistic_id) => {
                                                       ave_rating_count = results[0].average_rating || 0;
 
                                                       // Driver open balance
-                                                      // pool.query("SELECT SUM(balance) AS total_open_balance FROM driver_balances", (err, results) => { // Adjust this query based on your actual table
-                                                      //     if (err) {
-                                                      //         return reject(err);
-                                                      //     }
-                                                      //     driver_open_balance = results[0].total_open_balance || 0;
+                                             
+                                                // pool.query(`
+                                                // SELECT SUM(latest_balances.balance) AS total_user_balances
+                                                // FROM (
+                                                // SELECT user_id, balance
+                                                // FROM top_up
+                                                // WHERE client_profile_id IN (SELECT user_id FROM users)
+                                                // ORDER BY top_up_id DESC
+                                                // ) AS latest_balances
+                                                // GROUP BY latest_balances.user_id
+                                                // `, (err, results) => {
+                                                // if (err) {
+                                                // return reject(err);
+                                                // }
+                                                // total_user_balances = results[0].total_user_balances || 0;
+                                                // console.log("ppppp",total_user_balances );
+
 
                                                           // Proceed with the insert query
                                                           pool.query(
@@ -255,7 +267,8 @@ crudsObj.postStatistic = (application_statistic_id) => {
                   
               });
           });
-        });
+        // });
+    });
   
 };
 

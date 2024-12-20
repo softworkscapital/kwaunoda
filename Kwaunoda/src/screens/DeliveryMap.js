@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -8,35 +8,60 @@ import {
   Modal,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
-import MapView, { Marker, Polyline } from "react-native-maps";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { WebView } from "react-native-webview"; 
 import Geocoder from "react-native-geocoding";
 import { useNavigation } from "@react-navigation/native";
 
-Geocoder.init("AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE"); // Replace with your Google Maps API key
+// Replace with your actual API key from an environment variable
+const API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
+Geocoder.init(API_KEY);
 
-const DeliveryMap = () => {
-  const navigation = useNavigation(); // Initialize useNavigation
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+const MapViewComponent = () => {
+  const navigation = useNavigation();
   const [startingLocation, setStartingLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
   const [startCoords, setStartCoords] = useState(null);
   const [destCoords, setDestCoords] = useState(null);
-  const [route, setRoute] = useState([]);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
-  const mapRef = useRef(null);
-
   const [modalVisibleStart, setModalVisibleStart] = useState(false);
   const [modalVisibleDest, setModalVisibleDest] = useState(false);
   const [modalLocation, setModalLocation] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const debouncedLocation = useDebounce(modalLocation, 300);
+
+  useEffect(() => {
+    if (debouncedLocation.length >= 3) {
+      fetchLocationSuggestions(debouncedLocation);
+    } else {
+      setLocationSuggestions([]);
+    }
+  }, [debouncedLocation]);
 
   const fetchCoordinates = async (address) => {
-    const apiKey = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
-      address
-    )}&key=${apiKey}`;
+    setLoading(true);
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(address)}&key=${API_KEY}`;
 
     try {
       const response = await fetch(url);
@@ -51,127 +76,68 @@ const DeliveryMap = () => {
     } catch (error) {
       console.error("Error fetching coordinates:", error);
       Alert.alert("Error", error.message || "Unable to fetch coordinates.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveDeliveryToAsyncStorage = async () => {
+  const handleGetDirections = async () => {
+    const startCoords = await fetchCoordinates(startingLocation);
+    const destCoords = await fetchCoordinates(destinationLocation);
+
+    if (startCoords && destCoords) {
+      setStartCoords(startCoords);
+      setDestCoords(destCoords);
+      fetchTripDetails(startCoords, destCoords);
+    }
+  };
+
+  const fetchTripDetails = async (startCoords, destCoords) => {
+    setLoading(true);
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords.latitude},${startCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&key=${API_KEY}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes.length > 0) {
+        const leg = data.routes[0].legs[0];
+        setDistance(leg.distance.text);
+        setDuration(leg.duration.text);
+        await saveDeliveryToAsyncStorage(startingLocation, destinationLocation, leg.distance.text, leg.duration.text);
+      } else {
+        Alert.alert("Error", "No route found.");
+      }
+    } catch (error) {
+      console.error("Error fetching trip details:", error);
+      Alert.alert("Error", "Unable to fetch trip details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveDeliveryToAsyncStorage = async (start, destination, distance, duration) => {
     const deliveryData = {
-      startingLocation,
-      destinationLocation,
+      startingLocation: start,
+      destinationLocation: destination,
       distance,
       duration,
-      startCoords,
-      destCoords,
     };
 
     try {
       const existingDeliveries = await AsyncStorage.getItem("deliveries");
-      const deliveries = existingDeliveries
-        ? JSON.parse(existingDeliveries)
-        : [];
+      const deliveries = existingDeliveries ? JSON.parse(existingDeliveries) : [];
       deliveries.push(deliveryData);
       await AsyncStorage.setItem("deliveries", JSON.stringify(deliveries));
-      Alert.alert("Success", "Delivery saved!");
+      navigation.navigate("CustomerNewDelivery");
     } catch (error) {
       console.error("Error saving delivery:", error);
       Alert.alert("Error", "Unable to save delivery.");
     }
   };
 
-  const handleGetDirections = async () => {
-    let startCoords = await fetchCoordinates(startingLocation);
-    let destCoords = await fetchCoordinates(destinationLocation);
-
-    if (startCoords) {
-      setStartCoords(startCoords);
-    }
-    if (destCoords) {
-      setDestCoords(destCoords);
-    }
-  };
-
-  useEffect(() => {
-    if (startCoords && destCoords) {
-      const getRoute = async () => {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords.latitude},${startCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&key=AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE`
-        );
-        const data = await response.json();
-
-        if (data.routes.length > 0) {
-          const points = decodePolyline(
-            data.routes[0].overview_polyline.points
-          );
-          setRoute(points);
-
-          const leg = data.routes[0].legs[0];
-          setDistance(leg.distance.text);
-          setDuration(leg.duration.text);
-
-          mapRef.current.fitToCoordinates([startCoords, destCoords], {
-            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-            animated: true,
-          });
-        } else {
-          Alert.alert("Error", "No route found.");
-        }
-      };
-      getRoute();
-    }
-  }, [startCoords, destCoords]);
-
-  const decodePolyline = (t) => {
-    let points = [];
-    let index = 0,
-      len = t.length;
-    let lat = 0,
-      lng = 0;
-
-    while (index < len) {
-      let b,
-        shift = 0,
-        result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      let dlat = (result >> 1) ^ -(result & 1);
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = t.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      let dlng = (result >> 1) ^ -(result & 1);
-      lng += dlng;
-
-      points.push({
-        latitude: lat / 1e5,
-        longitude: lng / 1e5,
-      });
-    }
-    return points;
-  };
-
-  const handleLocationInput = (location) => {
-    setModalLocation(location);
-    fetchLocationSuggestions(location);
-  };
-
   const fetchLocationSuggestions = async (query) => {
-    if (query.length < 3) {
-      setLocationSuggestions([]);
-      return;
-    }
-
-    const apiKey = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-      query
-    )}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${API_KEY}`;
 
     try {
       const response = await fetch(url);
@@ -191,81 +157,53 @@ const DeliveryMap = () => {
       setStartingLocation(description);
       const coords = await fetchCoordinates(description);
       setStartCoords(coords);
-      setModalVisibleStart(false); // Close the starting location modal
+      setModalVisibleStart(false);
     } else {
       setDestinationLocation(description);
       const coords = await fetchCoordinates(description);
       setDestCoords(coords);
-      setModalVisibleDest(false); // Close the destination location modal
+      setModalVisibleDest(false);
     }
     setLocationSuggestions([]);
   };
 
+  const webViewUrl = startCoords && destCoords 
+    ? `https://kwaunoda.softworkscapital.com/map?lat1=${startCoords.latitude}&lng1=${startCoords.longitude}&lat2=${destCoords.latitude}&lng2=${destCoords.longitude}`
+    : null;
+
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={{
-          latitude: -17.8292,
-          longitude: 31.0522,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-      >
-        {startCoords && (
-          <Marker coordinate={startCoords} title="Starting Point" />
-        )}
-        {destCoords && <Marker coordinate={destCoords} title="Destination" />}
-        {route.length > 0 && <Polyline coordinates={route} strokeWidth={4} />}
-      </MapView>
-
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {webViewUrl && <WebView source={{ uri: webViewUrl }} style={styles.webview} />}
+      
       <View style={styles.inputContainer}>
         <TouchableOpacity onPress={() => setModalVisibleStart(true)}>
           <TextInput
             style={styles.input}
-            placeholder="Enter Picking Location"
+            placeholder="Enter Starting Location"
             value={startingLocation}
             editable={false}
+            accessibilityLabel="Starting Location"
           />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setModalVisibleDest(true)}>
           <TextInput
             style={styles.input}
-            placeholder="Enter Delivery Location"
+            placeholder="Enter Destination Location"
             value={destinationLocation}
             editable={false}
+            accessibilityLabel="Destination Location"
           />
         </TouchableOpacity>
 
-        <View style={styles.infoContainer}>
-          {distance && duration && (
-            <>
-              <Text style={styles.infoText}>Distance: {distance}</Text>
-              <Text style={styles.infoText}>Duration: {duration}</Text>
-            </>
-          )}
-        </View>
-
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={async () => {
-            await saveDeliveryToAsyncStorage(); 
-            navigation.navigate("CustomerNewDelivery");
-          }}
-        >
-          <Text style={styles.buttonText}>Add Delivery</Text>
+        <TouchableOpacity style={styles.button} onPress={handleGetDirections}>
+          <Text style={styles.buttonText}>Get Directions</Text>
         </TouchableOpacity>
       </View>
 
       {/* Modal for Starting Location */}
-      <Modal
-        visible={modalVisibleStart}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={modalVisibleStart} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Starting Location</Text>
@@ -274,7 +212,8 @@ const DeliveryMap = () => {
             style={styles.modalInput}
             placeholder="Search Location"
             value={modalLocation}
-            onChangeText={handleLocationInput}
+            onChangeText={setModalLocation}
+            accessibilityLabel="Search Starting Location"
           />
           <FlatList
             data={locationSuggestions}
@@ -283,6 +222,7 @@ const DeliveryMap = () => {
               <TouchableOpacity
                 style={styles.suggestionItem}
                 onPress={() => selectLocation(item, true)}
+                accessibilityLabel={`Select ${item.description}`}
               >
                 <Text>{item.description}</Text>
               </TouchableOpacity>
@@ -292,11 +232,7 @@ const DeliveryMap = () => {
       </Modal>
 
       {/* Modal for Destination Location */}
-      <Modal
-        visible={modalVisibleDest}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={modalVisibleDest} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Destination Location</Text>
@@ -305,7 +241,8 @@ const DeliveryMap = () => {
             style={styles.modalInput}
             placeholder="Search Location"
             value={modalLocation}
-            onChangeText={handleLocationInput}
+            onChangeText={setModalLocation}
+            accessibilityLabel="Search Destination Location"
           />
           <FlatList
             data={locationSuggestions}
@@ -314,6 +251,7 @@ const DeliveryMap = () => {
               <TouchableOpacity
                 style={styles.suggestionItem}
                 onPress={() => selectLocation(item, false)}
+                accessibilityLabel={`Select ${item.description}`}
               >
                 <Text>{item.description}</Text>
               </TouchableOpacity>
@@ -329,7 +267,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
+  webview: {
     flex: 1,
   },
   inputContainer: {
@@ -355,16 +293,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
   },
-  infoContainer: {
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  infoText: {
-    fontSize: 16,
-  },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)", // Transparent black background
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
     padding: 20,
     justifyContent: "center",
   },
@@ -408,4 +339,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DeliveryMap;
+export default MapViewComponent;

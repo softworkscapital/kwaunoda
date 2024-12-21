@@ -30,7 +30,6 @@ const InTransitTrip = () => {
   useFocusEffect(
     React.useCallback(() => {
       const resetData = async () => {
-        // Clear stored user details
         await AsyncStorage.removeItem("userDetails");
 
         // Reset state variables
@@ -52,6 +51,7 @@ const InTransitTrip = () => {
   const fetchData = async () => {
     const storedIds = await AsyncStorage.getItem("theIds");
     const parsedIds = JSON.parse(storedIds);
+    console.log("maId", parsedIds);
     if (parsedIds && parsedIds.driver_id) {
       setDriverId(parsedIds.driver_id);
       fetchTripData(parsedIds.driver_id);
@@ -62,6 +62,7 @@ const InTransitTrip = () => {
   };
 
   const fetchTripData = async (driverId) => {
+    console.log("driver id intransit", driverId);
     try {
       const response = await fetch(`${API_URL}/trip`);
       if (!response.ok) {
@@ -72,6 +73,7 @@ const InTransitTrip = () => {
       const inTransitTrips = trips.filter(
         (trip) => trip.driver_id === driverId && trip.status === "InTransit"
       );
+      console.log("in trans...");
 
       if (inTransitTrips.length > 0) {
         const trip = inTransitTrips[0];
@@ -131,6 +133,7 @@ const InTransitTrip = () => {
 
   // Fetch driver's location at regular intervals
   useEffect(() => {
+    console.log("Kubva muUseEffect:", driverId);
     if (driverId) {
       fetchDriverLocation(driverId);
       const intervalId = setInterval(() => {
@@ -149,7 +152,11 @@ const InTransitTrip = () => {
   return (
     <View style={styles.container}>
       <TopView id={driverId} />
-      <LocationSender user Id={driverId} userType={driver2} interval={60000} />
+      
+      {/* Conditional rendering of LocationSender */}
+      {driverId && (
+        <LocationSender userId={driverId} userType={driver2} interval={60000} />
+      )}
 
       {loading && (
         <View style={styles.loadingContainer}>
@@ -246,7 +253,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     height: 270,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

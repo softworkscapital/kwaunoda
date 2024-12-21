@@ -11,9 +11,9 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import BottomFooter2 from "./BottomFooter2"; // Ensure this is the correct footer
+import BottomFooter2 from "./BottomFooter2";
 import { API_URL } from "./config";
-import Toast from "react-native-toast-message"; // Import Toast
+import Toast from "react-native-toast-message";
 
 const DriverEndTrip = () => {
   const [rating, setRating] = useState(0);
@@ -53,7 +53,7 @@ const DriverEndTrip = () => {
       });
       return;
     }
-    console.log(tripId);
+
     const User = await AsyncStorage.getItem("userDetails");
     const user = JSON.parse(User);
     const FeedbackData = {
@@ -82,9 +82,8 @@ const DriverEndTrip = () => {
           visibilityTime: 3000,
           autoHide: true,
         });
-        redirectHome()
+        redirectHome();
       } else {
-        // redirectHome();
         Toast.show({
           text1: "Error",
           text2: result.message || "Failed to submit feedback.",
@@ -123,7 +122,7 @@ const DriverEndTrip = () => {
           <View style={styles.profileContainer}>
             <Image
               style={styles.profilePicture}
-              source={require("../../assets/profile.jpeg")} // Adjust the path as necessary
+              source={require("../../assets/profile.jpeg")}
             />
             <View>
               <Text style={styles.driverName}>Driver</Text>
@@ -170,14 +169,14 @@ const DriverEndTrip = () => {
 
           <TouchableOpacity
             style={[styles.submitButton, styles.goldenYellow, styles.textWhite]}
-            onPress={handleFeedback} // Fixed here
+            onPress={handleFeedback}
           >
             <Text style={styles.submitButtonText}>Submit Feedback</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
       <BottomFooter2 />
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+      <Toast />
     </View>
   );
 };
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
   },
   backArrow: {
     padding: 8,
@@ -213,9 +212,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profilePicture: {
-    width: 60, // Adjusted size
-    height: 60, // Adjusted size
-    borderRadius: 30, // Half of width/height for a circular image
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 10,
   },
   driverName: {
@@ -267,7 +266,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   goldenYellow: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
   },
   textWhite: {
     color: "#fff",

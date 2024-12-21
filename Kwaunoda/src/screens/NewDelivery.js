@@ -130,34 +130,34 @@ const NewDelivery = () => {
         console.error("Error fetching deliveries:", error);
       }
     };
-    const fetchTopUpHistory = async (id) => {
-      let me = id;
-      console.log("0000", id);
-      try {
-        const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    // const fetchTopUpHistory = async (id) => {
+    //   let me = id;
+    //   console.log("0000", id);
+    //   try {
+    //     const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     });
 
-        const result = await resp.json();
-        console.log("kkkkkk", result);
-        if (result) {
-          setBalance(result[0].balance);
-          console.log("suiiiii", result[0].balance);
-        } else {
-          Alert.alert("Error", "Failed to fetch History.");
-        }
-      } catch (error) {
-        console.error("Error fetching History:", error);
-        Alert.alert("Error", "An error occurred while fetching History.");
-      }
-    };
+    //     const result = await resp.json();
+    //     console.log("kkkkkk", result);
+    //     if (result) {
+    //       setBalance(result[0].balance);
+    //       console.log("suiiiii", result[0].balance);
+    //     } else {
+    //       Alert.alert("Error", "Failed to fetch History.");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching History:", error);
+    //     Alert.alert("Error", "An error occurred while fetching History.");
+    //   }
+    // };
 
     fetchDeliveries();
     fetchData();
-    fetchTopUpHistory(cid);
+    // fetchTopUpHistory(cid);
   }, []);
 
   const validateFields = () => {
@@ -172,25 +172,25 @@ const NewDelivery = () => {
     return true;
   };
 
-  const checkBalance = (price) => {
-    const priceValue = parseFloat(price);
-    console.log(balance);
-    if (priceValue > balance) {
-      Toast.show({
-        type: "error",
-        text1: "Insufficient Balance",
-        text2: `Your balance is insufficient. Available balance: $${balance}. Required: $${priceValue}.`,
-      });
-      return false; // Not enough balance
-    }
-    return true; // Sufficient balance
-  };
+  // const checkBalance = (price) => {
+  //   const priceValue = parseFloat(price);
+  //   console.log(balance);
+  //   if (priceValue > balance) {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Insufficient Balance",
+  //       text2: `Your balance is insufficient. Available balance: $${balance}. Required: $${priceValue}.`,
+  //     });
+  //     return false; // Not enough balance
+  //   }
+  //   return true; // Sufficient balance
+  // };
 
   const handleSignUp = async () => {
     if (!validateFields()) return;
 
     // Check balance before proceeding
-    if (!checkBalance(price)) return;
+    // if (!checkBalance(price)) return;
 
     try {
       const userDetails = await AsyncStorage.getItem("userDetails");
@@ -225,6 +225,7 @@ const NewDelivery = () => {
         driver_stars: "0",
       };
 
+      console.log(deliveryData);
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
         headers: {
@@ -232,8 +233,13 @@ const NewDelivery = () => {
         },
         body: JSON.stringify(deliveryData),
       });
+      
+      const textResponse = await response.text(); // Get raw response
+      console.log("Raw response:", textResponse);
+      
+      const result = JSON.parse(textResponse); // Parse if it's valid JSON
 
-      const result = await response.json();
+      // const result = await response.json();
 
       if (response.ok) {
         Toast.show({
@@ -279,7 +285,7 @@ const NewDelivery = () => {
 
       <View style={{ alignItems: "center", marginTop: 10, bottom: 0 }}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={25} color="red" />
-        <Text style={styles.appName}>EasyGo</Text>
+        <Text style={styles.appName}>DropX</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
@@ -416,13 +422,13 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "14%",
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     justifyContent: "center",
     marginBottom: 40,
   },
   viewTop: {
     height: 60,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     flexDirection: "row",
     width: "100%",
     marginTop: 20,
@@ -479,7 +485,7 @@ const styles = StyleSheet.create({
     color: "#cc",
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 50,
     padding: 14,
     width: "100%",

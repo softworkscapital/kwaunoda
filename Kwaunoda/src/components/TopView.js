@@ -150,7 +150,7 @@ const TopView = () => {
     },
     { id: "9", title: "Wallet", onPress: () => handleMenuPress("Wallet") },
     { id: "7", title: "History", onPress: () => handleMenuPress("History") },
-    { id: "8", title: "Settings", onPress: () => handleMenuPress("Settings") },
+    { id: "8", title: "Settings", onPress: () => handleMenuPress("settings") },
     { id: "2", title: "FAQ", onPress: () => handleMenuPress("FAQ") },
     { id: "3", title: "Safety", onPress: () => handleMenuPress("Safety") },
     {
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 8,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     paddingTop: 30,
     paddingRight: 30,
     width: "100%",
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   offerCard: {
     padding: 10,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 8,
     marginBottom: 10,
     position: "relative",
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   closeButton: {
     alignItems: "center",
     padding: 10,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 5,
     marginTop: 10,
   },
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   },
   offerCard: {
     padding: 10,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 8,
     marginBottom: 10,
     position: "relative",

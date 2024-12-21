@@ -64,6 +64,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
+        <Stack.Screen name="Invite" component={Invite} />
         <Stack.Screen
           name="DriverNewOrderList"
           component={DriverNewOrderList}
@@ -72,7 +73,6 @@ const App = () => {
         <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
         <Stack.Screen name="CustomerNewDelivery" component={CustomerNewDelivery} />
         <Stack.Screen name="DeliveryMap" component={DeliveryMap} />
-        <Stack.Screen name="Invite" component={Invite} />
         <Stack.Screen name="DriverChat" component={DriverChat} />
         <Stack.Screen name="TripTrack" component={TripTrack} />
         <Stack.Screen name="CustomerChat" component={CustomerChat} />

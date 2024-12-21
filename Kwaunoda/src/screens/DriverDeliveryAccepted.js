@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "green",
+    color: "#FFC000",
     marginBottom: 5,
   },
   detailTitle: {

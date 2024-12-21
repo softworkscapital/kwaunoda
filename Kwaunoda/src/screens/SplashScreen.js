@@ -34,7 +34,7 @@ const SplashScreen = () => {
       </Animated.View>
 
       <Text style={styles.description}>
-        Welcome to Kwaunoda! Your reliable delivery partner.
+        Welcome to DropX! Your reliable delivery partner.
       </Text>
 
       <View style={{ flexDirection: 'row' }}>

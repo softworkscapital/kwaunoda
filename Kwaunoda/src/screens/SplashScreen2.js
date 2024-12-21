@@ -34,7 +34,7 @@ const SplashScreen2 = () => {
             </Animated.View>
 
             <Text style={styles.description}>
-                From small parcels to large orders, Kwaunoda delivers it all with care and efficiency.
+                From small parcels to large orders, DropX delivers it all with care and efficiency.
             </Text>
 
             <View style={{ flexDirection: 'row' }}>

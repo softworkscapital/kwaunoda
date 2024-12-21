@@ -4,11 +4,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 
 const stores = [
-  { id: 1, name: "Store A" },
-  { id: 2, name: "Store B" },
-  { id: 3, name: "Store C" },
-  { id: 4, name: "Store D" },
-  { id: 5, name: "Store E" },
+  // { id: 1, name: "Store A" },
+  // { id: 2, name: "Store B" },
+  // { id: 3, name: "Store C" },
+  // { id: 4, name: "Store D" },
+  // { id: 5, name: "Store E" },
 ];
 
 const OnlineStore = () => {
@@ -54,7 +54,7 @@ const OnlineStore = () => {
             </TouchableOpacity>
           ))
         ) : (
-          <Text style={styles.noResults}>No stores found.</Text>
+          <Text style={styles.noResults}>Comming Soon.....</Text>
         )}
       </ScrollView>
     </View>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    backgroundColor: 'green',
+    backgroundColor: '#ffc000',
     paddingVertical: 30,
     flexDirection: 'row',
     alignItems: 'center',

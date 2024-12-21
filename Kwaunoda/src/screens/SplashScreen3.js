@@ -35,7 +35,7 @@ const SplashScreen3 = () => {
             </Animated.View>
 
             <Text style={styles.description}>
-                Experience swift and reliable delivery right to your doorstep with Kwaunoda.
+                Experience swift and reliable delivery right to your doorstep with DropX.
             </Text>
 
             <View style={{ flexDirection: 'row' }}>

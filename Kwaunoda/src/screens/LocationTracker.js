@@ -4,6 +4,7 @@ import { API_URL } from "./config";
 
 const LocationTracker = ({ userId, userType }) => {
   useEffect(() => {
+    // console.log("MuUse Effekiti Location Tracker:", userId);
     const init = async () => {
       const permissionGranted = await requestPermissions();
       if (!permissionGranted) return;
@@ -11,7 +12,7 @@ const LocationTracker = ({ userId, userType }) => {
       if (userId) {
         startTracking(userId);
       } else {
-        console.error("No User ID provided");
+        // console.error("No User ID provided");
       }
     };
 
@@ -19,14 +20,14 @@ const LocationTracker = ({ userId, userType }) => {
 
     // Cleanup function
     return () => {
-      console.log("Location tracking stopped");
+      // console.log("Location tracking stopped");
     };
   }, [userId]);
 
   const requestPermissions = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      console.error("Location permission denied");
+      // console.error("Location permission denied");
       return false; // Permission not granted
     }
     return true; // Permission granted
@@ -38,7 +39,7 @@ const LocationTracker = ({ userId, userType }) => {
       ? `${API_URL}/driver/${userId}/coordinates`
       : `${API_URL}/customerdetails/${userId}/coordinates`; // Change endpoint for customer
 
-    console.log("Sending location to API:", { userId, latitude, longitude });
+    // console.log("Sending location to API:", { userId, latitude, longitude });
 
     try {
       const response = await fetch(endpoint, {
@@ -58,15 +59,15 @@ const LocationTracker = ({ userId, userType }) => {
       }
 
       const data = await response.json();
-      console.log("Location updated:", data);
+      // console.log("Location updated:", data);
     } catch (error) {
-      console.error("Error sending location to API:", error);
+      // console.error("Error sending location to API:", error);
     }
   };
 
   // Start tracking location
   const startTracking = async (userId) => {
-    console.log("userid", userId);
+    // console.log("userid", userId);
     const subscription = Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
@@ -74,18 +75,18 @@ const LocationTracker = ({ userId, userType }) => {
         timeInterval: 10000,
       },
       (position) => {
-        console.log("Position update received:", position);
+        // console.log("Position update received:", position);
         const { latitude, longitude } = position.coords;
-        console.log(
-          "Current Coordinates: Latitude:",
-          latitude,
-          "Longitude:",
-          longitude
-        );
+        // console.log(
+        //   "Current Coordinates: Latitude:",
+        //   latitude,
+        //   "Longitude:",
+        //   longitude
+        // );
         sendLocationToAPI(userId, latitude, longitude);
       },
       (error) => {
-        console.error("Error obtaining location:", error);
+        // console.error("Error obtaining location:", error);
       }
     );
 

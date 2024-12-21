@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { API_URL } from "./config";
 import SideBar from "./SideBar";
 import Footer from "./Footer";
-import { Container, Table } from "react-bootstrap";
+import { Container, Table, Row, Col } from "react-bootstrap";
 import Navbar from "./Navbar";
 
 const AppStatistics = () => {
@@ -29,11 +29,11 @@ const AppStatistics = () => {
     return (
         <Container fluid style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar />
-            <div style={{ display: 'flex', flex: 1 }}>
+            <Row style={{ flex: 1 }}>
                 {/* Main Content Area */}
-                <div style={{ flex: 3, padding: '15px', overflowY: 'auto', height: 'calc(100vh - 120px)' }}>
+                <Col md={9} style={{ padding: '15px', overflowY: 'auto', height: 'calc(100vh - 120px)' }}>
                     <h3 style={{ margin: "60px 0 20px 0" }}>Application Statistics</h3>
-                    <div style={{ overflowY: 'auto', height: 'calc(100vh - 150px)' }}>
+                    <div style={{ overflowX: 'auto' }}>
                         <Table striped bordered hover>
                             <thead>
                                 <tr>
@@ -123,12 +123,12 @@ const AppStatistics = () => {
                             </tbody>
                         </Table>
                     </div>
-                </div>
+                </Col>
                 {/* Sidebar Area */}
-                <div style={{ flex: 1, paddingLeft: '15px', height: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+                <Col md={3} style={{ paddingLeft: '15px', height: 'calc(100vh - 120px)', overflowY: 'auto' }}>
                     <SideBar />
-                </div>
-            </div>
+                </Col>
+            </Row>
             <Footer />
         </Container>
     );

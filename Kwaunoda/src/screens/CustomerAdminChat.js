@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden', // Prevent the message from overflowing its container
   },
   sentMessage: {
-    backgroundColor: '#dcf8c6', // Light green for sent messages
+    backgroundColor: '#dcf8c6', // Light #FFC000 for sent messages
     alignSelf: 'flex-end', // Align sent messages to the right
   },
   receivedMessage: {

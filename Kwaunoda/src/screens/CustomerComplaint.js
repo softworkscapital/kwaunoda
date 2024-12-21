@@ -32,9 +32,7 @@ const CustomerComplaint = () => {
 
   const navigation = useNavigation();
 
-  const redirectHome = () => {
-    navigation.navigate("Home");
-  };
+ 
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -234,7 +232,7 @@ const CustomerComplaint = () => {
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
       <View style={[styles.topBar, styles.goldenYellow, { paddingTop: 35 }]}>
-        <TouchableOpacity style={styles.backArrow} onPress={redirectHome}>
+        <TouchableOpacity style={styles.backArrow} onPress={() => navigation.navigate('Home')}>
           <MaterialIcons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
 

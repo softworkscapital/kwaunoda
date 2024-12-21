@@ -70,7 +70,7 @@ const OTPCustomer = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-                <Text style={styles.appName}>EasyGo</Text>
+                <Text style={styles.appName}>DropX</Text>
             </View>
 
             <View style={styles.titleContainer}>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     topBar: {
         width: "100%",
         height: "25%",
-        backgroundColor: "green",
+        backgroundColor: "#FFC000",
         borderBottomLeftRadius: 45,
         borderBottomRightRadius: 45,
         justifyContent: "center",
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
     },
     btnVerify: {
-        backgroundColor: "green",
+        backgroundColor: "#FFC000",
         borderRadius: 50,
         padding: 14,
         width: "90%",

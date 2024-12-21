@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
   },
   backArrow: {
     padding: 8,
@@ -264,13 +264,14 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   submitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    backgroundColor: "#FFC000",
+    borderRadius: 50,
+    padding: 14,
+    width: "100%",
     alignItems: "center",
   },
   goldenYellow: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
   },
   textWhite: {
     color: "#fff",

@@ -237,7 +237,7 @@ const CustomerNewDelivery = () => {
 
       <View style={{ alignItems: "center", marginTop: 10, bottom: 0 }}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={25} color="red" />
-        <Text style={styles.appName}>EasyGo</Text>
+        <Text style={styles.appName}>DropX</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
@@ -385,13 +385,13 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "14%",
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     justifyContent: "center",
     marginBottom: 40,
   },
   viewTop: {
     height: 60,
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     flexDirection: "row",
     width: "100%",
     marginTop: 20,
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     color: "#cc",
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 50,
     padding: 14,
     width: "100%",

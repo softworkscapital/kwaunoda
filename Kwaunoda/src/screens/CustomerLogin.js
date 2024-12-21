@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator, // Import ActivityIndicator
 } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
@@ -19,12 +20,13 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
-import LocationSender from './LocationTracker'; 
+import LocationSender from './LocationTracker';
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [customerID, setCustomerID] = useState(0);
+  const [loading, setLoading] = useState(false); // Add loading state
   const navigation = useNavigation();
 
   const redirectSignUpCustomer = () => {
@@ -41,9 +43,7 @@ const CustomerLogin = () => {
         const response = await fetch(
           `${API_URL}/trip/byStatus/driver_id/status?driver_id=${driverId}&status=InTransit`
         );
-
-     
-
+  
         // Handle 404 error specifically
         if (response.status === 404) {
           Toast.show({
@@ -58,16 +58,15 @@ const CustomerLogin = () => {
           navigation.navigate("DriverNewOrderList", { driverId });
           return; // Exit the function early
         }
-
+  
         if (!response.ok) {
-          const errorResponse = await response.json();
+          const errorResponse = await response.json(); // Only read response once
           console.error("Error Response:", errorResponse);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const tripData = await response.json();
-      
-
+  
+        const tripData = await response.json(); // Read response here
+  
         if (tripData.length > 0) {
           navigation.navigate("InTransitTrip"); // Navigate to in-transit screen
         } else {
@@ -121,6 +120,7 @@ const CustomerLogin = () => {
   };
 
   const fetchUserDetails = async () => {
+    setLoading(true); // Set loading state to true
     try {
       const response = await fetch(
         `${API_URL}/users/login/${email}/${password}`,
@@ -135,20 +135,20 @@ const CustomerLogin = () => {
       const result = await response.json();
 
       // Access the customerid from the result
-      const customerId = result[0]?.customerid; // Safely access customerid
+      const customerId = result[0]?.customerid;
+      console.log("customa id:", customerId);
       setCustomerID(customerId);
-      // Log customer ID
 
       if (response.ok && result.length > 0) {
         const userStatus = result[0].status; // Assuming the user status is in the response
-       
+
         const ids = {
           driver_id: result[0].driver_id,
           customerId: result[0]?.customerid, // Store as customerId
           last_logged_account: result[0].last_logged_account,
         };
-       
 
+        console.log("The ids", ids);
         // Store driver ID and customer ID in AsyncStorage
         await AsyncStorage.setItem(
           "driver",
@@ -178,6 +178,8 @@ const CustomerLogin = () => {
         visibilityTime: 3000,
         autoHide: true,
       });
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -194,7 +196,7 @@ const CustomerLogin = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-        <Text style={styles.appName}>EasyGo</Text>
+        <Text style={styles.appName}>DropX</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
@@ -239,8 +241,13 @@ const CustomerLogin = () => {
           <TouchableOpacity
             style={[styles.btnSignUp, { marginTop: 50 }]}
             onPress={handleSignIn}
+            disabled={loading} // Disable button while loading
           >
-            <Text style={styles.txtSignUp}>Sign In</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#000" /> // Show loading spinner
+            ) : (
+              <Text style={styles.txtSignUp}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           <View style={{ alignItems: "center", marginTop: 4 }}>
@@ -272,7 +279,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "25%",
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -309,7 +316,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 50,
     padding: 14,
     width: "100%",

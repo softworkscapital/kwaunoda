@@ -151,7 +151,7 @@ const DeliveryAccepted = () => {
                 </View>
 
                 <View>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'green', marginBottom: 5}}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FFC000', marginBottom: 5}}>
                         Your parcel is on the way
                     </Text>
 

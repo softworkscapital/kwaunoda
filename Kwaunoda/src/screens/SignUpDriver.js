@@ -162,7 +162,7 @@ const SignUpDriver = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-        <Text style={styles.appName}>Kwaunoda</Text>
+        <Text style={styles.appName}>DropX</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "25%",
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 50,
     padding: 14,
     width: "100%",

@@ -175,10 +175,11 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   submitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    alignItems: 'center',
+    backgroundColor: "#FFC000",
+    borderRadius: 50,
+    padding: 14,
+    width: "100%",
+    alignItems: "center",
   },
   textWhite: {
     color: '#fff',

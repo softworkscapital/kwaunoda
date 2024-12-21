@@ -103,18 +103,8 @@ const Home = ({ navigation }) => {
       <View style={styles.overlay} />
       <SafeAreaView style={styles.container}>
         <TopView id={userId} />
-
-        {/* Fixed Bottom Card for Current Trip Details */}
+  
         <View style={styles.fixedCurrentTripContainer}>
-          {/* Animated Car */}
-          {/* <Animated.View
-            style={[
-              styles.carIconContainer,
-              { transform: [{ translateY: carTranslateY }] },
-            ]}
-          >
-            <FontAwesome name="car" size={30} color="#000" />
-          </Animated.View> */}
           <View style={{ display: "flex", flexDirection: "row" }}>
             <TouchableOpacity
               style={styles.requestTripButton}
@@ -122,7 +112,7 @@ const Home = ({ navigation }) => {
             >
               <Text style={styles.requestTripText}>Request Trip</Text>
             </TouchableOpacity>
-            // or for a customer
+            {/* or for a customer */}
             <LocationSender
               userId={userId}
               userType="customer"
@@ -141,7 +131,7 @@ const Home = ({ navigation }) => {
               <Text style={styles.requestTripText}>Online Store</Text>
             </TouchableOpacity>
           </View>
-
+  
           {/* Scrollable Card Showing All Trips */}
           <ScrollView
             style={styles.tripCard}
@@ -154,7 +144,7 @@ const Home = ({ navigation }) => {
                   key={trip.trip_id}
                   style={[
                     styles.tripDetailsView,
-                    { backgroundColor: "rgba(255, 255, 255, 0.3)" },
+                    { backgroundColor: "white" },
                   ]}
                   onPress={() => navigation.navigate("TripTrack", { trip })} // Navigate to MapScreen
                 >
@@ -176,7 +166,7 @@ const Home = ({ navigation }) => {
                   <Text style={styles.tripDetailsText}>
                     From: {trip.origin_location || "N/A"}
                   </Text>
-
+  
                   {/* Conditional Button Rendering based on Trip Status */}
                   <View style={styles.buttonContainer}>
                     {trip.status === "New Order" ? (
@@ -237,11 +227,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   fixedCurrentTripContainer: {
-    position: "absolute", // Fix position to bottom
+    position: "absolute", 
     bottom: 0,
     width: "100%",
-    height: 400, // Increased height for more space
-    backgroundColor: "green", // Changed to green
+    height: 400, 
+    backgroundColor: "#FFC000", 
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -252,7 +242,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     padding: 10,
     borderRadius: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly more opaque
+    backgroundColor: "yellow", // Slightly more opaque
     width: "100%",
     maxHeight: 300,
     paddingBottom: 10, // Added padding at the bottom
@@ -275,37 +265,38 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontWeight: "bold",
-    fontSize: 16, // Increased size for status
-    color: "red", // Change color to red
-    backgroundColor: "rgba(255, 255, 255, 0.5)", // Add a semi-transparent background to make it a card
-    padding: 10, // Add padding for better appearance
-    borderRadius: 10, // Rounded corners for the card effect
-    marginBottom: 10, // Space below the status card
+    fontSize: 16,
+    color: "red", 
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    padding: 10, 
+    borderRadius: 10, 
+    marginBottom: 10,
   },
   noTripText: {
     fontSize: 16,
-    color: "#FFFFFF", // White text for better visibility
-    textAlign: "center", // Center align the text
+    color: "#FFFFFF", 
+    textAlign: "center", 
   },
   carIconContainer: {
     position: "absolute",
-    bottom: 270, // Adjust position above the current trip view
+    bottom: 270,
     left: "50%",
     transform: [{ translateX: -15 }],
   },
   requestTripButton: {
-    backgroundColor: "#4CAF50", // A shade of green
+    backgroundColor: "#FFC000",
     borderRadius: 20,
-    paddingVertical: 10, // Reduced padding
-    paddingHorizontal: 20, // Reduced padding
-    marginBottom: 10, // Space between button and trip details
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 10,
     alignSelf: "center",
-    elevation: 5,
+    borderWidth: 1, // Add a border
+    borderColor: "black", // Set the border color to black
     marginLeft: 5,
   },
   requestTripText: {
     fontWeight: "bold",
-    color: "#FFFFFF", // White text for contrast
+    color: "#000", 
     fontSize: 16,
   },
   buttonContainer: {
@@ -313,39 +304,39 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   cancelTripButton: {
-    backgroundColor: "#FF5733", // Red color for Cancel Trip
+    backgroundColor: "#FF5733",
     borderRadius: 20,
-    paddingVertical: 6, // Reduced size
-    paddingHorizontal: 18, // Reduced size
-    marginRight: 10, // Space between buttons
+    paddingVertical: 6, 
+    paddingHorizontal: 18, 
+    marginRight: 10, 
   },
   cancelTripText: {
     fontWeight: "bold",
-    color: "#FFFFFF", // White text for contrast
-    fontSize: 14, // Reduced font size
+    color: "#FFFFFF",
+    fontSize: 14, 
   },
   endTripButton: {
-    backgroundColor: "#FFA500", // Orange color for End Trip
+    backgroundColor: "#FFA500", 
     borderRadius: 20,
-    paddingVertical: 6, // Reduced size
-    paddingHorizontal: 18, // Reduced size
-    marginRight: 10, // Space between buttons
+    paddingVertical: 6,
+    paddingHorizontal: 18, 
+    marginRight: 10, 
   },
   endTripText: {
     fontWeight: "bold",
-    color: "#FFFFFF", // White text for contrast
-    fontSize: 14, // Reduced font size
+    color: "#FFFFFF",
+    fontSize: 14, 
   },
   chatButton: {
-    backgroundColor: "#007BFF", // Blue color for Chat
+    backgroundColor: "#007BFF", 
     borderRadius: 20,
-    paddingVertical: 10, // Consistent padding
-    paddingHorizontal: 20, // Reduced size
-    elevation: 5, // Add shadow effect
+    paddingVertical: 10,
+    paddingHorizontal: 20, 
+    elevation: 5, 
   },
   chatText: {
     fontWeight: "bold",
-    color: "#FFFFFF", // White text for contrast
+    color: "#FFFFFF", 
     fontSize: 16,
   },
 });

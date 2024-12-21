@@ -146,7 +146,13 @@ const Feedback = () => {
             />
           </View>
           <TouchableOpacity
-            style={[styles.btnFeeedback, styles.goldenYellow, styles.textWhite]}
+            style={{
+              backgroundColor: "#FFC000",
+              borderRadius: 50,
+              padding: 14,
+              width: "100%",
+              alignItems: "center"
+          }}
             onPress={handleFeedback}
           >
             <Text style={styles.submitButtonText}>Submit Feedback</Text>
@@ -196,6 +202,7 @@ const styles = StyleSheet.create({
   ratingLabel: {
     fontSize: 16,
     marginBottom: 10,
+    marginTop: 80
   },
   ratingStars: {
     flexDirection: "row",
@@ -225,9 +232,10 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   submitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    backgroundColor: "#FFC000",
+    borderRadius: 50,
+    padding: 14,
+    width: "100%",
     alignItems: "center",
   },
   textWhite: {

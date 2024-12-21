@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   topView: {
     height: 60,
-    backgroundColor: 'green',
+    backgroundColor: '#FFC000',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
@@ -180,11 +180,11 @@ const styles = StyleSheet.create({
     maxWidth: '80%', // Limit the width of the message bubble
   },
   sentMessage: {
-    backgroundColor: '#b2d600', // Golden yellow-green for sent messages
+    backgroundColor: '#b2d600', // Golden yellow-#FFC000 for sent messages
     alignSelf: 'flex-end', // Align sent messages to the right
   },
   receivedMessage: {
-    backgroundColor: '#e0ffe0', // Light green for received messages
+    backgroundColor: '#e0ffe0', // Light #FFC000 for received messages
     alignSelf: 'flex-start', // Align received messages to the left
   },
   messageText: {
@@ -205,13 +205,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#b2d600', // Golden yellow-green for input border
+    borderColor: '#b2d600', // Golden yellow-#FFC000 for input border
     borderRadius: 20,
     padding: 10,
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: '#b2d600', // Golden yellow-green for send button
+    backgroundColor: '#b2d600', // Golden yellow-#FFC000 for send button
     borderRadius: 20,
     padding: 10,
   },

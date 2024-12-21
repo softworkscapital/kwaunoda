@@ -430,13 +430,15 @@ const newCustomer = {
             />
           </View>
 
-          <TouchableOpacity style={styles.btnSignUp} onPress={handleSignUp}>
-            {/* {loading ? (
-              <ActivityIndicator size="small" color="black" />
-            ) : ( */}
-              <Text style={styles.txtSignUp}>Sign Up</Text>
-            {/* // )} */}
-          </TouchableOpacity>
+          
+
+          <TouchableOpacity style={styles.btnSignUp} onPress={handleSignUp} disabled={loading}>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="black" />
+                        ) : (
+                            <Text style={styles.txtSignUp}>Sign Up</Text>
+                        )}
+                    </TouchableOpacity>
         </View>
       </ScrollView>
       <Toast />
@@ -451,7 +453,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "25%",
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderBottomLeftRadius: 45,
     borderBottomRightRadius: 45,
     justifyContent: "center",
@@ -497,7 +499,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     borderRadius: 50,
     padding: 14,
     width: "100%",

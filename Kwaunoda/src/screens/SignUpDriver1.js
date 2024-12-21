@@ -290,7 +290,7 @@ const SignUpDriver1 = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-        <Text style={styles.appName}>Kwaunoda</Text>
+        <Text style={styles.appName}>DropX</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>
@@ -317,7 +317,7 @@ const SignUpDriver1 = () => {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Phone Number"
+              placeholder="+263 716 056 317"
               value={phoneNumber}
               onChangeText={setPhoneNumber}
               keyboardType="phone-pad"
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     backgroundColor: "orange",
   },
   strong: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
   },
   strengthText: {
     alignSelf: "center",

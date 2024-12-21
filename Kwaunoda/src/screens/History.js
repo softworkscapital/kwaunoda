@@ -18,40 +18,6 @@ const History = () => {
   };
 
 
-  // useEffect(() => {
-  //   const fetchTrips = async () => {
-  //     const User = await AsyncStorage.getItem("userDetails");
-  //     const user = JSON.parse(User);
-  //     const customer_id = user.customerid;
-  //     const driver_id = user.driver_id;
-
-      // try {
-      //   const resp = await fetch(
-      //     `${APILINK}/trip/MylastTwentyTripsById/${customer_id}/${driver_id}`,
-      //     {
-      //       method: "GET",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //       },
-      //     }
-      //   );
-
-      //   const result = await resp.json();
-
-  //       if (result) {
-  //         setTrips(result); // Store the trips
-  //       } else {
-  //         Alert.alert("Error", "Failed to fetch trips.");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching trips:", error);
-  //       Alert.alert("Error", "An error occurred while fetching trips.");
-  //     }
-  //   };
-
-  //   fetchTrips();
-  // }, []);
-
   useEffect(() => {
     // Fetch delivery history data from the app's backend or local storage
     const test = async ()=>{
@@ -78,35 +44,25 @@ const History = () => {
     test();
   }, []);
 
-  // const fetchDeliveryHistory = () => {
-  //   // Replace this with your actual delivery history data retrieval logic
-  //   const sampleData = [
-  //     {
-  //       id: '1',
-  //       orderNumber: 'ORDER-001',
-  //       deliveredOn: '2023-08-12',
-  //       status: 'Delivered',
-  //     },
-  //     {
-  //       id: '2',
-  //       orderNumber: 'ORDER-002',
-  //       deliveredOn: '2023-07-30',
-  //       status: 'Delivered',
-  //     },
-  //     {
-  //       id: '3',
-  //       orderNumber: 'ORDER-003',
-  //       deliveredOn: '2023-06-22',
-  //       status: 'Cancelled',
-  //     },
-  //   ];
-  //   setDeliveryHistory(sampleData);
-  // };
-
+  
   const renderDeliveryItem = ({ item }) => (
     <TouchableOpacity style={styles.deliveryItem}>
       <View style={styles.deliveryItemHeader}>
-        <Text style={styles.orderNumber}>Order #{item.trip_id}</Text>
+      <View style={styles.container}>
+      <View style={styles.row}>
+            <Text style={[styles.label, styles.flex1]}>Order #: {item.trip_id}</Text>
+        </View>
+    <View style={styles.row}>
+        <Text style={styles.label}>To: {item.dest_location}</Text>
+    </View>
+    <View style={styles.row}>
+        <Text style={styles.label}>From: {item.origin_location}</Text>
+    </View>
+    <View style={styles.row}>
+        <Text style={styles.value}>{item.deliveray_details}</Text>
+    </View>
+</View>
+
         <Text
           style={[
             styles.status,

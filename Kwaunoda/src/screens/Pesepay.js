@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   goldenYellow: {
-    backgroundColor: "green", // Adjust the color as needed
+    backgroundColor: "#FFC000", // Adjust the color as needed
   },
   topBar: {
     flexDirection: "row",

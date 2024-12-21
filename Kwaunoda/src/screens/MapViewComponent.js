@@ -198,7 +198,7 @@ const MapViewComponent = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={handleGetDirections}>
-          <Text style={styles.buttonText}>Get Directions</Text>
+          <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
       </View>
 
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   modalHeader: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     padding: 10,
     alignItems: "center",
   },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   button: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",

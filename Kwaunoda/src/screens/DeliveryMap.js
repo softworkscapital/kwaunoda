@@ -168,7 +168,7 @@ const MapViewComponent = () => {
   };
 
   const webViewUrl = startCoords && destCoords 
-    ? `https://kwaunoda.softworkscapital.com/map?lat1=${startCoords.latitude}&lng1=${startCoords.longitude}&lat2=${destCoords.latitude}&lng2=${destCoords.longitude}`
+    ? `http://192.168.94.223:3000/map?lat1=${startCoords.latitude}&lng1=${startCoords.longitude}&lat2=${destCoords.latitude}&lng2=${destCoords.longitude}`
     : null;
 
   return (
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   modalHeader: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     padding: 10,
     alignItems: "center",
   },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   button: {
-    backgroundColor: "green",
+    backgroundColor: "#FFC000",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",

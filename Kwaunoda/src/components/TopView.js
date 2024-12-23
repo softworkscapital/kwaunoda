@@ -79,12 +79,14 @@ const TopView = () => {
     };
 
     const fetchCounterOffers = async (userId) => {
-      // console.log(userId);
+      console.log(userId);
       try {
         const response = await fetch(
-          `${API_URL}/counter_offer/customerid/status/${userId}/seen`
+          `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
         );
+        console.log("response:", response);
         const offers = await response.json();
+        console.log("hoyoo", offers)
 
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
@@ -127,13 +129,13 @@ const TopView = () => {
           // );
         }
       } catch (error) {
-        // console.error("Error fetching counter offers:", error);
+        console.error("Error fetching counter offers:", error);
       }
     };
 
     fetchData();
     fetchCounterOffers(id);
-    const intervalId = setInterval(() => fetchCounterOffers(id), 30000);
+    const intervalId = setInterval(() => fetchCounterOffers(id), 600000);
     return () => clearInterval(intervalId);
   }, [id]);
 

@@ -107,22 +107,33 @@ const NewDelivery = () => {
       try {
         const lastTripData = await AsyncStorage.getItem("deliveries");
         const deliveries = lastTripData ? JSON.parse(lastTripData) : [];
+
+
+        console.log("Last trip data:", deliveries);
+    
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
+          console.log("Last delivery:", lastDelivery);
+    
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
           setDist(lastDelivery.distance || "");
-          setStartLocationLat(
-            parseFloat(lastDelivery.startCoords.latitude || "")
-          );
-          setStartLocationLong(
-            parseFloat(lastDelivery.startCoords.longitude || "")
-          );
-          setEndLocationLat(parseFloat(lastDelivery.destCoords.latitude || ""));
-          setEndLocationLong(
-            parseFloat(lastDelivery.destCoords.longitude || "")
-          );
+    
+          // Check if startCoords and destCoords exist
+          if (lastDelivery.origin) {
+            setStartLocationLat(parseFloat(lastDelivery.origin.latitude || ""));
+            setStartLocationLong(parseFloat(lastDelivery.origin.longitude || ""));
+          } else {
+            console.warn("startCoords is undefined for last delivery.");
+          }
+    
+          if (lastDelivery.dest) {
+            setEndLocationLat(parseFloat(lastDelivery.dest.latitude || ""));
+            setEndLocationLong(parseFloat(lastDelivery.dest.longitude || ""));
+          } else {
+            console.warn("destCoords is undefined for last delivery.");
+          }
         } else {
           console.warn("No deliveries found");
         }
@@ -196,6 +207,8 @@ const NewDelivery = () => {
       const userDetails = await AsyncStorage.getItem("userDetails");
       const user = userDetails ? JSON.parse(userDetails) : {};
 
+      console.log("latend", endLocationLat);
+      console.log("longend", endLocationLong);
       const deliveryData = {
         driver_id: "",
         cust_id: cid,
@@ -204,8 +217,8 @@ const NewDelivery = () => {
         order_end_datetime: "",
         status: "New Order",
         deliveray_details: "default_value",
-        delivery_notes: deliverynotes || null,
-        weight: weight || null,
+        delivery_notes: deliverynotes || "",
+        weight: weight || "",
         delivery_contact_details: contact,
         dest_location: to,
         origin_location: from,

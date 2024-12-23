@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -14,8 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WebView } from "react-native-webview"; 
 import Geocoder from "react-native-geocoding";
 import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 
-// Replace with your actual API key from an environment variable
 const API_KEY = "AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE";
 Geocoder.init(API_KEY);
 
@@ -45,8 +44,6 @@ const MapViewComponent = () => {
   const [modalVisibleDest, setModalVisibleDest] = useState(false);
   const [modalLocation, setModalLocation] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
   const [loading, setLoading] = useState(false);
 
   const debouncedLocation = useDebounce(modalLocation, 300);
@@ -71,24 +68,32 @@ const MapViewComponent = () => {
         const { lat, lng } = data.results[0].geometry.location;
         return { latitude: lat, longitude: lng };
       } else {
-        throw new Error("No results found.");
+        throw new Error("No results found for the address.");
       }
     } catch (error) {
       console.error("Error fetching coordinates:", error);
       Alert.alert("Error", error.message || "Unable to fetch coordinates.");
+      return null; // Return null if an error occurs
     } finally {
       setLoading(false);
     }
   };
 
   const handleGetDirections = async () => {
+    console.log("honaiwo", startingLocation);
     const startCoords = await fetchCoordinates(startingLocation);
     const destCoords = await fetchCoordinates(destinationLocation);
+
+    // Logging the coordinates to debug
+    console.log("Fetched Start Coords:", startCoords);
+    console.log("Fetched Destination Coords:", destCoords);
 
     if (startCoords && destCoords) {
       setStartCoords(startCoords);
       setDestCoords(destCoords);
       fetchTripDetails(startCoords, destCoords);
+    } else {
+      Alert.alert("Error", "Unable to get coordinates for one or both locations.");
     }
   };
 
@@ -102,9 +107,7 @@ const MapViewComponent = () => {
 
       if (data.routes.length > 0) {
         const leg = data.routes[0].legs[0];
-        setDistance(leg.distance.text);
-        setDuration(leg.duration.text);
-        await saveDeliveryToAsyncStorage(startingLocation, destinationLocation, leg.distance.text, leg.duration.text);
+        await saveDeliveryToAsyncStorage(startCoords, startingLocation, destinationLocation, destCoords, leg.distance.text, leg.duration.text);
       } else {
         Alert.alert("Error", "No route found.");
       }
@@ -115,19 +118,33 @@ const MapViewComponent = () => {
       setLoading(false);
     }
   };
-
-  const saveDeliveryToAsyncStorage = async (start, destination, distance, duration) => {
+  const saveDeliveryToAsyncStorage = async (startCoords, start, destination, destCoords, distance, duration) => {
     const deliveryData = {
+      origin: startCoords,
       startingLocation: start,
       destinationLocation: destination,
+      dest: destCoords,
       distance,
       duration,
     };
-
+    
+    console.log("Derivery", deliveryData);
+    
     try {
       const existingDeliveries = await AsyncStorage.getItem("deliveries");
-      const deliveries = existingDeliveries ? JSON.parse(existingDeliveries) : [];
+  
+      // Ensure deliveries is initialized as an array
+      let deliveries = existingDeliveries ? JSON.parse(existingDeliveries) : [];
+  
+      // Check if deliveries is an array
+      if (!Array.isArray(deliveries)) {
+        deliveries = []; // Re-initialize as an empty array if it's not
+      }
+  
       deliveries.push(deliveryData);
+  
+      console.log("Derivary7 ft", deliveries);
+  
       await AsyncStorage.setItem("deliveries", JSON.stringify(deliveries));
       navigation.navigate("NewDelivery");
     } catch (error) {
@@ -156,13 +173,21 @@ const MapViewComponent = () => {
     if (isStarting) {
       setStartingLocation(description);
       const coords = await fetchCoordinates(description);
-      setStartCoords(coords);
-      setModalVisibleStart(false);
+      if (coords) {
+        setStartCoords(coords);
+        setModalVisibleStart(false);
+      } else {
+        Alert.alert("Error", "Unable to get coordinates for the starting location.");
+      }
     } else {
       setDestinationLocation(description);
       const coords = await fetchCoordinates(description);
-      setDestCoords(coords);
-      setModalVisibleDest(false);
+      if (coords) {
+        setDestCoords(coords);
+        setModalVisibleDest(false);
+      } else {
+        Alert.alert("Error", "Unable to get coordinates for the destination location.");
+      }
     }
     setLocationSuggestions([]);
   };
@@ -262,6 +287,7 @@ const MapViewComponent = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

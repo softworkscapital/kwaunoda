@@ -87,6 +87,7 @@ const DriverNewOrderList = () => {
         setLocations(
           data.map((trip) => ({
             trip_id: trip.trip_id,
+            customer: trip.cust_id,
             origin_lat: parseFloat(trip.origin_location_lat),
             origin_long: parseFloat(trip.origin_location_long),
             destination_lat: parseFloat(trip.destination_lat),
@@ -124,6 +125,8 @@ const DriverNewOrderList = () => {
 
   const handleCounterOffer = async () => {
     const currentdate = new Date().toISOString();
+    console.log("tavamukaunda");
+    
     try {
       const response = await fetch(`${API_URL}/counter_offer/`, {
         method: "POST",
@@ -140,8 +143,13 @@ const DriverNewOrderList = () => {
           currency: selectedCurrency,
           status: "Unseen",
         }),
+
       });
+
       const result = await response.json();
+
+      console.log("counda offer", result);
+
       if (!response.ok) {
         throw new Error(result.message || "Failed to send counter offer.");
       }

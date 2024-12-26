@@ -5,15 +5,18 @@ import {
   Text,
   Animated,
   TouchableOpacity,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Make sure to import AsyncStorage
+import { API_URL } from "./config"; // Adjust the path as necessary
+import Toast from "react-native-toast-message"; // Adjust the path as necessary
 
-const Welcome = ({ navigation }) => {
+const Welcome = ({ navigation, route }) => {
+  const { email, password } = route.params; // Destructure email and password from route params
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity for fade animation
   const [rotationAnim] = useState(new Animated.Value(0)); // Rotation animation
-
-
-
-
+  const [loading, setLoading] = useState(false);
+  const [customerId, setCustomerID] = useState(null); // State to hold customer ID
 
   const fetchUserDetails = async () => {
     setLoading(true); // Set loading state to true
@@ -30,9 +33,9 @@ const Welcome = ({ navigation }) => {
 
       const result = await response.json();
 
-      // Access the customerid from the result
+      // Access the customer ID from the result
       const customerId = result[0]?.customerid;
-      console.log("customa id:", customerId);
+      console.log("Customer ID:", customerId);
       setCustomerID(customerId);
 
       if (response.ok && result.length > 0) {
@@ -40,22 +43,19 @@ const Welcome = ({ navigation }) => {
 
         const ids = {
           driver_id: result[0].driver_id,
-          customerId: result[0]?.customerid, // Store as customerId
+          customerId: result[0]?.customerid,
           last_logged_account: result[0].last_logged_account,
         };
 
-        console.log("The ids", ids);
+        console.log("The IDs", ids);
         // Store driver ID and customer ID in AsyncStorage
-        await AsyncStorage.setItem(
-          "driver",
-          JSON.stringify(result[0].driver_id)
-        );
+        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
         await AsyncStorage.setItem("theIds", JSON.stringify(ids));
-        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId)); // Store as customerId
-        await AsyncStorage.setItem("userStatus", userStatus); // Store user status
+        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
+        await AsyncStorage.setItem("userStatus", userStatus);
 
         if (userStatus === "Pending Verification") {
-          navigation.navigate("Welcome");
+          navigation.navigate("Welcome", { email, password });
         } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {
           navigation.navigate("AccountInError");
         } else {
@@ -79,20 +79,9 @@ const Welcome = ({ navigation }) => {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   useEffect(() => {
+    fetchUserDetails(); // Fetch user details when component mounts
+
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,

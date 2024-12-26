@@ -15,9 +15,10 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "../screens/config";
+import { API_URL, API_URL_UPLOADS } from "../screens/config";
 import Icon from "react-native-vector-icons/FontAwesome";
 import "font-awesome/css/font-awesome.min.css";
+
 
 const { height } = Dimensions.get("window");
 
@@ -65,7 +66,7 @@ const TopView = () => {
 
         if (result && result.length > 0) {
           await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-          setPic(`${APILINK}${result[0].profilePic}`);
+          setPic(`${API_URL_UPLOADS}${result[0].profilePic}`);
           setType(result[0].account_type);
           setName(result[0].username);
         } else {

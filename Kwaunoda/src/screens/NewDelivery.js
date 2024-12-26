@@ -216,7 +216,7 @@ const NewDelivery = () => {
         order_start_datetime: "",
         order_end_datetime: "",
         status: "New Order",
-        deliveray_details: "default_value",
+        deliveray_details: "",
         delivery_notes: deliverynotes || "",
         weight: weight || "",
         delivery_contact_details: contact,

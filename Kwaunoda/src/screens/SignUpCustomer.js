@@ -30,6 +30,7 @@ const SignUpCustomer = () => {
   const [idnumber, setIdnumber] = useState("");
   const [loading, setLoading] = useState(false);
   const accountType = "customer";
+  const membershipstatus = "Pending OTP Verification"
 
 
   const [countryCode, setCountryCode] = React.useState('263'); // Zimbabwe's country code
@@ -75,7 +76,7 @@ const SignUpCustomer = () => {
 
     setLoading(true);
 
-    const customerDetails = { name, surname, phone, idnumber, accountType };
+    const customerDetails = { name, surname, phone, idnumber, accountType, membershipstatus };
 
     try {
       await AsyncStorage.setItem(

@@ -9,39 +9,43 @@ import {
     ActivityIndicator,
     Alert
 } from "react-native";
-import { useRoute } from '@react-navigation/native'; // Import useRoute
+import { useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { API_URL } from './config'; 
 
 const OTPCustomer = ({ navigation }) => {
-    const route = useRoute(); // Access route parameters
+    const route = useRoute();
     const { userId } = route.params; // Destructure userId from route parameters
   
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [loading, setLoading] = useState(false);
-    const [fetchedOtp, setFetchedOtp] = useState("");
-
-    // Create refs for each OTP input
     const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
     const handleVerifyOtp = async () => {
         const otpString = otp.join('');
         setLoading(true);
-        console.log("User ID:", userId);
         try {
-            // Fetch user details using the hardcoded user ID
             const response = await fetch(`${API_URL}/USERS/${userId}`);
             const userDetails = await response.json();
-            console.log("Fetched User Details:", userDetails);
 
             if (userDetails && userDetails.length > 0) {
-                const fetchedOtp = userDetails[0].otp.toString(); // Assuming OTP is in user details
-                console.log("Fetched OTP from database:", fetchedOtp);
+                const fetchedOtp = userDetails[0].otp.toString();
                 if (otpString === fetchedOtp) {
-                    Alert.alert("Success", "OTP verified successfully.");
-                    navigation.navigate('CustomerLogin'); // Navigate to CustomerLogin.js
+                    const status = { membershipstatus: "Pending Verification" };
+                    const response = await fetch(`${API_URL}/customerdetails/update_status/${userId}`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(status),
+                    });
+                
+                    if (response.ok) {
+                        Alert.alert("Success", "OTP verified successfully.");
+                        navigation.navigate("CustomerLogin");
+                    }
                 } else {
                     Alert.alert("Error", "Invalid OTP. Please try again.");
                 }
@@ -49,7 +53,6 @@ const OTPCustomer = ({ navigation }) => {
                 Alert.alert("Error", "User details not found.");
             }
         } catch (error) {
-            console.error("Error fetching user details:", error);
             Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
         } finally {
             setLoading(false);
@@ -60,14 +63,12 @@ const OTPCustomer = ({ navigation }) => {
         const newOtp = [...otp];
         newOtp[index] = text;
         setOtp(newOtp);
-        // Automatically focus on the next input if the current one is filled
         if (text.length === 1 && index < otp.length - 1) {
-            otpRefs[index + 1].current.focus(); // Use the ref to focus
+            otpRefs[index + 1].current.focus();
         }
     };
 
     const handleResendOtp = () => {
-        // Optionally, resend OTP logic can be implemented here
         Alert.alert("Info", "Resend OTP functionality not implemented yet.");
     };
 
@@ -85,7 +86,7 @@ const OTPCustomer = ({ navigation }) => {
                 {otp.map((digit, index) => (
                     <TextInput
                         key={index}
-                        ref={otpRefs[index]} // Set the ref
+                        ref={otpRefs[index]}
                         style={styles.otpInput}
                         value={digit}
                         onChangeText={(text) => handleChange(text, index)}
@@ -109,6 +110,7 @@ const OTPCustomer = ({ navigation }) => {
         </SafeAreaView>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {

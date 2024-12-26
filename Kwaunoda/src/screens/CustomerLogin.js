@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
-  ActivityIndicator, // Import ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
@@ -20,13 +20,12 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
-import LocationSender from './LocationTracker';
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [customerID, setCustomerID] = useState(0);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   const redirectSignUpCustomer = () => {
@@ -43,8 +42,7 @@ const CustomerLogin = () => {
         const response = await fetch(
           `${API_URL}/trip/byStatus/driver_id/status?driver_id=${driverId}&status=InTransit`
         );
-  
-        // Handle 404 error specifically
+
         if (response.status === 404) {
           Toast.show({
             text1: "No trips found.",
@@ -54,23 +52,21 @@ const CustomerLogin = () => {
             visibilityTime: 3000,
             autoHide: true,
           });
-          // Redirect to DriverNewOrderList
           navigation.navigate("DriverNewOrderList", { driverId });
-          return; // Exit the function early
+          return;
         }
-  
+
         if (!response.ok) {
-          const errorResponse = await response.json(); // Only read response once
+          const errorResponse = await response.json();
           console.error("Error Response:", errorResponse);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
-        const tripData = await response.json(); // Read response here
-  
+
+        const tripData = await response.json();
+
         if (tripData.length > 0) {
-          navigation.navigate("InTransitTrip"); // Navigate to in-transit screen
+          navigation.navigate("InTransitTrip");
         } else {
-          // Handle case when there are no trips in transit
           Toast.show({
             text1: "No trips in transit.",
             text2: "Redirecting to your new orders.",
@@ -120,7 +116,7 @@ const CustomerLogin = () => {
   };
 
   const fetchUserDetails = async () => {
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     try {
       const response = await fetch(
         `${API_URL}/users/login/${email}/${password}`,
@@ -133,35 +129,33 @@ const CustomerLogin = () => {
       );
 
       const result = await response.json();
-
-      // Access the customerid from the result
       const customerId = result[0]?.customerid;
-      console.log("customa id:", customerId);
       setCustomerID(customerId);
 
       if (response.ok && result.length > 0) {
-        const userStatus = result[0].status; // Assuming the user status is in the response
+        const userStatus = result[0].status; 
+        const userType = result[0].role; 
 
         const ids = {
           driver_id: result[0].driver_id,
-          customerId: result[0]?.customerid, // Store as customerId
+          customerId: result[0]?.customerid,
           last_logged_account: result[0].last_logged_account,
         };
 
-        console.log("The ids", ids);
-        // Store driver ID and customer ID in AsyncStorage
-        await AsyncStorage.setItem(
-          "driver",
-          JSON.stringify(result[0].driver_id)
-        );
+        console.log("the ids", ids)
+        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
         await AsyncStorage.setItem("theIds", JSON.stringify(ids));
-        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId)); // Store as customerId
-        await AsyncStorage.setItem("userStatus", userStatus); // Store user status
+        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
+        await AsyncStorage.setItem("userStatus", userStatus);
 
         if (userStatus === "Pending Verification") {
-          navigation.navigate("Welcome");
+          navigation.navigate("Welcome", email, password);
         } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {
           navigation.navigate("AccountInError");
+        } else if (userStatus === "Pending OTP Verification" && userType === "driver") {
+          navigation.navigate("OTPDriver", result[0].driver_id);
+        } else if (userStatus === "Pending OTP Verification" && userType === "customer") {
+          navigation.navigate("OTPCustomer", { userId: ids.customerId.toString() }); // Pass customerId here
         } else {
           redirectHome(ids.last_logged_account, ids.driver_id);
         }
@@ -179,17 +173,17 @@ const CustomerLogin = () => {
         autoHide: true,
       });
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
   const theLogin = async () => {
-    if (!validateInput()) return; // Validate input before proceeding
-    await fetchUserDetails(); // Fetch user details to check status
+    if (!validateInput()) return;
+    await fetchUserDetails();
   };
 
   const handleSignIn = async () => {
-    await theLogin(); // Attempt login
+    await theLogin();
   };
 
   return (
@@ -241,10 +235,10 @@ const CustomerLogin = () => {
           <TouchableOpacity
             style={[styles.btnSignUp, { marginTop: 50 }]}
             onPress={handleSignIn}
-            disabled={loading} // Disable button while loading
+            disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#000" /> // Show loading spinner
+              <ActivityIndicator size="small" color="#000" />
             ) : (
               <Text style={styles.txtSignUp}>Sign In</Text>
             )}
@@ -271,6 +265,8 @@ const CustomerLogin = () => {
     </SafeAreaView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {

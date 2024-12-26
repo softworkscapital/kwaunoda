@@ -200,7 +200,7 @@ const SignUpDriver1 = () => {
         editproperty: false,
         approverequests: false,
         delivery: false,
-        status: "Pending Verification", // Set status as pending
+        status: "Pending OTP Verification", // Set status as pending
         employee_id: null,
         company_id: null,
         branch_id: null,
@@ -257,7 +257,7 @@ const SignUpDriver1 = () => {
         suburb: driverDetails.suburb || "",
         city: driverDetails.city || "",
         country: driverDetails.country || "",
-        membershipstatus: "Pending Verification",
+        membershipstatus: "Pending OTP Verification",
       };
 
       const driverResp = await fetch(`${APILINK}/driver/`, {

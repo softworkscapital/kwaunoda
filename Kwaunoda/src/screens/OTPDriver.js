@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -14,24 +14,41 @@ import { API_URL } from "./config";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRoute } from "@react-navigation/native"; // Import useRoute
+import { useRoute } from "@react-navigation/native";
 
 const OTPDriver = ({ navigation }) => {
-  const route = useRoute(); // Access route parameters
-  const { userId } = route.params; // Destructure userId from route parameters
+  const route = useRoute();
 
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(true);
   const [fetchedOtp, setFetchedOtp] = useState("");
+  const [userId, setUserId] = useState(null);
+  const APILINK = API_URL;
+
+  // Create refs for OTP inputs
+  const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+
+  const getId = async () => {
+    const user = await AsyncStorage.getItem("driver");
+    const userId = JSON.parse(user);
+    setUserId(userId);
+    return userId; // Return userId for further use
+  };
 
   useEffect(() => {
-    console.log("Passed userId:", userId); // Log the passed userId
-    fetchDriverDetails(userId); // Pass userId to fetchDriverDetails
-  }, [userId]);
+    const fetchUserId = async () => {
+      const id = await getId();
+      console.log("Passed userId:", id);
+      if (id) {
+        fetchDriverDetails(id);
+      }
+    };
+    fetchUserId();
+  }, []);
 
-  const fetchDriverDetails = async (userId) => {
+  const fetchDriverDetails = async (id) => {
     try {
-      if (!userId) {
+      if (!id) {
         Toast.show({
           text1: "Error",
           text2: "User ID not found.",
@@ -41,14 +58,13 @@ const OTPDriver = ({ navigation }) => {
         return;
       }
 
-      // Fetch OTP based on userId
-      const response = await fetch(`${API_URL}/USERS/${userId}`);
+      const response = await fetch(`${API_URL}/users/${id}`);
       if (response.ok) {
         const user = await response.json();
         if (user.length > 0 && user[0].otp) {
-          setFetchedOtp(user[0].otp.toString()); // Convert OTP to string
+          setFetchedOtp(user[0].otp.toString());
           console.log("Fetched User Details:", user[0]);
-          console.log("Fetched OTP:", user[0].otp); // Log the fetched OTP
+          console.log("Fetched OTP:", user[0].otp);
         } else {
           Toast.show({
             text1: "Error",
@@ -80,11 +96,33 @@ const OTPDriver = ({ navigation }) => {
     }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const otpString = otp.join("");
     if (otpString === fetchedOtp) {
-      Alert.alert("Success", "OTP verified successfully.");
-      navigation.navigate("CustomerLogin");
+      try {
+        const status = { membershipstatus: "Pending Verification" };
+        const response = await fetch(`${APILINK}/driver/update_status/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(status),
+        });
+
+        if (response.ok) {
+          const result = await response.json(); // Await the JSON response
+          console.log("From OTP", result);
+          Alert.alert("Success", "OTP verified successfully.");
+          navigation.navigate("CustomerLogin");
+        } else {
+          const errorResponse = await response.json();
+          console.error("Error response:", errorResponse);
+          Alert.alert("Error", "Failed to update status.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Alert.alert("Error", "An error occurred while verifying OTP.");
+      }
     } else {
       Alert.alert("Error", "Invalid OTP. Please try again.");
     }
@@ -95,7 +133,7 @@ const OTPDriver = ({ navigation }) => {
     newOtp[index] = text;
     setOtp(newOtp);
     if (text.length === 1 && index < otp.length - 1) {
-      this[`otpInput${index + 1}`].focus();
+      otpInputRefs[index + 1].current.focus(); // Focus the next input
     }
   };
 
@@ -126,9 +164,7 @@ const OTPDriver = ({ navigation }) => {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            ref={(input) => {
-              this[`otpInput${index}`] = input;
-            }}
+            ref={otpInputRefs[index]} // Use ref created with useRef
             style={styles.otpInput}
             value={digit}
             onChangeText={(text) => handleChange(text, index)}
@@ -217,7 +253,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   txtResend: {
-    color: "#007BFF", // Change color to blue to indicate it's clickable
+    color: "#007BFF",
     fontSize: 16,
     fontWeight: "bold",
   },

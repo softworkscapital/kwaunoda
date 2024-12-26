@@ -279,8 +279,8 @@ crudsObj.postCustomer = (
                 if (err) {
                     return reject(err);
                 }
-                return resolve({ status: "200", message: "saving successful", result });
-            }
+                return resolve({ status: "200", message: "Your account has been created successfully, Now verify your phone number via the OTP sent to your mobile" });
+              }
         );
     });
 };

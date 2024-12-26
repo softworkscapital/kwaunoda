@@ -118,64 +118,67 @@ const CustomerLogin = () => {
   const fetchUserDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_URL}/users/login/${email}/${password}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+        const response = await fetch(
+            `${API_URL}/users/login/${email}/${password}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-      const result = await response.json();
-      const customerId = result[0]?.customerid;
-      setCustomerID(customerId);
+        const result = await response.json();
+        const customerId = result[0]?.customerid;
+        setCustomerID(customerId);
 
-      if (response.ok && result.length > 0) {
-        const userStatus = result[0].status; 
-        const userType = result[0].role; 
+        if (response.ok && result.length > 0) {
+            const userStatus = result[0].status; 
+            const userType = result[0].role; 
 
-        const ids = {
-          driver_id: result[0].driver_id,
-          customerId: result[0]?.customerid,
-          last_logged_account: result[0].last_logged_account,
-        };
+            const ids = {
+                driver_id: result[0].driver_id,
+                customerId: result[0]?.customerid,
+                last_logged_account: result[0].last_logged_account,
+            };
 
-        console.log("the ids", ids)
-        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
-        await AsyncStorage.setItem("theIds", JSON.stringify(ids));
-        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
-        await AsyncStorage.setItem("userStatus", userStatus);
+            // Store user data in AsyncStorage
+            await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
+            await AsyncStorage.setItem("theIds", JSON.stringify(ids));
+            await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
+            await AsyncStorage.setItem("userStatus", userStatus);
 
-        if (userStatus === "Pending Verification") {
-          navigation.navigate("Welcome", email, password);
-        } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {
-          navigation.navigate("AccountInError");
-        } else if (userStatus === "Pending OTP Verification" && userType === "driver") {
-          navigation.navigate("OTPDriver", result[0].driver_id);
-        } else if (userStatus === "Pending OTP Verification" && userType === "customer") {
-          navigation.navigate("OTPCustomer", { userId: ids.customerId.toString() }); // Pass customerId here
+            // Navigation based on user status
+            if (userStatus === "Pending Verification") {
+                navigation.navigate("Welcome", { email, password });
+            } else if (["Suspended", "Blacklisted"].includes(userStatus)) {
+                navigation.navigate("AccountInError");
+            } else if (userStatus === "Pending OTP Verification") {
+                if (userType === "driver") {
+                    navigation.navigate("OTPDriver", result[0].driver_id);
+                } else {
+                    navigation.navigate("OTPCustomer", { userId: ids.customerId.toString() });
+                }
+            } else {
+                redirectHome(ids.last_logged_account, ids.driver_id);
+            }
         } else {
-          redirectHome(ids.last_logged_account, ids.driver_id);
+            Alert.alert("Error", "No user found or wrong password/email.");
         }
-      } else {
-        Alert.alert("Error", "No user found or wrong password/email.");
-      }
     } catch (error) {
-      console.log("Error fetching user details:", error);
-      Toast.show({
-        text1: "Error",
-        text2: "An error occurred. Please try again.",
-        type: "error",
-        position: "center",
-        visibilityTime: 3000,
-        autoHide: true,
-      });
+        console.log("Error fetching user details:", error);
+        Toast.show({
+            text1: "Error",
+            text2: "An error occurred. Please try again.",
+            type: "error",
+            position: "center",
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
+
 
   const theLogin = async () => {
     if (!validateInput()) return;

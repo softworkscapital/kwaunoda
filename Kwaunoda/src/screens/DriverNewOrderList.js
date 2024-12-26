@@ -97,6 +97,9 @@ const DriverNewOrderList = () => {
             cost: trip.delivery_cost_proposed,
             origin_location: trip.origin_location,
             dest_location: trip.dest_location,
+            paying_when: trip.paying_when,
+            payment_type: trip.payment_type,
+            currency: trip.currency_id,
           }))
         );
       }
@@ -237,25 +240,27 @@ const DriverNewOrderList = () => {
             <Text style={{ paddingVertical: 7 }}>{selectedTrip.detail}</Text>
             <Text style={{ paddingVertical: 5 }}>From: {selectedTrip.origin_location}</Text>
             <Text style={{ paddingVertical: 5}}>To: {selectedTrip.dest_location}</Text>
+            <Text style={{ paddingVertical: 5}}>{selectedTrip.paying_when}</Text>
+            <Text style={{ paddingVertical: 5}}>{selectedTrip.payment_type}</Text>
             <Text style={{ fontSize: 20, fontWeight: "700", color: "green" }}>
-              ${selectedTrip.cost}
+              ${selectedTrip.cost} {selectedTrip.currency}
             </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={() => setShowCounterOfferModal(true)}
-                style={styles.counterOfferButton}
+                style={styles.endTripButton}
               >
                 <Text style={styles.counterOfferButtonText}>Counter Offer</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setSelectedTrip(null)}
-                style={styles.button}
+                style={styles.cancelTripButton}
               >
                 <Text style={styles.buttonText}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleAcceptTrip}
-                style={styles.acceptButton}
+                style={styles.chatButton}
               >
                 <Text style={styles.acceptButtonText}>Accept</Text>
               </TouchableOpacity>
@@ -321,7 +326,7 @@ const DriverNewOrderList = () => {
           onRequestClose={() => setShowCounterOfferModal(false)}
         >
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Enter Counter Offer</Text>
+            <Text style={styles.modalTitle}>Offer Price</Text>
             <View style={styles.counterOfferContainer}>
               <TextInput
                 style={styles.modalInput}
@@ -378,6 +383,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffc000",
     borderRadius: 8,
     margin: 10,
+    paddingBottom: 30,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -394,41 +400,51 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start", // Adjusted to space-between for better button arrangement
     marginTop: 10,
+    marginBottom: 5,
   },
-  button: {
-    backgroundColor: "green",
-    borderRadius: 50,
-    padding: 10,
-    width: "30%",
-    alignItems: "center",
+  cancelTripButton: {
+    backgroundColor: "#FF5733",
+    borderRadius: 15, // Smaller border radius
+    paddingVertical: 6, // Reduced padding
+    paddingHorizontal: 12, // Reduced padding
+    marginRight: 5, // Slight margin for spacing
   },
+  endTripButton: {
+    backgroundColor: "#FFA500",
+    borderRadius: 15, // Smaller border radius
+    paddingVertical: 6, // Reduced padding
+    paddingHorizontal: 12, // Reduced padding
+    marginRight: 5, // Slight margin for spacing
+  },
+  chatButton: {
+    backgroundColor: "#007BFF",
+    borderRadius: 15, // Smaller border radius
+    paddingVertical: 6, // Reduced padding
+    paddingHorizontal: 12, // Reduced padding
+    elevation: 2,
+  },
+  requestButtonRow: {
+    flexDirection: "row",
+    justifyContent: "center", // Center the buttons
+    // marginBottom: 1,
+  },
+
   buttonText: {
     fontSize: 14,
-    color: "#fff",
+    color: "black",
   },
-  acceptButton: {
-    backgroundColor: "green",
-    borderRadius: 50,
-    padding: 5,
-    width: "30%",
-    alignItems: "center",
-  },
+
   acceptButtonText: {
     fontSize: 14,
-    color: "white",
+    color: "black",
   },
-  counterOfferButton: {
-    backgroundColor: "green",
-    borderRadius: 50,
-    padding: 10,
-    width: "30%",
-    alignItems: "center",
-  },
+
   counterOfferButtonText: {
     fontSize: 14,
-    color: "white",
+    fontweight: "500",
+    color: "black",
   },
   selectTripContainer: {
     alignItems: "center",

@@ -161,7 +161,7 @@ const CustomerNewDelivery = () => {
         order_start_datetime: "",
         order_end_datetime: "",
         status: "New Order",
-        delivery_details: parcelDescription || null,
+        delivery_details: "Package : "+parcelDescription+" est. "+weight+" KGS"+" "+deliverynotes,
         delivery_notes: deliverynotes || null,
         weight: weight || null,
         delivery_contact_details: contact,

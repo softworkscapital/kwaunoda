@@ -168,21 +168,7 @@ const InTransitTrip = () => {
         <WebView source={{ uri: webViewUrl }} style={styles.webview} />
       )}
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Route</Text>
-
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={() => navigation.navigate("DriverChat")}
-        >
-          <Text style={styles.chatButtonText}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={() => navigation.navigate("DriverEndTrip", { tripId })}
-        >
-          <Text style={styles.chatButtonText}>End Trip</Text>
-        </TouchableOpacity>
+      <View >
 
         {currentTrip && (
           <View style={styles.fixedCurrentTripContainer}>
@@ -253,16 +239,18 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     height: 270,
-    backgroundColor: "#FFC000",
+    // backgroundColor: "#FFC000",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     elevation: 5,
-    paddingBottom: 20,
+    paddingBottom: 0,
+    marginBottom: 70,
+  
   },
   tripCard: {
-    marginVertical: 5,
-    padding: 10,
+    marginVertical: 10,
+    padding: 15,
     borderRadius: 5,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     width: "100%",

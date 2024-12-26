@@ -17,8 +17,7 @@ import { faCamera, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
-import { API_URL, API_URL_UPLOADS } from "./config";
-
+import { API_URL } from "./config";
 
 const SignUpCustomer3 = () => {
   const [username, setUsername] = useState("");
@@ -293,7 +292,7 @@ const handleImageUpload = async (imageUri) => {
     });
 
     try {
-      const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
         headers: {
@@ -331,7 +330,7 @@ const handleImageUpload = async (imageUri) => {
 const newCustomer = {
     customerid: userId, // Ensure this is set correctly
     ecnumber: user1.ecnumber || "",
-    account_type: user1.accountType || "",
+    account_type: user1.account_type || "",
     account_category: user1.account_category || "",
     signed_on: user1.signed_on || new Date().toISOString(),
     name: user1.name || "",
@@ -407,7 +406,7 @@ const newCustomer = {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <FontAwesomeIcon icon={faMapMarkerAlt} size={40} color="red" />
-        <Text style={styles.appName}>DropX</Text>
+        <Text style={styles.appName}>EasyGo</Text>
       </View>
       <ScrollView>
         <View style={styles.formContainer}>

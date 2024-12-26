@@ -36,6 +36,11 @@ const TopView = () => {
   const APILINK = API_URL;
   const progressAnimations = useRef({});
   const [refreshing, setRefreshing] = useState(false);
+
+
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -66,7 +71,7 @@ const TopView = () => {
 
         if (result && result.length > 0) {
           await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-          setPic(`${API_URL_UPLOADS}${result[0].profilePic}`);
+          setPic(`${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, '/')}`);
           setType(result[0].account_type);
           setName(result[0].username);
         } else {
@@ -140,6 +145,24 @@ const TopView = () => {
     return () => clearInterval(intervalId);
   }, [id]);
 
+
+
+  const iconMap = {
+    "Standard Account": 'user',
+    "Profile Info": 'user-edit',
+    "Wallet": 'wallet',
+    "History": 'history',
+    "Settings": 'cog',
+    "FAQ": 'question-circle',
+    "Safety": 'shield-alt',
+    "Chat": 'comments',
+    "Feedback": 'comment',
+    "About Us": 'info-circle',
+    "Complaint": 'exclamation-triangle',
+    "Tell A Friend": 'share-alt',
+    "Log Out": 'sign-out',
+  };
+
   const menuOptions = [
     {
       id: "0",
@@ -175,6 +198,9 @@ const TopView = () => {
     },
     { id: "12", title: "Log Out", onPress: () => handleLogout() },
   ];
+
+
+
 
   const handleMenuPress = (screen) => {
     setMenuModalVisible(false);
@@ -223,7 +249,7 @@ const TopView = () => {
           <View style={styles.profileContainer}>
             <Image
               source={{ uri: offer.profileImage }}
-              style={[styles.profileImage, { marginTop: 10 }]}
+              style={[styles.profileImage, { marginTop: 5 }]}
             />
           </View>
           <Text style={styles.offerText}>
@@ -371,19 +397,19 @@ const TopView = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ uri: profileImage }}
-          style={[styles.profileImage, { marginTop: 10 }]}
-        />
-        <View>
-          <Text style={styles.profileName}>{name}</Text>
-          <Text>{customerType}</Text>
-        </View>
-      </View>
+     
       <View style={styles.notificationContainer}>
+
+        <TouchableOpacity
+          onPress={() => setMenuModalVisible(true)}
+          style={styles.menuButton}
+        >
+          <FontAwesome name="bars" size={24} color="black" />
+        </TouchableOpacity>
+
+
         <TouchableOpacity onPress={() => setCounterOfferModalVisible(true)}>
-          <FontAwesome name="bell" size={24} color="black" />
+          <FontAwesome name="bell" size={24} color="black"    style={styles.menuButton}/>
           {notificationCount > 0 && (
             <View style={styles.notificationCount}>
               <Text style={styles.countText}>x{notificationCount}</Text>
@@ -402,13 +428,28 @@ const TopView = () => {
         >
           <FontAwesome name="shopping-cart" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setMenuModalVisible(true)}
-          style={styles.menuButton}
-        >
-          <FontAwesome name="bars" size={24} color="black" />
-        </TouchableOpacity>
+      
+
+
       </View>
+      <View style={styles.profileContainer}>
+
+        <View>
+        <Text style={styles.profileName}>
+        </Text>
+        <Text style={styles.profileName}>
+             {name}
+        </Text>
+        <Text style={{marginBottom: 3, fontSize: 11}}>
+            {customerType === "customer" ? "Customer" : "Driver"}
+        </Text>
+        </View>
+        <Image
+          source={{ uri: profileImage }}
+          style={[styles.profileImage, { marginTop: 5 }]}
+        />
+      </View>
+
 
       {/* Counter Offer Modal */}
       <Modal
@@ -439,8 +480,8 @@ const TopView = () => {
         </View>
       </Modal>
 
-      {/* Menu Options Modal */}
-      <Modal
+{/* Menu Options Modal */}
+<Modal
         transparent={true}
         animationType="slide"
         visible={isMenuModalVisible}
@@ -456,6 +497,11 @@ const TopView = () => {
                   style={styles.menuItem}
                   onPress={item.onPress}
                 >
+                  <FontAwesome 
+                    name={iconMap[item.title] || 'question'} // Default icon if not found
+                    size={20} 
+                    style={styles.icon} 
+                  />
                   <Text style={styles.menuText}>{item.title}</Text>
                 </TouchableOpacity>
               )}
@@ -482,10 +528,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 8,
+    padding: 3,
     backgroundColor: "#FFC000",
     paddingTop: 30,
-    paddingRight: 30,
+    paddingRight: 9,
     width: "100%",
   },
   profileContainer: {
@@ -493,13 +539,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    marginLeft: 10,
+    marginBottom: 8,
   },
   profileName: {
-    fontWeight: "800",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   notificationContainer: {
     flexDirection: "row",
@@ -617,15 +665,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#777",
   },
+
   menuItem: {
-    paddingVertical: 15,
+    flexDirection: 'row', // Align items in a row
+    alignItems: 'center', // Center vertically
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
-  menuText: {
-    fontSize: 16,
+  icon: {
+    marginRight: 10, // Space between icon and text
   },
-
+  menuText: {
+    fontSize: 16, // Adjust font size as needed
+    flex: 1, // Allows text to take available space
+  },
   counterOffersContainer: {
     paddingVertical: 10,
     paddingHorizontal: 0,

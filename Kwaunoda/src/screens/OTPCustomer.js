@@ -18,34 +18,48 @@ import { API_URL } from './config';
 const OTPCustomer = ({ navigation }) => {
     const route = useRoute();
     const { userId } = route.params; // Destructure userId from route parameters
-  
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [loading, setLoading] = useState(false);
+    const APILINK = API_URL;
     const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
-    const handleVerifyOtp = async () => {
-        const otpString = otp.join('');
-        setLoading(true);
+    const updateUserStatus = async () => {
+        const status = { status: "Pending Verification" };
         try {
-            const response = await fetch(`${API_URL}/USERS/${userId}`);
+            const response = await fetch(`${APILINK}/users/update_status/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(status),
+            });
+
+            if (response.ok) {
+                Alert.alert("Success", "OTP verified successfully.");
+                navigation.navigate("CustomerLogin");
+            } else {
+                const errorResponse = await response.json();
+                console.error("Error updating status:", errorResponse);
+                Alert.alert("Error", "Failed to update status.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            Alert.alert("Error", "An error occurred while verifying OTP.");
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        const otpString = otp.join("");
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${APILINK}/USERS/${userId}`);
             const userDetails = await response.json();
 
             if (userDetails && userDetails.length > 0) {
                 const fetchedOtp = userDetails[0].otp.toString();
                 if (otpString === fetchedOtp) {
-                    const status = { membershipstatus: "Pending Verification" };
-                    const response = await fetch(`${API_URL}/customerdetails/update_status/${userId}`, {
-                        method: "PUT",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(status),
-                    });
-                
-                    if (response.ok) {
-                        Alert.alert("Success", "OTP verified successfully.");
-                        navigation.navigate("CustomerLogin");
-                    }
+                    await updateUserStatus();
                 } else {
                     Alert.alert("Error", "Invalid OTP. Please try again.");
                 }

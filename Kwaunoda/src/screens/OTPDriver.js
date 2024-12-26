@@ -96,6 +96,35 @@ const OTPDriver = ({ navigation }) => {
     }
   };
 
+
+
+  const updateUsers = async() => {
+    try {
+      const status = { status: "Pending Verification" };
+      const response = await fetch(`${APILINK}/users/update_status/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(status),
+      });
+
+      if (response.ok) {
+        const result = await response.json(); // Await the JSON response
+        console.log("From OTP", result);
+        Alert.alert("Success", "OTP verified successfully.");
+        navigation.navigate("CustomerLogin");
+      } else {
+        const errorResponse = await response.json();
+        console.error("Error response:", errorResponse);
+        Alert.alert("Error", "Failed to update status.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Alert.alert("Error", "An error occurred while verifying OTP.");
+    }
+  }
+
   const handleVerifyOtp = async () => {
     const otpString = otp.join("");
     if (otpString === fetchedOtp) {
@@ -110,6 +139,7 @@ const OTPDriver = ({ navigation }) => {
         });
 
         if (response.ok) {
+          updateUsers();
           const result = await response.json(); // Await the JSON response
           console.log("From OTP", result);
           Alert.alert("Success", "OTP verified successfully.");
@@ -186,6 +216,7 @@ const OTPDriver = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

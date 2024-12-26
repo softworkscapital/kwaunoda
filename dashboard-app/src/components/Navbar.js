@@ -23,7 +23,7 @@ const Navbar = () => {
               
               <div class="dashboard-header">
                   <nav class="navbar navbar-expand-lg bg-white fixed-top " align='left'>
-                      <a  href="/"><p class="navbar-brand">KWAUNODA </p> <p style={{marginTop: '-40px',marginLeft: '20px'}}>Logged in as: {username}{companyname}</p></a>
+                      <a  href="/"><p class="navbar-brand">DropX </p> <p style={{marginTop: '-25px',marginLeft: '20px', fontSize:"14px"}}>Logged in as: {username}{companyname}</p></a>
                      
                       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                           <span class="navbar-toggler-icon"></span>

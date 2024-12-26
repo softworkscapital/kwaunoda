@@ -21,7 +21,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
-import { API_URL } from "./config"; // Import the API_URL
+import { API_URL_UPLOADS } from "./config"; // Import the API_URL
 
 const SignUpDriver = () => {
   const [name, setName] = useState("");
@@ -102,7 +102,7 @@ const SignUpDriver = () => {
     });
 
     try {
-      const response = await fetch(`${API_URL}/upload`, {
+      const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
         method: "POST",
         body: formData,
         headers: {

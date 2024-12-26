@@ -52,9 +52,9 @@ const DriversTable = ({ driversData }) => {
                     <Link
                       className="btn btn-primary btnAdd"
                       style={{ float: "right", marginRight: "40px" }}
-                      to="/adddirectexpenses"
+                      to="/verifyReg"
                     >
-                      Add Employee Detail
+                      Verify New Drivers
                     </Link>
                   </h2>
                   <div className="card-body">

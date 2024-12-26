@@ -10,6 +10,7 @@ const MapView = ({ selectedTrip }) => {
   const [startLocation, setStartLocation] = useState(null);
   const [endLocation, setEndLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: -17.8252, lng: 31.0335 }); // Initial center
+  const [pickedLocation, setPickedLocation] = useState(null); // New state for picked location
   const APILINK = API_URL;
 
   const getDrivers = async () => {
@@ -121,6 +122,14 @@ const MapView = ({ selectedTrip }) => {
     Pitch(selectedTrip);
   }, [selectedTrip]);
 
+  // Handle map click to set picked location
+  const handleMapClick = (event) => {
+    const { latLng } = event;
+    const lat = latLng.lat();
+    const lng = latLng.lng();
+    setPickedLocation({ lat, lng });
+  };
+
   return (
     <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
       <div style={{ width: '100%', height: '100vh' }}>
@@ -133,6 +142,7 @@ const MapView = ({ selectedTrip }) => {
             scrollwheel: true,
             gestureHandling: 'auto',
           }}
+          onClick={handleMapClick} // Add click handler
         >
           {markers.map((marker, index) => (
             <Marker 
@@ -165,6 +175,14 @@ const MapView = ({ selectedTrip }) => {
           {endLocation && (
             <Marker 
               position={endLocation}
+            />
+          )}
+
+          {/* Picked Location Marker */}
+          {pickedLocation && (
+            <Marker 
+              position={pickedLocation} 
+              icon={{ url: '/src/assets/icons8-motorcycle-30.png', scaledSize: new window.google.maps.Size(30, 30) }} // Use your custom icon path
             />
           )}
 

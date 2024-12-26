@@ -23,6 +23,8 @@ import AddConfig from './components/AddConfig';
 import AppStatistics from './components/AppStatistics';
 import ViewConfig from './components/ViewConfig';
 import Configurations from './components/Configurations';
+import MapView from './components/Location';
+import MapViewWithDriver from './components/TripTrack';
 
 function App() {
     const [tripData, setTripData] = useState([]);
@@ -92,6 +94,8 @@ function App() {
                     <Route path="/AppStatistics" element={<AppStatistics />} />
                     <Route path="/ViewConfig" element={<ViewConfig />} />
                     <Route path="/Configurations" element={<Configurations />} />
+                    <Route path="/map" element={<MapView />} />
+                    <Route path="/mapWithDriver" element={<MapViewWithDriver />} />
 
 
                 </Routes>

@@ -10,7 +10,7 @@ const Footer = () => {
                 <link rel="stylesheet" href="../assets/libs/css/style.css" />
                 <link rel="stylesheet" href="../assets/vendor/fonts/fontawesome/css/fontawesome-all.css" />
             </head>
-            <div class="footer" style={{position: 'fixed', bottom: 0}}>
+            <div class="footer" style={{position: 'fixed', bottom: '0'}}>
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">

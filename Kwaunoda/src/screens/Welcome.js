@@ -11,6 +11,87 @@ const Welcome = ({ navigation }) => {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity for fade animation
   const [rotationAnim] = useState(new Animated.Value(0)); // Rotation animation
 
+
+
+
+
+  const fetchUserDetails = async () => {
+    setLoading(true); // Set loading state to true
+    try {
+      const response = await fetch(
+        `${API_URL}/users/login/${email}/${password}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      // Access the customerid from the result
+      const customerId = result[0]?.customerid;
+      console.log("customa id:", customerId);
+      setCustomerID(customerId);
+
+      if (response.ok && result.length > 0) {
+        const userStatus = result[0].status; // Assuming the user status is in the response
+
+        const ids = {
+          driver_id: result[0].driver_id,
+          customerId: result[0]?.customerid, // Store as customerId
+          last_logged_account: result[0].last_logged_account,
+        };
+
+        console.log("The ids", ids);
+        // Store driver ID and customer ID in AsyncStorage
+        await AsyncStorage.setItem(
+          "driver",
+          JSON.stringify(result[0].driver_id)
+        );
+        await AsyncStorage.setItem("theIds", JSON.stringify(ids));
+        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId)); // Store as customerId
+        await AsyncStorage.setItem("userStatus", userStatus); // Store user status
+
+        if (userStatus === "Pending Verification") {
+          navigation.navigate("Welcome");
+        } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {
+          navigation.navigate("AccountInError");
+        } else {
+          redirectHome(ids.last_logged_account, ids.driver_id);
+        }
+      } else {
+        Alert.alert("Error", "No user found or wrong password/email.");
+      }
+    } catch (error) {
+      console.log("Error fetching user details:", error);
+      Toast.show({
+        text1: "Error",
+        text2: "An error occurred. Please try again.",
+        type: "error",
+        position: "center",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } finally {
+      setLoading(false); // Reset loading state
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     // Fade in animation
     Animated.timing(fadeAnim, {
@@ -54,11 +135,11 @@ const Welcome = ({ navigation }) => {
             },
           ]}
         >
-          <Text style={styles.boxText}>Kwaunoda</Text>
+          <Text style={styles.boxText}>DropX</Text>
         </Animated.View>
       </View>
       <Text style={styles.message}>
-        Your account is still being verified by the Kwaunoda agents.
+        Your account is still being verified by the DropX agents.
       </Text>
       <Text style={[styles.message, { marginTop: 10 }]}>
         Please be patient...
@@ -87,14 +168,14 @@ const styles = StyleSheet.create({
   box: {
     width: 120, // Increased width
     height: 120, // Increased height
-    backgroundColor: "green",
+    backgroundColor: "#ffc000",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 80,
   },
   boxText: {
-    color: "white",
+    color: "black",
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -104,7 +185,7 @@ const styles = StyleSheet.create({
     marginTop: 120,
   },
   btnBack: {
-    backgroundColor: "green",
+    backgroundColor: "#ffc000",
     borderRadius: 50,
     padding: 14,
     width: "100%",
@@ -113,7 +194,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   txtBack: {
-    color: "white",
+    color: "black",
     fontSize: 16,
     fontWeight: "bold",
   },

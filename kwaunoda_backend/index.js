@@ -14,7 +14,7 @@ const pesepay = new Pesepay(
   process.env.PESEPAY_INTERGRATION_KEY,
   process.env.PESEPAY_ENCRYPTION_KEY
 );
-const PORT = process.env.APPPORT || 3011;
+const PORT = process.env.APPORT || 3011;
 // Route path
 const tripRouter = require("./routes/trip");
 const userRouter = require("./routes/users");
@@ -104,8 +104,6 @@ app.use("/trip_status_analytics", TripStatusAnalyticRouter);
 app.use("/application_configs", ConfigRouter);
 app.use("/application_statistics", StatisticRouter);
 app.use("/application_withdrawals", WithdrawalRouter);
-
-
 
 
 

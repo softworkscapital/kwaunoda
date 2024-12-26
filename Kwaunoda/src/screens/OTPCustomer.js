@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
     StyleSheet,
     View,
@@ -9,22 +9,27 @@ import {
     ActivityIndicator,
     Alert
 } from "react-native";
+import { useRoute } from '@react-navigation/native'; // Import useRoute
 import Toast from 'react-native-toast-message';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
-import { API_URL } from './config'; // Adjust the path as necessary
+import { API_URL } from './config'; 
 
 const OTPCustomer = ({ navigation }) => {
     const route = useRoute(); // Access route parameters
     const { userId } = route.params; // Destructure userId from route parameters
   
     const [otp, setOtp] = useState(["", "", "", ""]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [fetchedOtp, setFetchedOtp] = useState("");
+
+    // Create refs for each OTP input
+    const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
     const handleVerifyOtp = async () => {
         const otpString = otp.join('');
         setLoading(true);
+        console.log("User ID:", userId);
         try {
             // Fetch user details using the hardcoded user ID
             const response = await fetch(`${API_URL}/USERS/${userId}`);
@@ -33,7 +38,7 @@ const OTPCustomer = ({ navigation }) => {
 
             if (userDetails && userDetails.length > 0) {
                 const fetchedOtp = userDetails[0].otp.toString(); // Assuming OTP is in user details
-                console.log("Fetched OTP from database:", fetchedOtp); // Log the fetched OTP
+                console.log("Fetched OTP from database:", fetchedOtp);
                 if (otpString === fetchedOtp) {
                     Alert.alert("Success", "OTP verified successfully.");
                     navigation.navigate('CustomerLogin'); // Navigate to CustomerLogin.js
@@ -57,7 +62,7 @@ const OTPCustomer = ({ navigation }) => {
         setOtp(newOtp);
         // Automatically focus on the next input if the current one is filled
         if (text.length === 1 && index < otp.length - 1) {
-            this[`otpInput${index + 1}`].focus();
+            otpRefs[index + 1].current.focus(); // Use the ref to focus
         }
     };
 
@@ -80,7 +85,7 @@ const OTPCustomer = ({ navigation }) => {
                 {otp.map((digit, index) => (
                     <TextInput
                         key={index}
-                        ref={(input) => { this[`otpInput${index}`] = input; }}
+                        ref={otpRefs[index]} // Set the ref
                         style={styles.otpInput}
                         value={digit}
                         onChangeText={(text) => handleChange(text, index)}
@@ -100,7 +105,6 @@ const OTPCustomer = ({ navigation }) => {
             <TouchableOpacity onPress={handleResendOtp} style={styles.resendContainer}>
                 <Text style={styles.txtResend}>Resend OTP</Text>
             </TouchableOpacity>
-
             <Toast />
         </SafeAreaView>
     );

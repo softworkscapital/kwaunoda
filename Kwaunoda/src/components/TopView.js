@@ -135,7 +135,7 @@ const TopView = () => {
 
     fetchData();
     fetchCounterOffers(id);
-    const intervalId = setInterval(() => fetchCounterOffers(id), 600000);
+    const intervalId = setInterval(() => fetchCounterOffers(id), 30000);
     return () => clearInterval(intervalId);
   }, [id]);
 
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     backgroundColor: "#FFC000",
-    borderRadius: 5,
+    borderRadius: 25,
     marginTop: 10,
   },
   closeText: {
@@ -698,3 +698,6 @@ const styles = StyleSheet.create({
 });
 
 export default TopView;
+
+
+

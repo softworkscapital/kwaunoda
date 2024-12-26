@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     inviteButton: {
         backgroundColor: '#FFC000',
         paddingVertical: 15,
-        borderRadius: 5,
+        borderRadius: 25,
         alignItems: 'center',
     },
     inviteButtonText: {

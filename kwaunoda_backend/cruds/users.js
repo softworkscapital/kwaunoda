@@ -10,27 +10,31 @@ crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
     let User = user;
     console.log("honai user:", User);
+    
     pool.query(
-      "INSERT INTO users(userid,username,password,role,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,sync_status,last_logged_account,driver_id,customerid,otp,signed_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        user.userId, // Make sure this is set correctly
-        user.username,
-        user.password,
-        user.role,
-        user.email,
-        user.notify,
-        user.activeSession,
-        user.addProperty,
-        user.editProperty,
-        user.approveRequests,
-        user.delivery,
-        user.status,
-        user.syncStatus,
-        user.last_logged_account,
-        user.driverId,
-        user.customerId,
-        user.otp,
-        user.signed_on,
+        user.userId, // User ID
+        user.username, // Username
+        user.password, // Password
+        user.role, // Role
+        user.email, // Email
+        user.notify, // Notification preference
+        user.activeSession, // Active session
+        user.addProperty, // Add property
+        user.editProperty, // Edit property
+        user.approveRequests, // Approve requests
+        user.delivery, // Delivery flag
+        user.status, // Status
+        user.employeeId, // Employee ID
+        user.companyId, // Company ID
+        user.branchId, // Branch ID
+        user.syncStatus, // Sync status
+        user.last_logged_account, // Last logged account type
+        user.driverId, // Driver ID
+        user.customerId, // Customer ID
+        user.otp, // OTP
+        user.signed_on, // Signed on
       ],
       (err, result) => {
         if (err) {

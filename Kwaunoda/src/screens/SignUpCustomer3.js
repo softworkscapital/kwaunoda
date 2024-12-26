@@ -33,6 +33,7 @@ const SignUpCustomer3 = () => {
     try {
       const custData = await AsyncStorage.getItem("customerDetailsC0");
       const custDetails = JSON.parse(custData);
+      console.log("honai user", custDetails);
       setUser1(custDetails);
 
       const cData = await AsyncStorage.getItem("userDetailsC2");
@@ -183,6 +184,8 @@ const SignUpCustomer3 = () => {
         }),
       });
 
+      console.log("muonei", response);
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error sending OTP:", response.status, errorText);
@@ -219,7 +222,7 @@ const SignUpCustomer3 = () => {
         username: username.trim(),
         email: userDetails.email.trim(),
         password: userDetails.password,
-        otp: "",
+        otp: otp,
         notify: false,
         activesession: false,
         addproperty: false,
@@ -239,7 +242,7 @@ const SignUpCustomer3 = () => {
 
       await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
       Alert.alert("Success", "User signed up successfully.");
-      navigation.navigate("OTPCustomer");
+      navigation.navigate("OTPCustomer", { userId: newUserId });
     } catch (error) {
       console.error("Sign-up error:", error);
       Alert.alert(

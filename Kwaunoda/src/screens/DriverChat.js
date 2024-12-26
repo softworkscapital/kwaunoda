@@ -9,8 +9,6 @@ const DriverChat = () => {
   const route = useRoute();
   const { tripId, driverId, customerId } = route.params || {}; // Ensure customerId is correctly destructured
 
-  console.log(driverId);
-
   const navigation = useNavigation(); // Get navigation object
 
   useEffect(() => {
@@ -24,7 +22,6 @@ const DriverChat = () => {
         }
     
         const result = await response.json();
-        // console.log('Fetched response:', result);
     
         if (result && result.status === "200" && Array.isArray(result.data)) {
           const sortedMessages = result.data.sort((a, b) => {
@@ -33,7 +30,6 @@ const DriverChat = () => {
             return dateA - dateB; // Ascending order
           });
           setChatHistory(sortedMessages);
-          console.log('Chat History:', sortedMessages); // Log the sorted messages
         } else {
           console.error('Failed to retrieve messages:', result.message || 'No message provided');
         }
@@ -60,13 +56,11 @@ const DriverChat = () => {
         date_chat: dateChat,
         time_chat: timeChat,
         trip_id: tripId,
-        driver_id: driverId, // Hardcoded for demonstration
-        customerid: customerId, // Use customerId from route
+        driver_id: driverId,
+        customerid: customerId,
         message: message.trim(),
-        origin: driverId, // Use customerId as origin for sent messages
+        origin: driverId,
       };
-
-      
 
       try {
         const response = await fetch(`${API_URL}/customer_driver_chats`, {
@@ -106,22 +100,18 @@ const DriverChat = () => {
       </View>
 
       <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
-        {chatHistory.map((chat, index) => {
-          // console.log('Chat Origin:', chat.origin, 'Customer ID:', customerId); // Debugging log
-
-          return (
-            <View
-              key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
-              style={[
-                styles.messageContainer,
-                chat.origin === driverId ? styles.sentMessage : styles.receivedMessage,
-              ]}
-            >
-              <Text style={styles.messageText}>{chat.message}</Text>
-              <Text style={styles.dateText}>{`${chat.date_chat} ${chat.time_chat}`}</Text>
-            </View>
-          );
-        }).reverse()} {/* Reverse the order of rendering */}
+        {chatHistory.map((chat, index) => (
+          <View
+            key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
+            style={[
+              styles.messageContainer,
+              chat.origin === driverId ? styles.sentMessage : styles.receivedMessage,
+            ]}
+          >
+            <Text style={styles.messageText}>{chat.message}</Text>
+            <Text style={styles.dateText}>{`${chat.date_chat} ${chat.time_chat}`}</Text>
+          </View>
+        )).reverse()} {/* Reverse the order of rendering */}
       </ScrollView>
       
       <View style={styles.inputContainer}>
@@ -164,37 +154,37 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'black',
     textAlign: 'center',
-    flex: 1, // Allow title to be centered
+    flex: 1,
   },
   chatContainer: {
     flex: 1,
     padding: 10,
   },
   chatContent: {
-    paddingBottom: 100, // Prevent overlap with input
+    paddingBottom: 100,
   },
   messageContainer: {
     marginVertical: 5,
     padding: 10,
     borderRadius: 15,
-    maxWidth: '80%', // Limit the width of the message bubble
+    maxWidth: '80%',
   },
   sentMessage: {
-    backgroundColor: '#b2d600', // Golden yellow-green for sent messages
-    alignSelf: 'flex-end', // Align sent messages to the right
+    backgroundColor: '#b2d600',
+    alignSelf: 'flex-end',
   },
   receivedMessage: {
-    backgroundColor: '#e0ffe0', // Light green for received messages
-    alignSelf: 'flex-start', // Align received messages to the left
+    backgroundColor: '#e0ffe0',
+    alignSelf: 'flex-start',
   },
   messageText: {
     fontSize: 16,
-    color: '#000', // Set message text color to black
+    color: '#000',
   },
   dateText: {
     fontSize: 12,
     color: '#888',
-    marginTop: 5, // Add some space above the date text
+    marginTop: 5,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -205,19 +195,19 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#b2d600', // Golden yellow-green for input border
+    borderColor: '#b2d600',
     borderRadius: 20,
     padding: 10,
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: '#b2d600', // Golden yellow-green for send button
+    backgroundColor: '#b2d600',
     borderRadius: 20,
     padding: 10,
   },
   buttonText: {
     fontSize: 20,
-    color: '#fff', // White text for button
+    color: '#fff',
   },
 });
 

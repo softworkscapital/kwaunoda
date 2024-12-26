@@ -17,6 +17,7 @@ import { API_URL } from "./config";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import TopView from "../components/TopView";
+import Toast from 'react-native-toast-message';
 import { WebView } from "react-native-webview";
 
 const DriverNewOrderList = () => {
@@ -146,7 +147,7 @@ const DriverNewOrderList = () => {
 
       });
 
-      const result = await response.json();
+      const result = await response.json()
 
       console.log("counda offer", result);
 
@@ -166,44 +167,52 @@ const DriverNewOrderList = () => {
 
   const handleAcceptTrip = async () => {
     if (!driver || !selectedTrip) {
-      Alert.alert("Error", "Some values are missing.");
-      return;
+        Alert.alert("Error", "Some values are missing.");
+        return;
     }
 
     const currentdate = new Date().toISOString();
     try {
-      const response = await fetch(
-        `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customerid: selectedTrip.customer,
-            driver_id: driver,
-            trip_id: selectedTrip.trip_id,
-            date_time: currentdate,
-            offer_value: selectedTrip.cost,
-            counter_offer_value: counterOffer,
-            currency: selectedCurrency,
-            status: "InTransit",
-          }),
+        const response = await fetch(
+            `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
+            {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    customerid: selectedTrip.customer,
+                    driver_id: driver,
+                    trip_id: selectedTrip.trip_id,
+                    date_time: currentdate,
+                    offer_value: selectedTrip.cost,
+                    counter_offer_value: counterOffer,
+                    currency: selectedCurrency,
+                    status: "InTransit",
+                }),
+            }
+        );
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to accept trip.");
         }
-      );
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to accept trip.");
-      }
-      Alert.alert("Success", result.message || "Trip accepted successfully.");
-      setSelectedTrip(null); // Hide trip details after accepting
-      fetchTrips(driver); // Refresh trips after accepting the trip
-      navigation.navigate("InTransitTrip");
+        Alert.alert("Success", result.message || "Trip accepted successfully.");
+
+        // Show the toast notification
+        Toast.show({
+            type: 'success',  // Change this to your preferred toast type
+            text1: 'Settlement Occurred', // Toast message
+            position: 'top', // Position of the toast
+        });
+
+        setSelectedTrip(null); // Hide trip details after accepting
+        fetchTrips(driver); // Refresh trips after accepting the trip
+        navigation.navigate("InTransitTrip");
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error.message || "An error occurred while accepting the trip."
-      );
+        Alert.alert(
+            "Error",
+            error.message || "An error occurred while accepting the trip."
+        );
     }
-  };
+};
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -225,7 +234,9 @@ const DriverNewOrderList = () => {
         {selectedTrip ? (
           <>
             <Text style={styles.title}>Trip Details</Text>
-            <Text style={{ paddingVertical: 10 }}>{selectedTrip.detail}</Text>
+            <Text style={{ paddingVertical: 7 }}>{selectedTrip.detail}</Text>
+            <Text style={{ paddingVertical: 5 }}>From: {selectedTrip.origin_location}</Text>
+            <Text style={{ paddingVertical: 5}}>To: {selectedTrip.dest_location}</Text>
             <Text style={{ fontSize: 20, fontWeight: "700", color: "green" }}>
               ${selectedTrip.cost}
             </Text>

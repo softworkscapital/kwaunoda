@@ -102,9 +102,8 @@ const Wallet = () => {
 
       const data = await response.json();
       console.log("Kupese kwauya izvi.....", data);
-      
+
       if (data.success && data.redirectUrl) {
-        
         navigation.navigate("PesepayView", { url: data.redirectUrl });
       } else {
         Alert.alert(
@@ -163,18 +162,42 @@ const Wallet = () => {
     const response = await initiatePayment(topupDetails);
     if (response) {
       setModalVisible(false);
-    }else{
-      Alert.alert(response)
+    } else {
+      Alert.alert(response);
     }
   };
 
   const renderTopUpItem = ({ item }) => (
     <TouchableOpacity style={styles.deliveryItem}>
       <View style={styles.deliveryItemHeader}>
-        <Text style={styles.orderNumber}>Order #{item.top_up_id}</Text>
-        <Text style={styles.status}>${item.balance}</Text>
+        <Text style={styles.orderNumber}>Ref: {item.top_up_id}</Text>
+        <Text style={styles.bal}>
+          ${Number(item.balance).toFixed(2)} {item.currency}
+        </Text>
       </View>
-      <Text style={styles.deliveredOn}>Delivered on {item.total_usage}</Text>
+      <Text style={styles.status}>
+        Date: {item.date}
+      </Text>
+      <Text style={styles.status}>
+      Description: {item.description}
+      </Text>
+      <Text style={styles.status}>
+        Amount Affected:
+        {item.debit ? (
+          <Text style={{ color: "red", fontWeight: "bold" }}>
+            {" "}
+            - {item.debit} {item.currency}
+          </Text>
+        ) : item.credit ? (
+          <Text style={{ color: "green", fontWeight: "bold" }}>
+            {item.credit} {item.currency}
+          </Text>
+        ) : (
+          " N/A"
+        )}
+      </Text>
+      <Text style={styles.status}>Trip Id: {item.trip_id || "N/A"}</Text>
+      
     </TouchableOpacity>
   );
 
@@ -234,7 +257,10 @@ const Wallet = () => {
         <View style={styles.detailsContainer}>
           <View style={[styles.detail, { alignSelf: "center" }]}>
             {/* <MaterialIcons name="wallet" size={70} color="#000" /> */}
-            <Text style={[styles.text, { fontSize: 16 }]}> ${oldbalance}</Text>
+            <Text style={[styles.text, { fontSize: 16 }]}>
+              {" "}
+              ${Number(oldbalance).toFixed(2)}
+            </Text>
           </View>
           <Text
             style={[
@@ -356,8 +382,6 @@ const Wallet = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-
-      <BottomFooter />
     </View>
   );
 };
@@ -375,14 +399,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   btnSignUp: {
-    backgroundColor: "green",
+    backgroundColor: "#ffc000",
     borderRadius: 50,
     padding: 14,
     width: "80%",
     alignItems: "center",
   },
   goldenYellow: {
-    backgroundColor: "green",
+    backgroundColor: "#ffc000",
   },
   backArrow: {
     padding: 8,
@@ -408,8 +432,9 @@ const styles = StyleSheet.create({
   },
   detail: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "left",
     marginBottom: 1,
+    fontSize: 15,
   },
   text: {
     fontSize: 16,
@@ -459,10 +484,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  status: {
-    fontSize: 14,
+  bal: {
+    fontSize: 16,
     fontWeight: "bold",
-    paddingVertical: 4,
+    paddingVertical: 1,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  status: {
+    fontSize: 12,
+    fontWeight: "condensed",
+    paddingVertical: 1,
     paddingHorizontal: 8,
     borderRadius: 4,
   },
@@ -476,6 +508,7 @@ const styles = StyleSheet.create({
   },
   deliveredOn: {
     fontSize: 14,
+    fontWeight: "300",
     color: "#666",
   },
   bottomBar: {

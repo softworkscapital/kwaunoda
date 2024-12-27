@@ -173,7 +173,7 @@ const CustomerNewDelivery = () => {
         destination_long: parseFloat(endLocationLong),
         distance: distance,
         delivery_cost_proposed: price,
-        accepted_cost: "0",
+        accepted_cost: price,
         paying_when: payingWhen,
         payment_type: paymentMethod,
         currency_id: cid,

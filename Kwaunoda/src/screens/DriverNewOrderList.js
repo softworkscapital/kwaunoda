@@ -17,7 +17,7 @@ import { API_URL } from "./config";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import TopView from "../components/TopView";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import { WebView } from "react-native-webview";
 
 const DriverNewOrderList = () => {
@@ -25,6 +25,7 @@ const DriverNewOrderList = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { driverId } = route.params || {};
+  const APILINK = API_URL;
   const [driver, setDriver] = useState(null);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,7 @@ const DriverNewOrderList = () => {
       const result = await response.json();
       if (result && result.length > 0) {
         setDriver(result[0].driver_id);
+        await fetchTopUpHistory(); // Fetch top-up history here
         await fetchTrips(driverId);
       } else {
         Alert.alert("Error", "Driver details not found.");
@@ -80,35 +82,133 @@ const DriverNewOrderList = () => {
     }
   };
 
-  const fetchTrips = async (driverId) => {
-    setRefreshing(true);
+  const fetchTopUpHistory = async () => {
+    if (!driverId) return; // Early return if driverId is not set
+
     try {
-      const response = await fetch(`${API_URL}/trip/driver/notify/`);
-      const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setLocations(
-          data.map((trip) => ({
-            trip_id: trip.trip_id,
-            customer: trip.cust_id,
-            origin_lat: parseFloat(trip.origin_location_lat),
-            origin_long: parseFloat(trip.origin_location_long),
-            destination_lat: parseFloat(trip.destination_lat),
-            destination_long: parseFloat(trip.destination_long),
-            detail: trip.deliveray_details,
-            cost: trip.delivery_cost_proposed,
-            origin_location: trip.origin_location,
-            dest_location: trip.dest_location,
-            paying_when: trip.paying_when,
-            payment_type: trip.payment_type,
-            currency: trip.currency_id,
-          }))
-        );
+      const resp = await fetch(`${APILINK}/topUp/topup/${driverId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await resp.json();
+      console.log("Top Up History:", result);
+      if (result && result.length > 0) {
+        setBalance(result[0]?.balance || 0); // Ensure balance is set
+      } else {
+        Alert.alert("Error", "Failed to fetch Top Up History.");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to fetch trips. Please try again.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      console.error("Error fetching History:", error);
+      Alert.alert("Error", "An error occurred while fetching History.");
+    }
+  };
+
+  const handleAcceptTrip = async () => {
+    if (!driver || !selectedTrip) {
+      Alert.alert("Error", "Some values are missing.");
+      return;
+    }
+
+    // Ensure selectedTrip.accepted_cost is valid before proceeding
+    if (!selectedTrip.accepted_cost) {
+      Alert.alert("Error", "Trip cost is not defined.");
+      return;
+    }
+
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )} ${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
+
+    const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
+    const newBalance = balance - fee; // Update balance after fee deduction
+
+    const data = {
+      currency: "USD",
+      exchange_rate: 1.0,
+      date: formattedDate,
+      debit: fee,
+      credit: 0,
+      balance: newBalance,
+      description: `${"Trip ID: "} ${
+        selectedTrip.trip_id
+      } ${" Commission "} ${"\n"} ${selectedTrip.detail} ${"\nFrom: "} ${
+        selectedTrip.origin_location
+      } ${"\nTo: "} ${selectedTrip.dest_location}`,
+      client_profile_id: driver,
+    };
+
+    console.log("Zvikuenda izvo", data);
+
+    try {
+      const resp = await fetch(`${APILINK}/topUp/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await resp.json();
+      if (result) {
+        setBalance(newBalance); // Update balance state
+        await updateTripStatus(); // Call a function to update trip status
+      } else {
+        Alert.alert("Error", "Failed to process top-up.");
+      }
+    } catch (error) {
+      console.error("Error processing top-up:", error);
+      Alert.alert("Error", "An error occurred while processing top-up.");
+    }
+  };
+
+  const updateTripStatus = async () => {
+    const currentdate = new Date().toISOString();
+    try {
+      const response = await fetch(
+        `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerid: selectedTrip.customer,
+            driver_id: driver,
+            trip_id: selectedTrip.trip_id,
+            date_time: currentdate,
+            offer_value: selectedTrip.accepted_cost,
+            counter_offer_value: counterOffer,
+            currency: selectedCurrency,
+            status: "InTransit",
+          }),
+        }
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to accept trip.");
+      }
+      Toast.show({
+        type: "success",
+        text1: "Trip accepted successfully",
+        text2: "Settlement Occurred",
+        position: "top",
+        visibilityTime: 5000,
+      });
+      setSelectedTrip(null);
+      fetchTrips(driver);
+      navigation.navigate("InTransitTrip");
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.message || "An error occurred while accepting the trip."
+      );
     }
   };
 
@@ -131,7 +231,7 @@ const DriverNewOrderList = () => {
   const handleCounterOffer = async () => {
     const currentdate = new Date().toISOString();
     console.log("tavamukaunda");
-    
+
     try {
       const response = await fetch(`${API_URL}/counter_offer/`, {
         method: "POST",
@@ -148,10 +248,9 @@ const DriverNewOrderList = () => {
           currency: selectedCurrency,
           status: "Unseen",
         }),
-
       });
 
-      const result = await response.json()
+      const result = await response.json();
 
       console.log("counda offer", result);
 
@@ -169,138 +268,38 @@ const DriverNewOrderList = () => {
     }
   };
 
-
-
-
-  const fetchTopUpHistory = async () => {
-    if (!driverId) return; // Early return if userId is not set
-
+  const fetchTrips = async (driverId) => {
+    setRefreshing(true);
     try {
-      const resp = await fetch(`${APILINK}/topUp/topup/${driverId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await resp.json();
-      console.log("Top Up History:", userId);
-      if (result) {
-        // setTopUpHistory(result);
-        setBalance(result[0]?.balance || 0);
-        setDate(new Date().toISOString());
-      } else {
-        Alert.alert("Error", "Failed to fetch History.");
+      const response = await fetch(`${API_URL}/trip/driver/notify/`);
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setLocations(
+          data.map((trip) => ({
+            trip_id: trip.trip_id,
+            customer: trip.cust_id,
+            origin_lat: parseFloat(trip.origin_location_lat),
+            origin_long: parseFloat(trip.origin_location_long),
+            destination_lat: parseFloat(trip.destination_lat),
+            destination_long: parseFloat(trip.destination_long),
+            detail: trip.deliveray_details,
+            cost: trip.delivery_cost_proposed,
+            accepted_cost: trip.accepted_cost,
+            origin_location: trip.origin_location,
+            dest_location: trip.dest_location,
+            paying_when: trip.paying_when,
+            payment_type: trip.payment_type,
+            currency: trip.currency_id,
+          }))
+        );
       }
     } catch (error) {
-      console.error("Error fetching History:", error);
-      Alert.alert("Error", "An error occurred while fetching History.");
+      Alert.alert("Error", "Failed to fetch trips. Please try again.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
-
-
-
-
-
-
- const FeeCharge = async () => {
-    if (!driverId) return; // Early return if userId is not set
-    const debit = 0.15 * selectedTrip.accepted_cost;
-  const data = {
-    currency: "USD",
-    exchange_rate: 1.0,
-    date: new Date().toISOString(),
-    debit: debit,
-    credit: 0,
-    balance: balance - debit,
-    description: selectedTrip.trip_id + "" + selectedTrip.deliveray_details,
-    client_profile_id: driverId,
-
-  }
-
-  console.log("Zvikuenda izvo", data);
-
-    try {
-      const resp = await fetch(`${APILINK}/topUp/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await resp.json();
-      console.log("hamenowo:", userId);
-      if (result) {
-        // setTopUpHistory(result);
-        setBalance(result[0]?.balance || 0);
-        setDate(new Date().toISOString());
-      } else {
-        Alert.alert("Error", "Failed to fetch History.");
-      }
-    } catch (error) {
-      console.error("Error fetching History:", error);
-      Alert.alert("Error", "An error occurred while fetching History.");
-    }
-  };
-
-
-
-  const handleAcceptTrip = async () => {
-    if (!driver || !selectedTrip) {
-        Alert.alert("Error", "Some values are missing.");
-        return;
-    }
-
-    const history = fetchTopUpHistory()
-    console.log("history", history);
-
-
-    const currentdate = new Date().toISOString();
-    try {
-        const response = await fetch(
-            `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
-            {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    customerid: selectedTrip.customer,
-                    driver_id: driver,
-                    trip_id: selectedTrip.trip_id,
-                    date_time: currentdate,
-                    offer_value: selectedTrip.cost,
-                    counter_offer_value: counterOffer,
-                    currency: selectedCurrency,
-                    status: "InTransit",
-                }),
-            }
-        );
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.message || "Failed to accept trip.");
-        }
-        // Alert.alert("Success", result.message || "Trip accepted successfully.");
-
-        // Show the toast notification
-        Toast.show({
-          type: 'success',
-          text1: "Trip accepted successfully",
-          text2: 'Settlement Occurred',
-
-          position: 'top',
-          visibilityTime: 5000, // Show for 5 seconds
-      });
-
-        setSelectedTrip(null); // Hide trip details after accepting
-        fetchTrips(driver); // Refresh trips after accepting the trip
-        navigation.navigate("InTransitTrip");
-    } catch (error) {
-        Alert.alert(
-            "Error",
-            error.message || "An error occurred while accepting the trip."
-        );
-    }
-};
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -308,7 +307,6 @@ const DriverNewOrderList = () => {
 
   return (
     <View style={styles.container}>
-
       <TopView />
       <WebView
         ref={webviewRef}
@@ -324,10 +322,18 @@ const DriverNewOrderList = () => {
           <>
             <Text style={styles.title}>Trip Details</Text>
             <Text style={{ paddingVertical: 7 }}>{selectedTrip.detail}</Text>
-            <Text style={{ paddingVertical: 5 }}>From: {selectedTrip.origin_location}</Text>
-            <Text style={{ paddingVertical: 5}}>To: {selectedTrip.dest_location}</Text>
-            <Text style={{ paddingVertical: 5}}>{selectedTrip.paying_when}</Text>
-            <Text style={{ paddingVertical: 5}}>{selectedTrip.payment_type}</Text>
+            <Text style={{ paddingVertical: 5 }}>
+              From: {selectedTrip.origin_location}
+            </Text>
+            <Text style={{ paddingVertical: 5 }}>
+              To: {selectedTrip.dest_location}
+            </Text>
+            <Text style={{ paddingVertical: 5 }}>
+              {selectedTrip.paying_when}
+            </Text>
+            <Text style={{ paddingVertical: 5 }}>
+              {selectedTrip.payment_type}
+            </Text>
             <Text style={{ fontSize: 20, fontWeight: "700", color: "green" }}>
               ${selectedTrip.cost} {selectedTrip.currency}
             </Text>
@@ -379,9 +385,11 @@ const DriverNewOrderList = () => {
                       >
                         Trip ID: {location.trip_id}
                       </Text>
-                      <Text style={styles.listItemDetail}>
-                        Trip Details: {location.detail}
-                      </Text>
+                      {location.detail ? (
+                        <Text style={styles.listItemDetail}>
+                          {location.detail}
+                        </Text>
+                      ) : null}
                       <Text style={styles.listItemDetail}>
                         To: {location.dest_location}
                       </Text>
@@ -448,7 +456,7 @@ const DriverNewOrderList = () => {
           </View>
         </Modal>
       )}
-       {/* <Toast /> */}
+      {/* <Toast /> */}
     </View>
   );
 };
@@ -573,7 +581,7 @@ const styles = StyleSheet.create({
   },
   listItemWeight: {
     alignSelf: "center",
-    fontSize: 16
+    fontSize: 16,
   },
   noTripsText: {
     textAlign: "center",

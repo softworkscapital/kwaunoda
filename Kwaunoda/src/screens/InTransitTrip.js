@@ -238,16 +238,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 270,
+    height: 260,
     // backgroundColor: "#FFC000",
-    padding: 20,
+    
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     elevation: 5,
     paddingBottom: 45,
-    marginBottom: 40,
+    marginBottom: 70,
   
   },
   tripCard: {

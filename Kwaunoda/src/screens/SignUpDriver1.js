@@ -150,6 +150,62 @@ const SignUpDriver1 = () => {
     return lettersArray.join("");
   };
 
+
+
+  const newAccount = async (driver) => {
+    if (!driver) {
+      Alert.alert("Error", "Some values are missing.");
+      return;
+    }
+
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )} ${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
+
+
+    const data = {
+      currency: "USD",
+      exchange_rate: 1.0,
+      date: formattedDate,
+      debit: 0,
+      credit: 0,
+      balance: 0,
+      description: "New Account",
+      client_profile_id: driver,
+    };
+
+    console.log("Zvikuenda izvo", data);
+
+    try {
+      const resp = await fetch(`${APILINK}/topUp/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await resp.json();
+      if (result) {
+        
+      } else {
+        Alert.alert("Error", "Failed to process top-up account.");
+      }
+    } catch (error) {
+      console.error("Error processing top-up:", error);
+      Alert.alert("Error", "An error occurred while processing top-up.");
+    }
+  };
+
+
+
+
   const handleNext = async () => {
     if (!validateInput()) return;
 

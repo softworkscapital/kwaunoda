@@ -396,6 +396,86 @@ const newCustomer = {
       body: JSON.stringify(newCustomer)
     });
 
+
+
+
+
+
+
+
+  // const handleAcceptTrip = async () => {
+  //   if (!driver || !selectedTrip) {
+  //     Alert.alert("Error", "Some values are missing.");
+  //     return;
+  //   }
+
+  //   // Ensure selectedTrip.accepted_cost is valid before proceeding
+  //   if (!selectedTrip.accepted_cost) {
+  //     Alert.alert("Error", "Trip cost is not defined.");
+  //     return;
+  //   }
+
+  //   const currentDate = new Date();
+  //   const formattedDate = `${currentDate.getFullYear()}-${String(
+  //     currentDate.getMonth() + 1
+  //   ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+  //     2,
+  //     "0"
+  //   )} ${String(currentDate.getHours()).padStart(2, "0")}:${String(
+  //     currentDate.getMinutes()
+  //   ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
+
+  //   const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
+  //   const newBalance = balance - fee; // Update balance after fee deduction
+
+  //   const data = {
+  //     currency: "USD",
+  //     exchange_rate: 1.0,
+  //     date: formattedDate,
+  //     debit: fee,
+  //     credit: 0,
+  //     balance: newBalance,
+  //     description: `${"Trip ID: "} ${
+  //       selectedTrip.trip_id
+  //     } ${" Commission "} ${"\n"} ${selectedTrip.detail} ${"\nFrom: "} ${
+  //       selectedTrip.origin_location
+  //     } ${"\nTo: "} ${selectedTrip.dest_location}`,
+  //     client_profile_id: driver,
+  //   };
+
+  //   console.log("Zvikuenda izvo", data);
+
+  //   try {
+  //     const resp = await fetch(`${APILINK}/topUp/`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(data),
+  //     });
+
+  //     const result = await resp.json();
+  //     if (result) {
+  //       setBalance(newBalance); // Update balance state
+  //       await updateTripStatus(); // Call a function to update trip status
+  //     } else {
+  //       Alert.alert("Error", "Failed to process top-up.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing top-up:", error);
+  //     Alert.alert("Error", "An error occurred while processing top-up.");
+  //   }
+  // };
+
+
+
+
+
+
+
+
+
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Failed to create customer details: ${errorText}`);

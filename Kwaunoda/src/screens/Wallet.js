@@ -13,8 +13,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import BottomFooter from "./BottomFooter";
-import { API_URL } from "./config";
+import { API_URL, API_URL_UPLOADS } from "./config";
 import { Picker } from "@react-native-picker/picker"; // Import Picker
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -34,6 +33,7 @@ const Wallet = () => {
   const [name, setName] = useState();
   const [surname, setSurname] = useState();
   const [userId, setUserId] = useState();
+  const [profileImage, setPic] = useState();
 
   const APILINK = API_URL;
   const navigation = useNavigation();
@@ -50,6 +50,7 @@ const Wallet = () => {
     setName(driverData.name);
     setSurname(driverData.surname);
     setUserId(driverData.driver_id);
+    setPic(`${API_URL_UPLOADS}/${driverData.profilePic.replace(/\\/g, '/')}`);
 
   }
   useEffect(() => {
@@ -57,6 +58,7 @@ const Wallet = () => {
       try {
         const response = await AsyncStorage.getItem("userDetails");
         const driverData = JSON.parse(response);
+    
         if (driverData) {
           setter(driverData);
           console.log("Driver email:", driverData); // Check if email is available
@@ -192,8 +194,8 @@ const Wallet = () => {
           ${Number(item.balance).toFixed(2)} {item.currency}
         </Text>
       </View>
-      <Text style={styles.status}>Date: {item.date}</Text>
-      <Text style={styles.status}>Description: {item.description}</Text>
+      <Text style={styles.status}>{item.date}</Text>
+      <Text style={styles.status}>{item.description}</Text>
       <Text style={styles.status}>
         Amount Affected:
          {item.debit ? (
@@ -209,7 +211,7 @@ const Wallet = () => {
           " N/A"
         )}
       </Text>
-      <Text style={styles.status}>Trip Id: {item.trip_id || "N/A"}</Text>
+      {/* <Text style={styles.status}>Trip Id: {item.trip_id || "N/A"}</Text> */}
     </TouchableOpacity>
   );
 
@@ -247,7 +249,7 @@ const Wallet = () => {
         <View style={styles.profileContainer}>
           <Image
             style={styles.profilePicture}
-            source={require("../../assets/profile.jpeg")}
+            source={{ uri: profileImage }}
           />
           <View>
             <Text style={styles.username}>
@@ -476,10 +478,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   profilePicture: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 25,
+    
   },
   profileContainer: {
     flexDirection: "row",

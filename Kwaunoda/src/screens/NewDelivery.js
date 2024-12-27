@@ -196,19 +196,23 @@ const NewDelivery = () => {
   //   }
   //   return true; // Sufficient balance
   // };
-
   const handleSignUp = async () => {
     if (!validateFields()) return;
-
-    // Check balance before proceeding
-    // if (!checkBalance(price)) return;
-
+  
+    // Validate that origin latitude and longitude are set
+    if (!startLocationLat || !startLocationLong) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Origin location coordinates are required.",
+      });
+      return;
+    }
+  
     try {
       const userDetails = await AsyncStorage.getItem("userDetails");
       const user = userDetails ? JSON.parse(userDetails) : {};
-
-      console.log("latend", endLocationLat);
-      console.log("longend", endLocationLong);
+  
       const deliveryData = {
         driver_id: "",
         cust_id: cid,
@@ -228,7 +232,7 @@ const NewDelivery = () => {
         destination_long: parseFloat(endLocationLong),
         distance: distance,
         delivery_cost_proposed: price,
-        accepted_cost: "0",
+        accepted_cost: price,
         paying_when: payingWhen,
         payment_type: paymentMethod,
         currency_id: cid,
@@ -237,8 +241,8 @@ const NewDelivery = () => {
         driver_comment: "",
         driver_stars: "0",
       };
-
-      console.log(deliveryData);
+  
+      console.log("Data iriiiii", deliveryData);
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
         headers: {
@@ -246,14 +250,12 @@ const NewDelivery = () => {
         },
         body: JSON.stringify(deliveryData),
       });
-      
+  
       const textResponse = await response.text(); // Get raw response
       console.log("Raw response:", textResponse);
-      
+  
       const result = JSON.parse(textResponse); // Parse if it's valid JSON
-
-      // const result = await response.json();
-
+  
       if (response.ok) {
         Toast.show({
           type: "success",

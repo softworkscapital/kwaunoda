@@ -446,7 +446,7 @@ const TopView = () => {
         </View>
         <Image
           source={{ uri: profileImage }}
-          style={[styles.profileImage, { marginTop: 5 }]}
+          style={[styles.profileImage, { marginTop: 8}]}
         />
       </View>
 
@@ -539,8 +539,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    width: 55,
-    height: 55,
+    width: 60,
+    height: 60,
     borderRadius: 30,
     marginLeft: 10,
     marginBottom: 8,

@@ -37,6 +37,7 @@ const DriverNewOrderList = () => {
   const [webViewUrl, setWebViewUrl] = useState(
     "https://kwaunoda.softworkscapital.com/map?lat1=0&lng1=0&lat2=0&lng2=0"
   );
+  const [balance, setBalance] = useState();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,11 +169,92 @@ const DriverNewOrderList = () => {
     }
   };
 
+
+
+
+  const fetchTopUpHistory = async () => {
+    if (!driverId) return; // Early return if userId is not set
+
+    try {
+      const resp = await fetch(`${APILINK}/topUp/topup/${driverId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await resp.json();
+      console.log("Top Up History:", userId);
+      if (result) {
+        // setTopUpHistory(result);
+        setBalance(result[0]?.balance || 0);
+        setDate(new Date().toISOString());
+      } else {
+        Alert.alert("Error", "Failed to fetch History.");
+      }
+    } catch (error) {
+      console.error("Error fetching History:", error);
+      Alert.alert("Error", "An error occurred while fetching History.");
+    }
+  };
+
+
+
+
+
+
+ const FeeCharge = async () => {
+    if (!driverId) return; // Early return if userId is not set
+    const debit = 0.15 * selectedTrip.accepted_cost;
+  const data = {
+    currency: "USD",
+    exchange_rate: 1.0,
+    date: new Date().toISOString(),
+    debit: debit,
+    credit: 0,
+    balance: balance - debit,
+    description: selectedTrip.trip_id + "" + selectedTrip.deliveray_details,
+    client_profile_id: driverId,
+
+  }
+
+  console.log("Zvikuenda izvo", data);
+
+    try {
+      const resp = await fetch(`${APILINK}/topUp/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await resp.json();
+      console.log("hamenowo:", userId);
+      if (result) {
+        // setTopUpHistory(result);
+        setBalance(result[0]?.balance || 0);
+        setDate(new Date().toISOString());
+      } else {
+        Alert.alert("Error", "Failed to fetch History.");
+      }
+    } catch (error) {
+      console.error("Error fetching History:", error);
+      Alert.alert("Error", "An error occurred while fetching History.");
+    }
+  };
+
+
+
   const handleAcceptTrip = async () => {
     if (!driver || !selectedTrip) {
         Alert.alert("Error", "Some values are missing.");
         return;
     }
+
+    const history = fetchTopUpHistory()
+    console.log("history", history);
+
 
     const currentdate = new Date().toISOString();
     try {

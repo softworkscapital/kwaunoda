@@ -109,7 +109,7 @@ app.use("/application_withdrawals", WithdrawalRouter);
 
 
 pesepay.resultUrl = 'https://localhost:3011/payment-result';
-pesepay.returnUrl = 'https://192.168.241.97:8081';
+pesepay.returnUrl = 'https://192.168.43.210:8081';
 
 
 app.post('/initiate-payment', async (req, res) => {

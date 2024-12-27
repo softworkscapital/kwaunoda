@@ -31,6 +31,9 @@ const Wallet = () => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [currencyCode, setCurrencyCode] = useState("");
   const [driver, setDriver] = useState();
+  const [name, setName] = useState();
+  const [surname, setSurname] = useState();
+  const [userId, setUserId] = useState();
 
   const APILINK = API_URL;
   const navigation = useNavigation();
@@ -39,14 +42,24 @@ const Wallet = () => {
     navigation.goBack();
   };
 
+
+  const setter = (data) => {
+    const driverData = data;
+  
+    setDriver(driverData);
+    setName(driverData.name);
+    setSurname(driverData.surname);
+    setUserId(driverData.driver_id);
+
+  }
   useEffect(() => {
     const fetchDriver = async () => {
       try {
         const response = await AsyncStorage.getItem("userDetails");
         const driverData = JSON.parse(response);
         if (driverData) {
-          setDriver(driverData);
-          console.log("Driver email:", driverData.email); // Check if email is available
+          setter(driverData);
+          console.log("Driver email:", driverData); // Check if email is available
         } else {
           console.log("No driver data found.");
         }
@@ -54,19 +67,24 @@ const Wallet = () => {
         console.error("Error fetching driver data:", error);
       }
     };
-
+  
+    fetchDriver();
+  }, []);
+  
+  useEffect(() => {
     const fetchTopUpHistory = async () => {
-      let me = 1003;
+      if (!userId) return; // Early return if userId is not set
+  
       try {
-        const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
+        const resp = await fetch(`${APILINK}/topUp/topup/${userId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
-
+  
         const result = await resp.json();
-        // console.log("Top Up History:", result);
+        console.log("Top Up History:", userId);
         if (result) {
           setTopUpHistory(result);
           setBalance(result[0]?.balance || 0);
@@ -79,16 +97,15 @@ const Wallet = () => {
         Alert.alert("Error", "An error occurred while fetching History.");
       }
     };
-
+  
     fetchTopUpHistory();
-    fetchDriver();
-
+  
     const interval = setInterval(() => {
       fetchTopUpHistory();
     }, 7000);
-
+  
     return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
+  }, [userId]); // Depend on userId
 
   const initiatePayment = async (paymentDetails) => {
     try {
@@ -175,29 +192,24 @@ const Wallet = () => {
           ${Number(item.balance).toFixed(2)} {item.currency}
         </Text>
       </View>
-      <Text style={styles.status}>
-        Date: {item.date}
-      </Text>
-      <Text style={styles.status}>
-      Description: {item.description}
-      </Text>
+      <Text style={styles.status}>Date: {item.date}</Text>
+      <Text style={styles.status}>Description: {item.description}</Text>
       <Text style={styles.status}>
         Amount Affected:
-        {item.debit ? (
+         {item.debit ? (
           <Text style={{ color: "red", fontWeight: "bold" }}>
             {" "}
             - {item.debit} {item.currency}
           </Text>
         ) : item.credit ? (
           <Text style={{ color: "green", fontWeight: "bold" }}>
-            {item.credit} {item.currency}
+           {" "}{item.credit} {item.currency}
           </Text>
         ) : (
           " N/A"
         )}
       </Text>
       <Text style={styles.status}>Trip Id: {item.trip_id || "N/A"}</Text>
-      
     </TouchableOpacity>
   );
 
@@ -238,8 +250,10 @@ const Wallet = () => {
             source={require("../../assets/profile.jpeg")}
           />
           <View>
-            <Text style={styles.username}>Munashe Mudoti (Driver)</Text>
-            <Text style={styles.userid}>ACY 1988</Text>
+            <Text style={styles.username}>
+              {name} {surname}
+            </Text>
+            <Text style={styles.userid}>{userId}</Text>
           </View>
         </View>
 
@@ -282,7 +296,7 @@ const Wallet = () => {
       {/* hoyooo */}
       <FlatList
         data={topUpHistory}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.top_up_id.toString()} // Use a unique property
         renderItem={renderTopUpItem}
         contentContainerStyle={styles.deliveryList}
         showsVerticalScrollIndicator={false}

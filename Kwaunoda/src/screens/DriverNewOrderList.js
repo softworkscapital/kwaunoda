@@ -197,14 +197,17 @@ const DriverNewOrderList = () => {
         if (!response.ok) {
             throw new Error(result.message || "Failed to accept trip.");
         }
-        Alert.alert("Success", result.message || "Trip accepted successfully.");
+        // Alert.alert("Success", result.message || "Trip accepted successfully.");
 
         // Show the toast notification
         Toast.show({
-            type: 'success',  // Change this to your preferred toast type
-            text1: 'Settlement Occurred', // Toast message
-            position: 'top', // Position of the toast
-        });
+          type: 'success',
+          text1: "Trip accepted successfully",
+          text2: 'Settlement Occurred',
+
+          position: 'top',
+          visibilityTime: 5000, // Show for 5 seconds
+      });
 
         setSelectedTrip(null); // Hide trip details after accepting
         fetchTrips(driver); // Refresh trips after accepting the trip
@@ -223,6 +226,7 @@ const DriverNewOrderList = () => {
 
   return (
     <View style={styles.container}>
+
       <TopView />
       <WebView
         ref={webviewRef}
@@ -362,6 +366,7 @@ const DriverNewOrderList = () => {
           </View>
         </Modal>
       )}
+       {/* <Toast /> */}
     </View>
   );
 };

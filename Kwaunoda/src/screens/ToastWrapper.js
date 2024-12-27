@@ -1,9 +1,14 @@
 // ToastWrapper.js
-import React, { forwardRef } from "react";
-import Toast from "react-native-toast-message";
+import React from 'react';
+import Toast from 'react-native-toast-message';
 
-const ToastWrapper = forwardRef((props, ref) => {
-  return <Toast ref={ref} {...props} />;
-});
+const ToastWrapper = ({ children }) => {
+    return (
+        <>
+            {children}
+            <Toast ref={(ref) => Toast.setRef(ref)} />
+        </>
+    );
+};
 
 export default ToastWrapper;

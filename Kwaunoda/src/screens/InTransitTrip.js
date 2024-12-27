@@ -243,9 +243,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     elevation: 5,
-    paddingBottom: 0,
-    marginBottom: 70,
+    paddingBottom: 45,
+    marginBottom: 40,
   
   },
   tripCard: {

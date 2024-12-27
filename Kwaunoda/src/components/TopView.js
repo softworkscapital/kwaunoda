@@ -417,7 +417,7 @@ const TopView = () => {
           )}
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ChatScreen")} // Replace with your chat screen name
+          onPress={() => navigation.navigate("CustomerAdminChat")} // Replace with your chat screen name
           style={styles.menuButton}
         >
           <FontAwesome name="comments" size={24} color="black" />

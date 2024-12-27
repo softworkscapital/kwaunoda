@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons'; // Import the MaterialIcons for the back arrow
 import { API_URL } from "./config";
 import { useNavigation, useRoute } from '@react-navigation/native';
 
@@ -89,20 +90,20 @@ const DriverChat = () => {
       }
     }
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <MaterialIcons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.chatTitle}>Chat</Text>
       </View>
 
+      
       <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
         {chatHistory.map((chat, index) => (
           <View
-            key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
+            key={`${chat.date_chat}-${chat.time_chat}-${index}`}
             style={[
               styles.messageContainer,
               chat.origin === driverId ? styles.sentMessage : styles.receivedMessage,
@@ -111,9 +112,11 @@ const DriverChat = () => {
             <Text style={styles.messageText}>{chat.message}</Text>
             <Text style={styles.dateText}>{`${chat.date_chat} ${chat.time_chat}`}</Text>
           </View>
-        )).reverse()} {/* Reverse the order of rendering */}
+        )).reverse()}
       </ScrollView>
       
+   
+    
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -126,7 +129,7 @@ const DriverChat = () => {
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
           <Text style={styles.buttonText}>➤</Text>
         </TouchableOpacity>
-      </View>
+      </View> 
     </View>
   );
 };
@@ -137,8 +140,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   topView: {
-    height: 60,
-    backgroundColor: 'green',
+    height: 70,
+    padding: 12,
+    backgroundColor: '#ffc000',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
@@ -195,13 +199,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#b2d600',
+    borderColor: '#ffc000',
     borderRadius: 20,
     padding: 10,
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: '#b2d600',
+    backgroundColor: '#ffc000',
     borderRadius: 20,
     padding: 10,
   },

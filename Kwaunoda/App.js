@@ -56,11 +56,14 @@ import OnlineStore from "./src/screens/Store.js";
 import StoreCategories from "./src/screens/StoreCatergories.js";
 import StoreInventory from "./src/screens/StoreInventory.js";
 import MapCompo from "./src/screens/MapCompo.js";
+import ToastWrapper from './src/screens/ToastWrapper'; 
 
 
 const Stack = createStackNavigator();
 const App = () => {
   return (
+
+    <ToastWrapper>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
@@ -130,8 +133,9 @@ const App = () => {
         <Stack.Screen name="StoreInventory" component={StoreInventory} />
         {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>
-      <Toast />
+      {/* <Toast /> */}
     </NavigationContainer>
+    </ToastWrapper>
   );
 };
 

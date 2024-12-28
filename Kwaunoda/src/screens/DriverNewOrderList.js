@@ -107,6 +107,7 @@ const DriverNewOrderList = () => {
   };
 
   const handleAcceptTrip = async () => {
+    
     if (!driver || !selectedTrip) {
       Alert.alert("Error", "Some values are missing.");
       return;
@@ -115,6 +116,11 @@ const DriverNewOrderList = () => {
     // Ensure selectedTrip.accepted_cost is valid before proceeding
     if (!selectedTrip.accepted_cost) {
       Alert.alert("Error", "Trip cost is not defined.");
+      return;
+    }
+
+    if (balance <= 0) {
+      Alert.alert("Error", "Balance too low. Please increase your balance");
       return;
     }
 

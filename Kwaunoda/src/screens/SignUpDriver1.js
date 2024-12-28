@@ -27,6 +27,7 @@ const SignUpDriver1 = () => {
   const [username, setUsername] = useState("");
   const [otp, setOtp] = useState(""); // State for OTP
   const [phoneNumber, setPhoneNumber] = useState(""); // State for phone number input
+  const APILINK = API_URL;
 
   const navigation = useNavigation();
 
@@ -152,7 +153,7 @@ const SignUpDriver1 = () => {
 
 
 
-  const newAccount = async (driver) => {
+  const newAccount = async (driver, driverResponse) => {
     if (!driver) {
       Alert.alert("Error", "Some values are missing.");
       return;
@@ -192,7 +193,8 @@ const SignUpDriver1 = () => {
       });
 
       const result = await resp.json();
-      if (result) {
+      if (resp.ok) {
+        Alert.alert("Success", driverResponse.message);
         
       } else {
         Alert.alert("Error", "Failed to process top-up account.");
@@ -208,41 +210,41 @@ const SignUpDriver1 = () => {
 
   const handleNext = async () => {
     if (!validateInput()) return;
-
+  
     const APILINK = API_URL;
     setLoading(true);
-
+  
     try {
       const driveData = await AsyncStorage.getItem("driverDetailsD0");
       const driverDetails = JSON.parse(driveData);
-
+  
       const otpSent = await sendOtpToPhone(phoneNumber);
       if (!otpSent) {
         setLoading(false);
         return;
       }
-
+  
       const idResponse = await fetch(`${APILINK}/users/last_user_id/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
+  
       if (!idResponse.ok) {
         console.error("Error fetching last inserted ID:", idResponse.status);
         showToast("Error", "Failed to fetch last inserted ID.");
         return;
       }
-
+  
       const idResult = await idResponse.json();
       const lastUserId = idResult[0].userid;
-
+  
       let user_id = incrementId(lastUserId);
-
+  
       // Save user ID in local storage
       await AsyncStorage.setItem("user_id", user_id); // Store user_id for OTP page
-
+  
       const user = {
         userId: user_id,
         role: "driver",
@@ -265,15 +267,15 @@ const SignUpDriver1 = () => {
         driverId: user_id,
         customerId: 0,
       };
-
+  
       console.log("User object to be sent:", user);
       
       // Save user details to local storage
       await AsyncStorage.setItem("driverDetails", JSON.stringify(user));
-
+  
       await AsyncStorage.setItem("driver_id", JSON.stringify(user_id)); 
       console.log("wadzanai anopenga", user_id);
-
+  
       const userResp = await fetch(`${APILINK}/users/`, {
         method: "POST",
         headers: {
@@ -281,14 +283,14 @@ const SignUpDriver1 = () => {
         },
         body: JSON.stringify(user),
       });
-
+  
       if (!userResp.ok) {
         const errorText = await userResp.text();
         console.error("Error posting to user details:", userResp.status, errorText);
         showToast("Error", "Failed to create user.");
         return;
       }
-
+  
       const driver = {
         driver_id: user_id,
         ecnumber: "",
@@ -315,7 +317,7 @@ const SignUpDriver1 = () => {
         country: driverDetails.country || "",
         membershipstatus: "Pending OTP Verification",
       };
-
+  
       const driverResp = await fetch(`${APILINK}/driver/`, {
         method: "POST",
         headers: {
@@ -323,22 +325,23 @@ const SignUpDriver1 = () => {
         },
         body: JSON.stringify(driver),
       });
-
+  
       if (!driverResp.ok) {
         const errorText = await driverResp.text();
         console.error("Error posting to driver details:", driverResp.status, errorText);
         showToast("Error", "Failed to create driver.");
         return;
       }
-
+  
       const driverResponse = await driverResp.json();
-      Alert.alert("Success", driverResponse.message);
-      navigation.navigate("OTPDriver", { userId: user_id });
+      
+      await newAccount(driver.driver_id, driverResponse);
+      navigation.navigate("OTPDriver", { userId: user_id }); // Ensure userId is passed correctly
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "Failed to save details. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading state is reset
     }
   };
 

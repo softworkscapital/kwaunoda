@@ -116,13 +116,19 @@ const MapViewComponent = () => {
     }
   };
 
-  const saveDeliveryToAsyncStorage = async (start, destination, distance, duration) => {
+
+
+  const saveDeliveryToAsyncStorage = async (startCoords, start, destination, destCoords, distance, duration) => {
     const deliveryData = {
+      origin: startCoords,
       startingLocation: start,
       destinationLocation: destination,
+      dest: destCoords,
       distance,
       duration,
     };
+    
+    console.log("Derivery", deliveryData);
 
     try {
       const existingDeliveries = await AsyncStorage.getItem("deliveries");

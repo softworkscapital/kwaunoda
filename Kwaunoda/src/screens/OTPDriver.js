@@ -18,37 +18,23 @@ import { useRoute } from "@react-navigation/native";
 
 const OTPDriver = ({ navigation }) => {
   const route = useRoute();
-
+  const { userId } = route.params; // Destructure userId from route parameters
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start loading true
   const [fetchedOtp, setFetchedOtp] = useState("");
-  const [userId, setUserId] = useState(null);
   const APILINK = API_URL;
 
   // Create refs for OTP inputs
   const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
-  const getId = async () => {
-    const user = await AsyncStorage.getItem("driver");
-    const userId = JSON.parse(user);
-    setUserId(userId);
-    return userId; // Return userId for further use
-  };
-
   useEffect(() => {
-    const fetchUserId = async () => {
-      const id = await getId();
-      console.log("Passed userId:", id);
-      if (id) {
-        fetchDriverDetails(id);
-      }
-    };
-    fetchUserId();
+    fetchDriverDetails();
   }, []);
 
-  const fetchDriverDetails = async (id) => {
+  const fetchDriverDetails = async () => {
+    setLoading(true); // Set loading to true while fetching
     try {
-      if (!id) {
+      if (!userId) { // Check if userId is falsy
         Toast.show({
           text1: "Error",
           text2: "User ID not found.",
@@ -58,7 +44,7 @@ const OTPDriver = ({ navigation }) => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/users/${id}`);
+      const response = await fetch(`${APILINK}/users/${userId}`);
       if (response.ok) {
         const user = await response.json();
         if (user.length > 0 && user[0].otp) {
@@ -92,15 +78,13 @@ const OTPDriver = ({ navigation }) => {
         position: "top",
       });
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading is set to false after fetching
     }
   };
 
-
-
-  const updateUsers = async() => {
+  const updateUsers = async () => {
+    const status = { status: "Pending Verification" };
     try {
-      const status = { status: "Pending Verification" };
       const response = await fetch(`${APILINK}/users/update_status/${userId}`, {
         method: "PUT",
         headers: {
@@ -110,20 +94,18 @@ const OTPDriver = ({ navigation }) => {
       });
 
       if (response.ok) {
-        const result = await response.json(); // Await the JSON response
-        console.log("From OTP", result);
         Alert.alert("Success", "OTP verified successfully.");
         navigation.navigate("CustomerLogin");
       } else {
         const errorResponse = await response.json();
-        console.error("Error response:", errorResponse);
+        console.error("Error updating status:", errorResponse);
         Alert.alert("Error", "Failed to update status.");
       }
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "An error occurred while verifying OTP.");
     }
-  }
+  };
 
   const handleVerifyOtp = async () => {
     const otpString = otp.join("");
@@ -140,10 +122,6 @@ const OTPDriver = ({ navigation }) => {
 
         if (response.ok) {
           updateUsers();
-          const result = await response.json(); // Await the JSON response
-          console.log("From OTP", result);
-          Alert.alert("Success", "OTP verified successfully.");
-          navigation.navigate("CustomerLogin");
         } else {
           const errorResponse = await response.json();
           console.error("Error response:", errorResponse);
@@ -216,7 +194,6 @@ const OTPDriver = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

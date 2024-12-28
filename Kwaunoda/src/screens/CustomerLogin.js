@@ -149,6 +149,7 @@ const CustomerLogin = () => {
             await AsyncStorage.setItem("userStatus", userStatus);
 
             // Navigation based on user status
+            
             if (userStatus === "Pending Verification") {
                 navigation.navigate("Welcome", { email, password });
             } else if (["Suspended", "Blacklisted"].includes(userStatus)) {

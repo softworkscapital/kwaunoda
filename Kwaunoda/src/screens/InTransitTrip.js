@@ -6,10 +6,11 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "./config";
+import { API_URL, API_URL_UPLOADS } from "./config";
 import TopView from "../components/TopView";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import LocationSender from "./LocationTracker";
@@ -23,8 +24,11 @@ const InTransitTrip = () => {
   const [currentTrip, setCurrentTrip] = useState(null);
   const [tripId, setTripId] = useState(null);
   const [driverId, setDriverId] = useState(null);
+  const [customer, setCustomer] = useState();
+  const [profilePic, setPicture] = useState();
+
   const APILINK = API_URL;
-  const driver2 = 'driver';
+  const driver2 = "driver";
 
   // Use focus effect to reset data when navigating to this screen
   useFocusEffect(
@@ -61,6 +65,44 @@ const InTransitTrip = () => {
     }
   };
 
+  const fetchCustomer = async (customerId) => {
+    if (!customerId) {
+      Alert.alert("Error", "No customer ID provided.");
+      return; // Exit the function if no customerId
+    }
+
+    console.log("Fetching customer ID:", customerId);
+
+    try {
+      const resp = await fetch(`${APILINK}/customerdetails/${customerId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!resp.ok) {
+        // Handle HTTP errors
+        const errorResponse = await resp.json();
+        console.error("Error fetching customer:", errorResponse);
+        Alert.alert("Error", "Failed to fetch customer details.");
+        return;
+      }
+
+      const customerData = await resp.json(); // Await the JSON parsing
+      console.log("Customer Info:", customerData[0]);
+      setCustomer(customerData[0]);
+      setPicture(
+        `${API_URL_UPLOADS}/${customerData[0].profilePic.replace(/\\/g, "/")}`
+      );
+
+      // Do something with customerData, e.g., update state or UI
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      Alert.alert("Error", "An error occurred while fetching customer data.");
+    }
+  };
+
   const fetchTripData = async (driverId) => {
     console.log("driver id intransit", driverId);
     try {
@@ -79,7 +121,7 @@ const InTransitTrip = () => {
         const trip = inTransitTrips[0];
         setCurrentTrip(trip);
         setTripId(trip.trip_id);
-
+        fetchCustomer(trip.cust_id);
         const startCoords = {
           latitude: parseFloat(trip.origin_location_lat),
           longitude: parseFloat(trip.origin_location_long),
@@ -117,7 +159,10 @@ const InTransitTrip = () => {
 
       if (Array.isArray(driverArray) && driverArray.length > 0) {
         const driver = driverArray[0];
-        if (driver.lat_cordinates !== undefined && driver.long_cordinates !== undefined) {
+        if (
+          driver.lat_cordinates !== undefined &&
+          driver.long_cordinates !== undefined
+        ) {
           setDriverLocation({
             latitude: driver.lat_cordinates,
             longitude: driver.long_cordinates,
@@ -152,7 +197,7 @@ const InTransitTrip = () => {
   return (
     <View style={styles.container}>
       <TopView id={driverId} />
-      
+
       {/* Conditional rendering of LocationSender */}
       {driverId && (
         <LocationSender userId={driverId} userType={driver2} interval={60000} />
@@ -168,8 +213,7 @@ const InTransitTrip = () => {
         <WebView source={{ uri: webViewUrl }} style={styles.webview} />
       )}
 
-      <View >
-
+      <View>
         {currentTrip && (
           <View style={styles.fixedCurrentTripContainer}>
             <View style={styles.tripCard}>
@@ -179,9 +223,18 @@ const InTransitTrip = () => {
               <Text style={styles.currentTripText}>
                 Current Trip: {currentTrip.trip_id}
               </Text>
-              <Text style={styles.tripDetailsText}>
-                Driver ID: {currentTrip.driver_id}
-              </Text>
+              <View style={styles.profileContainer}>
+                <Text style={styles.profileName}></Text>
+
+                <Image
+                  source={{ uri: profilePic }}
+                  style={[styles.profileImage, { marginTop: 5 }]}
+                />
+                <Text style={styles.tripDetailsText}>
+                  {customer ? customer.name : "Loading customer..."}{" "}
+                  {customer ? customer.surname : "Loading customer..."}
+                </Text>
+              </View>
               <Text style={styles.tripDetailsText}>
                 Start Time: {currentTrip.request_start_datetime}
               </Text>
@@ -240,7 +293,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 260,
     // backgroundColor: "#FFC000",
-    
+
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
@@ -248,7 +301,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     paddingBottom: 45,
     marginBottom: 70,
-  
   },
   tripCard: {
     marginVertical: 10,
@@ -259,6 +311,22 @@ const styles = StyleSheet.create({
     maxHeight: 300,
     paddingBottom: 10,
     marginBottom: 10,
+  },
+  profileContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileName: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 30,
+    marginLeft: 3,
+    marginRight: 5,
+    marginBottom: 8,
   },
   statusText: {
     fontWeight: "bold",

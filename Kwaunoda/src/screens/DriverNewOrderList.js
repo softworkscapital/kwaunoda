@@ -45,22 +45,24 @@ const DriverNewOrderList = () => {
       const storedIds = await AsyncStorage.getItem("theIds");
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
+        setDriver(parsedIds.driver_id); // Set driver_id immediately
         await fetchDriverDetails(parsedIds.driver_id);
-        setDriver(parsedIds.driver_id);
+        await fetchTopUpHistory(); // Fetch top-up history immediately after setting driver
       } else {
         Alert.alert("Driver ID not found", "Please log in again.");
         setLoading(false);
       }
     };
-
+  
     fetchData();
-
+  
     const intervalId = setInterval(() => {
       if (driverId) {
         fetchTrips(driverId);
+        fetchTopUpHistory();
       }
-    }, 30000);
-
+    }, 3000);
+  
     return () => clearInterval(intervalId);
   }, [driverId]);
 
@@ -70,7 +72,6 @@ const DriverNewOrderList = () => {
       const result = await response.json();
       if (result && result.length > 0) {
         setDriver(result[0].driver_id);
-        await fetchTopUpHistory(); // Fetch top-up history here
         await fetchTrips(driverId);
       } else {
         Alert.alert("Error", "Driver details not found.");
@@ -119,8 +120,11 @@ const DriverNewOrderList = () => {
       return;
     }
 
+        const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
+    const newBalance = balance - fee;
+
     if (balance <= 0) {
-      Alert.alert("Error", "Balance too low. Please increase your balance");
+      Alert.alert("Error", `Your floating balance is too low. You need to top up to at least ${fee}`);
       return;
     }
 
@@ -134,8 +138,7 @@ const DriverNewOrderList = () => {
       currentDate.getMinutes()
     ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
 
-    const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
-    const newBalance = balance - fee; // Update balance after fee deduction
+ // Update balance after fee deduction
 
     const data = {
       currency: "USD",

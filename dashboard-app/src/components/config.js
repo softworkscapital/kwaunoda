@@ -1,3 +1,3 @@
-export const API_URL = 'http://192.168.43.210:3011';
+export const API_URL = 'http://192.168.184.7:3011';
 // export const API_URL = 'https://srv547457.hstgr.cloud:3011';
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyA4ZQWDwYRHmhu66Cb1F8DgXbJJrArHYyE';

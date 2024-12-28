@@ -308,6 +308,19 @@ CustomerRouter.delete('/:id', async (req, res, next) => {
     }
 });
 
+/////Verification
+CustomerRouter.get("/customer_verify/:email/:phone/:idnumber", async (req, res, next) => {
+  try {
+    let email = req.params.email;
+    let phone = req.params.phone;
+    let idnumber = req.params.idnumber;
+    let result = await CustomersDbOperations.getVerifyCustomer(email,phone,idnumber);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 
 
 CustomerRouter.put("/update_status/:id", async (req, res, next) => {

@@ -100,16 +100,18 @@ const CustomerNewDelivery = () => {
       try {
         const lastTripData = await AsyncStorage.getItem("deliveries");
         const deliveries = lastTripData ? JSON.parse(lastTripData) : [];
+      
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
+          console.log("The deliiiii:", lastDelivery)
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
           setDist(lastDelivery.distance || "");
-          setStartLocationLat(parseFloat(lastDelivery.startCoords.latitude || ""));
-          setStartLocationLong(parseFloat(lastDelivery.startCoords.longitude || ""));
-          setEndLocationLat(parseFloat(lastDelivery.destCoords.latitude || ""));
-          setEndLocationLong(parseFloat(lastDelivery.destCoords.longitude || ""));
+          setStartLocationLat(parseFloat(lastDelivery.origin.latitude || ""));
+          setStartLocationLong(parseFloat(lastDelivery.origin.longitude || ""));
+          setEndLocationLat(parseFloat(lastDelivery.dest.latitude || ""));
+          setEndLocationLong(parseFloat(lastDelivery.dest.longitude || ""));
         } else {
           console.warn("No deliveries found");
         }
@@ -161,7 +163,7 @@ const CustomerNewDelivery = () => {
         order_start_datetime: "",
         order_end_datetime: "",
         status: "New Order",
-        delivery_details: "Package : "+parcelDescription+" est. "+weight+" KGS"+" "+deliverynotes,
+        deliveray_details: "Package : "+parcelDescription+" est. "+weight+" KGS"+" "+deliverynotes,
         delivery_notes: deliverynotes || null,
         weight: weight || null,
         delivery_contact_details: contact,
@@ -176,12 +178,14 @@ const CustomerNewDelivery = () => {
         accepted_cost: price,
         paying_when: payingWhen,
         payment_type: paymentMethod,
-        currency_id: cid,
+        currency_id: "1",
         currency_code: code,
         customer_comment: "",
         driver_comment: "",
         driver_stars: "0",
       };
+
+      console.log("derivary yedu iyi:", deliveryData);
 
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
@@ -198,6 +202,8 @@ const CustomerNewDelivery = () => {
           type: "success",
           text1: "Trip Created Successfully",
           text2: result.message,
+          position: "center",
+          visibilityTime: 5000,
         });
         navigation.navigate("Home");
       } else {
@@ -205,6 +211,8 @@ const CustomerNewDelivery = () => {
           type: "error",
           text1: "Error",
           text2: result.message || "Failed to submit delivery details.",
+          position: "center",
+          visibilityTime: 5000,
         });
       }
     } catch (error) {
@@ -213,6 +221,8 @@ const CustomerNewDelivery = () => {
         type: "error",
         text1: "Error",
         text2: "An error occurred while submitting your delivery details.",
+        position: "center",
+        visibilityTime: 5000,
       });
     }
   };
@@ -321,8 +331,8 @@ const CustomerNewDelivery = () => {
               onValueChange={(itemValue) => setPayingWhen(itemValue)}
             >
               <Picker.Item label="Paying When" value="" />
-              <Picker.Item label="Pay Before Delivery" value="Pay Before Delivery" />
-              <Picker.Item label="Pay After Delivery" value="Pay After Delivery" />
+              <Picker.Item label="Paying Before Delivery" value="Paying Before Delivery" />
+              <Picker.Item label="Paying After Delivery" value="Paying After Delivery" />
             </Picker>
           </View>
 
@@ -372,7 +382,6 @@ const CustomerNewDelivery = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Toast />
     </SafeAreaView>
   );
 };

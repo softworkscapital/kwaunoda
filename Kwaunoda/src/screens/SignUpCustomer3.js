@@ -27,6 +27,7 @@ const SignUpCustomer3 = () => {
   const [user1, setUser1] = useState(null);
   const [otp, setOtp] = useState(0);
   const navigation = useNavigation();
+  const APILINK = API_URL;
 
   // Fetch user details from AsyncStorage
   const fetchUserDetails = async () => {
@@ -205,52 +206,74 @@ const SignUpCustomer3 = () => {
 
   // Handle sign-up process
   const handleSignUp = async () => {
-    if (!validateInput()) return;
-
-    setLoading(true);
+    if (!validateInput()) return; // Validate inputs before proceeding
+  
+    setLoading(true); // Start loading state
+  
     try {
-      const lastUserId = await fetchLastUserId();
-      console.log("horror", lastUserId);
-      const newUserId = incrementId(lastUserId);
-      console.log("New User ID:", newUserId); // Debug log
-
-      let last = 'customer'
-      let sync = 'Pending'
-      const user = {
-        userId: newUserId,
-        role: "driver",
-        username: username.trim(),
-        email: userDetails.email.trim(),
-        password: userDetails.password,
-        otp: otp,
-        notify: false,
-        activesession: false,
-        addproperty: false,
-        editproperty: false,
-        approverequests: false,
-        delivery: false,
-        status: "Pending OTP Verification",
-        sync_status: "Pending",
-        last_logged_account: "customer",
-        driverId: 0,
-        customerId: newUserId, // Set customerId to newUserId
-      };
-
-      console.log(user);
-
-      await createUser(user);
-
-      await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
-      Alert.alert("Success", "User signed up successfully.");
-      navigation.navigate("OTPCustomer", { userId: newUserId });
+      // Verify driver details
+      const resp = await fetch(`${APILINK}/driver/driver_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const result = await resp.json();
+  
+      // Check if a user with the same email, phone number, or ID number already exists
+      if (result.length > 0) {
+        Alert.alert("Error", "A user with the same email, phone number, or ID number already exists.");
+        return; // Early return if verification fails
+      } else {
+        try {
+          // Fetch last user ID and increment it
+          const lastUserId = await fetchLastUserId();
+          const newUserId = incrementId(lastUserId);
+          console.log("New User ID:", newUserId); // Debug log
+  
+          // Create user object
+          const user = {
+            userId: newUserId,
+            role: "driver",
+            username: username.trim(),
+            email: userDetails.email.trim(),
+            password: userDetails.password,
+            otp: otp,
+            notify: false,
+            activesession: false,
+            addproperty: false,
+            editproperty: false,
+            approverequests: false,
+            delivery: false,
+            status: "Pending OTP Verification",
+            sync_status: "Pending",
+            last_logged_account: "customer",
+            driverId: 0,
+            customerId: newUserId, // Set customerId to newUserId
+          };
+  
+          console.log("User object to be created:", user);
+  
+          // Create the user in the database
+          await createUser(user);
+  
+          // Create customer details
+          await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
+  
+          Alert.alert("Success", "User signed up Now Verify Your Number Using the OTP we sent to your Phone.");
+          navigation.navigate("OTPCustomer", { userId: newUserId }); // Navigate to OTP page
+        } catch (error) {
+          console.error("Sign-up error:", error);
+          Alert.alert("Error", error.message || "Failed to sign up. Please try again.");
+        } finally {
+          setLoading(false); // Ensure loading state is reset
+        }
+      }
     } catch (error) {
-      console.error("Sign-up error:", error);
-      Alert.alert(
-        "Error",
-        error.message || "Failed to sign up. Please try again."
-      );
-    } finally {
-      setLoading(false);
+      console.error("Error during verification:", error);
+      Alert.alert("Error", "Failed to verify user details. Please try again.");
+      setLoading(false); // Ensure loading state is reset
     }
   };
 

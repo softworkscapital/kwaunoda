@@ -91,20 +91,21 @@ const MapViewComponent = () => {
       fetchTripDetails(startCoords, destCoords);
     }
   };
-
   const fetchTripDetails = async (startCoords, destCoords) => {
     setLoading(true);
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords.latitude},${startCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&key=${API_KEY}`;
-
+  
     try {
       const response = await fetch(url);
       const data = await response.json();
-
+  
       if (data.routes.length > 0) {
         const leg = data.routes[0].legs[0];
         setDistance(leg.distance.text);
         setDuration(leg.duration.text);
-        await saveDeliveryToAsyncStorage(startingLocation, destinationLocation, leg.distance.text, leg.duration.text);
+        
+        // Call to save delivery, passing the correct parameters
+        await saveDeliveryToAsyncStorage(startCoords, startingLocation, destinationLocation, destCoords, leg.distance.text, leg.duration.text);
       } else {
         Alert.alert("Error", "No route found.");
       }
@@ -120,22 +121,24 @@ const MapViewComponent = () => {
 
   const saveDeliveryToAsyncStorage = async (startCoords, start, destination, destCoords, distance, duration) => {
     const deliveryData = {
-      origin: startCoords,
-      startingLocation: start,
-      destinationLocation: destination,
-      dest: destCoords,
-      distance,
-      duration,
+      origin: startCoords, // Keep coordinates as is
+      startingLocation: start, // Starting address
+      destinationLocation: destination, // Destination address
+      dest: destCoords, // Destination coordinates
+      distance, // Distance string
+      duration, // Duration string
     };
-    
-    console.log("Derivery", deliveryData);
-
+  
+    console.log("Delivery Data:", deliveryData); // Fixed typo in 'Derivery'
+  
     try {
       const existingDeliveries = await AsyncStorage.getItem("deliveries");
       const deliveries = existingDeliveries ? JSON.parse(existingDeliveries) : [];
-      deliveries.push(deliveryData);
-      await AsyncStorage.setItem("deliveries", JSON.stringify(deliveries));
-      navigation.navigate("CustomerNewDelivery");
+      
+      console.log("Existing Deliveries:", deliveries); // Debugging log to see existing deliveries
+      deliveries.push(deliveryData); // Push the new delivery data
+      await AsyncStorage.setItem("deliveries", JSON.stringify(deliveries)); // Store updated deliveries
+      navigation.navigate("CustomerNewDelivery"); // Navigate after storing
     } catch (error) {
       console.error("Error saving delivery:", error);
       Alert.alert("Error", "Unable to save delivery.");

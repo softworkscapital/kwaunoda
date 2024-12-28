@@ -212,6 +212,22 @@ DriverRouter.get("/driver_status/:status", async (req, res, next) => {
 });
 
 
+/////Verification
+DriverRouter.get("/driver_verify/:email/:phone/:idnumber", async (req, res, next) => {
+  try {
+    let email = req.params.email;
+    let phone = req.params.phone;
+    let idnumber = req.params.idnumber;
+    let result = await DriverDbOperations.getVerifyDriver(email,phone,idnumber);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+
+
 ///////
 
 DriverRouter.put("/update_status/:id", async (req, res, next) => {

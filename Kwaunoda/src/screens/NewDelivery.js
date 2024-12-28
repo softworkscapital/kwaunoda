@@ -236,7 +236,7 @@ const NewDelivery = () => {
         paying_when: payingWhen,
         payment_type: paymentMethod,
         currency_id: cid,
-        currency_code: code,
+        // currency_code: code,
         customer_comment: "",
         driver_comment: "",
         driver_stars: "0",
@@ -352,7 +352,7 @@ const NewDelivery = () => {
             <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Delivery Contact (263123456789)"
+              placeholder="Delivery Contact (263777000000)"
               value={contact}
               onChangeText={setContact}
             />
@@ -365,15 +365,16 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPayingWhen(itemValue)}
             >
               <Picker.Item label="Paying When" value="" />
-              <Picker.Item
-                label="Pay Before Delivery"
-                value="Pay Before Delivery"
-              />
-              <Picker.Item
-                label="Pay After Delivery"
-                value="Pay After Delivery"
-              />
-            </Picker>
+              <Picker.Item label="Paying Before Trip" value="Paying Before Trip" />
+              <Picker.Item label="Paying After Trip" value="Paying After Trip" />
+              </Picker>
+
+
+
+
+
+
+
           </View>
 
           <View style={styles.pickerContainer}>
@@ -410,7 +411,7 @@ const NewDelivery = () => {
                 style={[styles.picker, { fontSize: 10, color: "#666" }]}
                 onValueChange={(itemValue) => setCode(itemValue)}
               >
-                <Picker.Item label="CURRENCY" value="USD" />
+                <Picker.Item label="Choose Currency" value="" />
                 <Picker.Item label="USD" value="USD" />
                 <Picker.Item label="ZIG" value="ZIG" />
                 <Picker.Item label="RAND" value="ZAR" />

@@ -8,10 +8,11 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  Image,
   ScrollView,
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome5";
-import { API_URL } from "./config";
+import { API_URL, API_URL_UPLOADS } from "./config";
 import TopView from "../components/TopView";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocationSender from "./LocationTracker";
@@ -59,7 +60,6 @@ const Home = ({ navigation }) => {
     ).start();
   }, []);
 
-
   const fetchUserTrips = async (userId) => {
     try {
       const response = await fetch(`${API_URL}/trip/customer/notify/${userId}`);
@@ -67,15 +67,17 @@ const Home = ({ navigation }) => {
 
       if (userTrips.length > 0) {
         // Fetch driver details for all unique driver IDs
-        const driverIds = userTrips.map(trip => trip.driver_id);
+        const driverIds = userTrips.map((trip) => trip.driver_id);
         const uniqueDriverIds = [...new Set(driverIds)];
         const drivers = await fetchDrivers(uniqueDriverIds);
-        
+
         // Create a map of driver details
-        const driverMap = new Map(drivers.map(driver => [driver.driver_id, driver]));
+        const driverMap = new Map(
+          drivers.map((driver) => [driver.driver_id, driver])
+        );
 
         // Add driver details to each trip
-        const tripsWithDrivers = userTrips.map(trip => ({
+        const tripsWithDrivers = userTrips.map((trip) => ({
           ...trip,
           driver: driverMap.get(trip.driver_id) || null, // Get driver details or null if not found
         }));
@@ -91,8 +93,8 @@ const Home = ({ navigation }) => {
 
   const fetchDrivers = async (driverIds) => {
     try {
-      const driverPromises = driverIds.map(driverId =>
-        fetch(`${API_URL}/driver/${driverId}`).then(res => res.json())
+      const driverPromises = driverIds.map((driverId) =>
+        fetch(`${API_URL}/driver/${driverId}`).then((res) => res.json())
       );
       const drivers = await Promise.all(driverPromises);
       return drivers.flat(); // Flatten in case of multiple results
@@ -102,11 +104,11 @@ const Home = ({ navigation }) => {
     }
   };
 
-
-
   const fetchCounterOffers = async (userId) => {
     try {
-      const response = await fetch(`${API_URL}/counter_offer/customerid/status/${userId}/Unseen`);
+      const response = await fetch(
+        `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
+      );
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -120,9 +122,13 @@ const Home = ({ navigation }) => {
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
             offers.map(async (offer) => {
-              const driverResponse = await fetch(`${API_URL}/driver/${offer.driver_id}`);
+              const driverResponse = await fetch(
+                `${API_URL}/driver/${offer.driver_id}`
+              );
               const driverResult = await driverResponse.json();
-              const driverData = Array.isArray(driverResult) ? driverResult[0] : driverResult;
+              const driverData = Array.isArray(driverResult)
+                ? driverResult[0]
+                : driverResult;
 
               return {
                 ...offer,
@@ -135,17 +141,23 @@ const Home = ({ navigation }) => {
           );
 
           // Filter out already shown offers before setting state
-          const newOffers = updatedOffers.filter(offer => !shownOfferIds.has(offer.counter_offer_id));
+          const newOffers = updatedOffers.filter(
+            (offer) => !shownOfferIds.has(offer.counter_offer_id)
+          );
 
           if (newOffers.length > 0) {
-            setCounterOffers(prev => [...prev, ...newOffers]);
+            setCounterOffers((prev) => [...prev, ...newOffers]);
 
             // Add new IDs to the set
-            newOffers.forEach(offer => shownOfferIds.add(offer.counter_offer_id));
+            newOffers.forEach((offer) =>
+              shownOfferIds.add(offer.counter_offer_id)
+            );
             setShowCounterOffers(true);
 
             // Start the timer for each offer
-            newOffers.forEach(offer => startOfferTimer(offer.counter_offer_id));
+            newOffers.forEach((offer) =>
+              startOfferTimer(offer.counter_offer_id)
+            );
           }
         }
       } catch (parseError) {
@@ -192,7 +204,9 @@ const Home = ({ navigation }) => {
       );
 
       if (!acceptResponse.ok) {
-        throw new Error(`Error accepting counter offer: ${acceptResponse.statusText}`);
+        throw new Error(
+          `Error accepting counter offer: ${acceptResponse.statusText}`
+        );
       }
 
       // Update the trip status and driver details
@@ -211,7 +225,9 @@ const Home = ({ navigation }) => {
       );
 
       if (!statusResponse.ok) {
-        throw new Error(`Error updating trip status: ${statusResponse.statusText}`);
+        throw new Error(
+          `Error updating trip status: ${statusResponse.statusText}`
+        );
       }
 
       setCounterOffers((prevOffers) =>
@@ -248,8 +264,8 @@ const Home = ({ navigation }) => {
           body: JSON.stringify({ status: "seen" }), // Convert to JSON string
         }
       );
-      
-      console.log("marked counter offer as seen id: ", offerId)
+
+      console.log("marked counter offer as seen id: ", offerId);
 
       // Optionally handle the response
       if (!response.ok) {
@@ -263,22 +279,16 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const renderStars = (stars) => {
-    const filledStars = Math.round(stars);
-    return (
-      <View style={{ flexDirection: "row" }}>
-        {[...Array(5)].map((_, i) => (
-          <FontAwesome
-            key={i}
-            name="star" // Use "star" for both
-            size={16}
-            color={i < filledStars ? "#FFD700" : "#D3D3D3"} // Gold for filled, gray for empty
-            solid={i < filledStars} // Solid for filled stars
-            regular={i >= filledStars} // Regular for empty stars
-          />
-        ))}
-      </View>
-    );
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Text key={i} style={styles.star}>
+          {i < rating ? "★" : "☆"}
+        </Text>
+      );
+    }
+    return <View style={styles.starContainer}>{stars}</View>;
   };
 
   return (
@@ -291,160 +301,227 @@ const Home = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <TopView id={userId} />
         <ScrollView>
-          {showCounterOffers && counterOffers.map((offer) => {
-            const slideAnimation = new Animated.Value(Dimensions.get("window").width); // Start off-screen
+          {showCounterOffers &&
+            counterOffers.map((offer) => {
+              const slideAnimation = new Animated.Value(
+                Dimensions.get("window").width
+              ); // Start off-screen
 
-            Animated.timing(slideAnimation, {
-              toValue: 0, // Move to the starting position
-              duration: 500, // Animation duration
-              useNativeDriver: true,
-            }).start();
+              Animated.timing(slideAnimation, {
+                toValue: 0, // Move to the starting position
+                duration: 500, // Animation duration
+                useNativeDriver: true,
+              }).start();
 
-            const offerProgress = progressAnimations.current[offer.counter_offer_id] || new Animated.Value(1);
+              const offerProgress =
+                progressAnimations.current[offer.counter_offer_id] ||
+                new Animated.Value(1);
 
-            return (
-              <Animated.View
-                key={offer.counter_offer_id}
-                style={[
-                  styles.offerCard,
-                  { transform: [{ translateX: slideAnimation }], marginBottom: 10 }
-                ]}
-              >
-                <View style={styles.progressBarContainer}>
-                  <Animated.View
-                    style={{
-                      ...styles.progressBar,
-                      width: offerProgress.interpolate({
-                        inputRange: [0, 100],
-                        outputRange: ["100%", "0%"],
-                      }),
-                    }}
-                  />
-                </View>
-                <Text style={styles.offerText}>
-                  {offer.name} {renderStars(offer.stars)}
-                </Text>
-                <Text style={styles.offerText}>
-                  Counter Offer: {offer.counter_offer_value} {offer.currency}
-                </Text>
-                <Text style={styles.offerText}>For Trip: {offer.trip_id}</Text>
-                <View style={styles.offerButtonContainer}>
-                  <TouchableOpacity
-                    style={styles.acceptButton}
-                    onPress={() => acceptCounterOffer(offer.counter_offer_id, offer)}
-                  >
-                    <Text style={styles.buttonText}>Accept</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.rejectButton}
-                    onPress={() => rejectCounterOffer(offer.counter_offer_id)}
-                  >
-                    <Text style={styles.buttonText}>Decline</Text>
-                  </TouchableOpacity>
-                </View>
-              </Animated.View>
-            );
-          })}
+              return (
+                <Animated.View
+                  key={offer.counter_offer_id}
+                  style={[
+                    styles.offerCard,
+                    {
+                      transform: [{ translateX: slideAnimation }],
+                      marginBottom: 10,
+                    },
+                  ]}
+                >
+                  <View style={styles.progressBarContainer}>
+                    <Animated.View
+                      style={{
+                        ...styles.progressBar,
+                        width: offerProgress.interpolate({
+                          inputRange: [0, 100],
+                          outputRange: ["100%", "0%"],
+                        }),
+                      }}
+                    />
+                  </View>
+                  <Text style={styles.offerText}>
+                    {offer.name} {renderStars(offer.stars)}
+                  </Text>
+                  <Text style={styles.offerText}>
+                    Counter Offer: {offer.counter_offer_value} {offer.currency}
+                  </Text>
+                  <Text style={styles.offerText}>
+                    For Trip: {offer.trip_id}
+                  </Text>
+                  <View style={styles.offerButtonContainer}>
+                    <TouchableOpacity
+                      style={styles.acceptButton}
+                      onPress={() =>
+                        acceptCounterOffer(offer.counter_offer_id, offer)
+                      }
+                    >
+                      <Text style={styles.buttonText}>Accept</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.rejectButton}
+                      onPress={() => rejectCounterOffer(offer.counter_offer_id)}
+                    >
+                      <Text style={styles.buttonText}>Decline</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              );
+            })}
         </ScrollView>
         <View style={styles.fixedCurrentTripContainer}>
-  <ScrollView style={styles.tripCard} showsVerticalScrollIndicator={false}>
-    <Text style={styles.tripHeaderText}>My Trips</Text>
-    {trips.length > 0 ? (
-      trips.map((trip) => (
-        <TouchableOpacity
-          key={trip.trip_id}
-          style={[styles.tripDetailsView, { backgroundColor: "rgb(255, 255, 255)" }]}
-          onPress={() => navigation.navigate("TripTrack", { trip })}
-        >
-          <View style={styles.driverInfoContainer}>
-            {trip.driver && trip.driver.profile_picture && (
-              <Image
-                source={{ uri: trip.driver.profile_picture }}
-                style={styles.profilePicture}
-              />
-            )}
-            <View style={styles.driverDetails}>
-              <Text style={[styles.tripDetailsText, styles.statusText]}>
-                {trip.status}
-              </Text>
-              <Text style={styles.tripDetailsText}>Driver: {trip.driver ? trip.driver.name && trip.driver.surname : "N/A" }</Text>
-              {trip.driver && (
-                <>
+          <ScrollView
+            style={styles.tripCard}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.tripHeaderText}>My Trips</Text>
+            {trips.length > 0 ? (
+              trips.map((trip) => (
+                <TouchableOpacity
+                  key={trip.trip_id}
+                  style={[
+                    styles.tripDetailsView,
+                    { backgroundColor: "rgb(255, 255, 255)" },
+                  ]}
+                  onPress={() => navigation.navigate("TripTrack", { trip })}
+                >
+                  <View style={styles.driverInfoContainer}>
+                    <View>{/* Other driver info details can go here */}</View>
+
+                    <View style={styles.driverDetails}>
+                      {trip.status !== "New Order" && trip.driver ? (
+                        <>
+                          <Text
+                            style={[styles.tripDetailsText, styles.statusText]}
+                          >
+                            {trip.status}
+                          </Text>
+
+                          <View style={styles.profileContainer}>
+                            <Image
+                              source={{
+                                uri: `${API_URL_UPLOADS}/${trip.driver.profilePic.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`,
+                              }}
+                              style={[styles.profileImage, { marginTop: 5 }]}
+                            />
+
+                            <View style={styles.nameContainer}>
+                              
+                              <Text style={styles.tripDetailsTextPro}>
+                                Driver: {trip.driver.name} {trip.driver.surname}
+                              </Text>
+                              {renderStars(trip.driver.rating)}
+                            </View>
+                          </View>
+
+                          <Text style={styles.tripDetailsText}>
+                            License Plate: {trip.driver.license_plate || "N/A"}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text
+                          style={[styles.tripDetailsText, styles.statusText]}
+                        >
+                          {trip.status}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {trip.deliveray_details &&
+                    trip.deliveray_details.length > 0 && (
+                      <Text style={styles.tripDetailsText}>
+                        {trip.deliveray_details}
+                      </Text>
+                    )}
                   <Text style={styles.tripDetailsText}>
-                    Rating: {renderStars(trip.driver.rating)}
+                    Trip ID: {trip.trip_id}
                   </Text>
-                  <Text style={styles.tripDetailsText}>License Plate: {trip.driver.license_plate || "N/A"}</Text>
-                </>
-              )}
-            </View>
-          </View>
-          <Text style={styles.tripDetailsText}>Trip ID: {trip.trip_id}</Text>
-          <Text style={styles.tripDetailsText}>Start Time: {trip.request_start_datetime}</Text>
-          <Text style={styles.tripDetailsText}>To: {trip.dest_location}</Text>
-          <Text style={styles.tripDetailsText}>From: {trip.origin_location || "N/A"}</Text>
+                  <Text style={styles.tripDetailsText}>
+                    Start Time: {trip.request_start_datetime}
+                  </Text>
+                  <Text style={styles.tripDetailsText}>
+                    To: {trip.dest_location}
+                  </Text>
+                  <Text style={styles.tripDetailsText}>
+                    From: {trip.origin_location || "N/A"}
+                  </Text>
 
-          <View style={styles.buttonContainer}>
-            {trip.status === "New Order" ? (
-              <TouchableOpacity
-                style={styles.cancelTripButton}
-                onPress={() => console.log(`Cancelling trip with ID: ${trip.trip_id}`)}
-              >
-                <Text style={styles.cancelTripText}>Cancel</Text>
-              </TouchableOpacity>
+                  <View style={styles.buttonContainer}>
+                    {trip.status === "New Order" ? (
+                      <TouchableOpacity
+                        style={styles.cancelTripButton}
+                        onPress={() =>
+                          console.log(
+                            `Cancelling trip with ID: ${trip.trip_id}`
+                          )
+                        }
+                      >
+                        <Text style={styles.cancelTripText}>Cancel</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.endTripButton}
+                        onPress={() =>
+                          navigation.navigate("CustomerEndTrip", { trip })
+                        }
+                      >
+                        <Text style={styles.endTripText}>End</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      style={styles.chatButton}
+                      onPress={() =>
+                        navigation.navigate("CustomerChat", {
+                          tripId: trip.trip_id,
+                        })
+                      }
+                    >
+                      <Text style={styles.chatText}>Chat</Text>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              ))
             ) : (
-              <TouchableOpacity
-                style={styles.endTripButton}
-                onPress={() => navigation.navigate("CustomerEndTrip", { trip })}
-              >
-                <Text style={styles.endTripText}>End</Text>
-              </TouchableOpacity>
+              <Text style={styles.noTripText}>
+                You have no trips in transit or new orders.
+              </Text>
             )}
-            <TouchableOpacity
-              style={styles.chatButton}
-              onPress={() => navigation.navigate("CustomerChat", { tripId: trip.trip_id })}
-            >
-              <Text style={styles.chatText}>Chat</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      ))
-    ) : (
-      <Text style={styles.noTripText}>
-        You have no trips in transit or new orders.
-      </Text>
-    )}
-  </ScrollView>
+          </ScrollView>
 
-
-              <View style={styles.selectTripContainer}>
-    <View style={styles.requestButtonRow}>
-      <TouchableOpacity
-        style={styles.requestTripButton}
-        onPress={() => navigation.navigate("MapViewComponent")}
-      >
-        <Text style={styles.requestTripText}>Request Trip</Text>
-      </TouchableOpacity>
-      <LocationSender userId={userId} userType="customer" interval={60000} />
-      <TouchableOpacity
-        style={styles.requestTripButton}
-        onPress={() => navigation.navigate("DeliveryMap")}
-      >
-        <Text style={styles.requestTripText}>Request Delivery</Text>
-      </TouchableOpacity>
-            {/* <TouchableOpacity
+          <View style={styles.selectTripContainer}>
+            <View style={styles.requestButtonRow}>
+              <TouchableOpacity
+                style={styles.requestTripButton}
+                onPress={() => navigation.navigate("MapViewComponent")}
+              >
+                <Text style={styles.requestTripText}>Request Trip</Text>
+              </TouchableOpacity>
+              <LocationSender
+                userId={userId}
+                userType="customer"
+                interval={60000}
+              />
+              <TouchableOpacity
+                style={styles.requestTripButton}
+                onPress={() => navigation.navigate("DeliveryMap")}
+              >
+                <Text style={styles.requestTripText}>Request Delivery</Text>
+              </TouchableOpacity>
+              {/* <TouchableOpacity
               style={styles.requestTripButton}
               onPress={() => navigation.navigate("OnlineStore")}
             >
               <Text style={styles.requestTripText}>Online Store</Text>
             </TouchableOpacity> */}
+            </View>
           </View>
-        </View>
         </View>
       </SafeAreaView>
     </ImageBackground>
   );
 };
-
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -480,13 +557,13 @@ const styles = StyleSheet.create({
 
   selectTripContainer: {
     alignItems: "center",
-    display: "flex", 
+    display: "flex",
     marginTop: -6,
     marginBottom: -1,
     backgroundColor: "rgba(255, 255, 255, 0.8)", // Background color
-    paddingTop: "5",// Padding for spacing
+    paddingTop: "5", // Padding for spacing
     borderBottomEndRadius: 10,
-    borderStartEndRadius: 10,  // Rounded corners
+    borderStartEndRadius: 10, // Rounded corners
     shadowColor: "#000", // Shadow effect
     shadowOffset: {
       width: 0,
@@ -494,10 +571,37 @@ const styles = StyleSheet.create({
     },
   },
 
-
-
-
+  nameContainer: {
+    flexDirection: "column", // Stack stars and name vertically
+    justifyContent: "center", // Center items vertically
+    marginLeft: 5,
+    marginBottom: 20, // Space between image and text
+  },
+  profileContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileName: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginLeft: 3,
+    marginRight: 5,
+    marginBottom: 8,
+  },
+  starContainer: {
+    flexDirection: "row",
   
+  },
+  star: {
+    fontSize: 18, // Adjust size as needed
+    color: "gold", // Star color
+  },
+
   tripCard: {
     marginVertical: 5,
     padding: 10,
@@ -507,7 +611,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-
   },
   tripDetailsView: {
     borderRadius: 10,
@@ -526,6 +629,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#595959",
   },
+  tripDetailsTextPro: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#595959",
+  },
   statusText: {
     fontWeight: "bold",
     fontSize: 16,
@@ -536,7 +644,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   noTripText: {
-    fontSize: 16,
+    fontSize: 12,
     color: "Black",
     textAlign: "center",
   },
@@ -554,7 +662,7 @@ const styles = StyleSheet.create({
   requestTripText: {
     fontWeight: "bold",
     color: "#000",
-    fontSize: 16,
+    fontSize: 14,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -589,8 +697,6 @@ const styles = StyleSheet.create({
     // marginBottom: 1,
   },
 
-
-  
   cancelTripText: {
     fontWeight: "bold",
     color: "#FFFFFF",

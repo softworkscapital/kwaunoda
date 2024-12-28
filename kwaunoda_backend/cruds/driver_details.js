@@ -357,6 +357,34 @@ crudsObj.getDriverByStatus = (status) => {
 };
 
 
+//verification on login
+crudsObj.getVerifyDriver = (email, phone, idnumber) => {
+  return new Promise((resolve, reject) => {
+    if (!email && !phone && !idnumber) {
+      return reject(new Error("At least one parameter (email, phone, or idnumber) must be provided."));
+    }
+
+    const query = `
+      SELECT * FROM driver_details 
+      WHERE email = ? OR phone = ? OR idnumber = ?
+    `;
+  
+    pool.query(query, [email, phone, idnumber], (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return reject(err);
+      }
+      
+      if (results.length === 0) {
+        console.log("No driver found with the given details.");
+      }
+
+      return resolve(results);
+    });
+  });
+};
+
+
 
 // Driver Crud update
   crudsObj.updateDriverStatus = (driverid, updatedValues) => {

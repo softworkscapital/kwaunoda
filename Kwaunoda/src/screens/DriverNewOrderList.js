@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useFocusEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Modal,
   TextInput,
+  BackHandler,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -45,7 +46,9 @@ const DriverNewOrderList = () => {
       const storedIds = await AsyncStorage.getItem("theIds");
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
-        setDriver(parsedIds.driver_id); // Set driver_id immediately
+        setDriver(parsedIds.driver_id); // Set driver_id
+  
+        // Fetch driver details and top-up history immediately
         await fetchDriverDetails(parsedIds.driver_id);
         await fetchTopUpHistory(); // Fetch top-up history immediately after setting driver
       } else {
@@ -58,13 +61,40 @@ const DriverNewOrderList = () => {
   
     const intervalId = setInterval(() => {
       if (driverId) {
-        fetchTrips(driverId);
+        fetchTrips();
         fetchTopUpHistory();
       }
     }, 3000);
   
     return () => clearInterval(intervalId);
-  }, [driverId]);
+  }, []); // Run only on mount
+  
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert("Hold on!", "You can click the back button on the App Or Logout", [
+        {
+          text: "Cancel",
+          onPress: () => null,
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => null }
+      ]);
+      return true; // Prevent default back action
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    if (driverId) {
+      // If driverId changes, fetch top-up history
+      fetchTopUpHistory();
+    }
+    return () => backHandler.remove(); // Cleanup on unmount
+
+  }, [driverId]); // Fetch top-up history when driverId is set
+
 
   const fetchDriverDetails = async (driverId) => {
     try {
@@ -72,7 +102,7 @@ const DriverNewOrderList = () => {
       const result = await response.json();
       if (result && result.length > 0) {
         setDriver(result[0].driver_id);
-        await fetchTrips(driverId);
+        await fetchTrips();
       } else {
         Alert.alert("Error", "Driver details not found.");
         setLoading(false);
@@ -120,8 +150,8 @@ const DriverNewOrderList = () => {
       return;
     }
 
-        const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
-    const newBalance = balance - fee;
+    const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
+  
 
     if (balance <= 0) {
       Alert.alert("Error", `Your floating balance is too low. You need to top up to at least ${fee}`);
@@ -139,6 +169,8 @@ const DriverNewOrderList = () => {
     ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
 
  // Update balance after fee deduction
+// Calculate fee based on accepted cost
+ const newBalance = balance - fee;
 
     const data = {
       currency: "USD",
@@ -207,11 +239,11 @@ const DriverNewOrderList = () => {
         type: "success",
         text1: "Trip accepted successfully",
         text2: "Settlement Occurred",
-        position: "top",
+        position: "center",
         visibilityTime: 5000,
       });
       setSelectedTrip(null);
-      fetchTrips(driver);
+      fetchTrips();
       navigation.navigate("InTransitTrip");
     } catch (error) {
       Alert.alert(
@@ -222,6 +254,7 @@ const DriverNewOrderList = () => {
   };
 
   const handlePress = (location) => {
+    fetchTopUpHistory();
     const origin = {
       latitude: parseFloat(location.origin_lat),
       longitude: parseFloat(location.origin_long),
@@ -271,13 +304,13 @@ const DriverNewOrderList = () => {
         result.message || "Counter offer sent successfully."
       );
       setShowCounterOfferModal(false);
-      fetchTrips(driver);
+      fetchTrips();
     } catch (error) {
       Alert.alert("Error", error.message || "An error occurred.");
     }
   };
 
-  const fetchTrips = async (driverId) => {
+  const fetchTrips = async () => {
     setRefreshing(true);
     try {
       const response = await fetch(`${API_URL}/trip/driver/notify/`);
@@ -298,7 +331,8 @@ const DriverNewOrderList = () => {
             dest_location: trip.dest_location,
             paying_when: trip.paying_when,
             payment_type: trip.payment_type,
-            currency: trip.currency_id,
+            currency_code: trip.currency_code,
+            currency_symbol: trip.currency_symbol,
           }))
         );
       }
@@ -326,25 +360,30 @@ const DriverNewOrderList = () => {
           alert("Unable to load the page.");
         }}
       />
-      <View style={styles.card}>
+      <View>
         {selectedTrip ? (
           <>
-            <Text style={styles.title}>Trip Details</Text>
-            <Text style={{ paddingVertical: 7 }}>{selectedTrip.detail}</Text>
-            <Text style={{ paddingVertical: 5 }}>
+
+
+          <View style={styles.cardAccept}>
+
+          <View style={styles.tripCard}>
+          <Text style={styles.title}>Trip Details</Text>
+            <Text style={{ paddingVertical: 1, paddingTop:  8}}>{selectedTrip.detail}</Text>
+            <Text style={{ paddingVertical: 1 }}>
               From: {selectedTrip.origin_location}
             </Text>
-            <Text style={{ paddingVertical: 5 }}>
+            <Text style={{ paddingVertical: 1}}>
               To: {selectedTrip.dest_location}
             </Text>
-            <Text style={{ paddingVertical: 5 }}>
+            <Text style={{ paddingVertical: 1 }}>
               {selectedTrip.paying_when}
             </Text>
-            <Text style={{ paddingVertical: 5 }}>
+            <Text style={{ paddingVertical: 1 }}>
               {selectedTrip.payment_type}
             </Text>
             <Text style={{ fontSize: 20, fontWeight: "700", color: "green" }}>
-              ${selectedTrip.cost} {selectedTrip.currency}
+             {selectedTrip.currency_symbol} {selectedTrip.cost} {selectedTrip.currency_code}
             </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -366,10 +405,17 @@ const DriverNewOrderList = () => {
                 <Text style={styles.acceptButtonText}>Accept</Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+
+          </View>
+            
           </>
         ) : (
           <>
-            <View style={styles.selectTripContainer}>
+
+          <View style={styles.card}>
+          <View style={styles.selectTripContainer}>
               <Text style={styles.selectTripTitle}>Select Trip</Text>
             </View>
             <ScrollView
@@ -377,7 +423,7 @@ const DriverNewOrderList = () => {
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
-                  onRefresh={() => fetchTrips(driverId)}
+                  onRefresh={() => fetchTrips()}
                 />
               }
             >
@@ -417,6 +463,8 @@ const DriverNewOrderList = () => {
                 <Text style={styles.noTripsText}>No trips available</Text>
               )}
             </ScrollView>
+          </View>
+     
           </>
         )}
       </View>
@@ -482,6 +530,38 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  tripCard: {
+    marginVertical: 10,
+    padding: 15,
+    borderRadius: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "100%",
+    maxHeight: 500,
+    paddingBottom: 60,
+    marginBottom: 10,
+  },
+  cardAccept: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    height: 400,
+    padding: 20,
+    // backgroundColor: "",
+    borderRadius: 8,
+    margin: 20,
+    marginRight: 60,
+    paddingBottom: 30,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+    minHeight: 200,
+  },
+
   card: {
     padding: 20,
     backgroundColor: "#ffc000",

@@ -217,13 +217,31 @@ const SignUpDriver1 = () => {
     try {
       const driveData = await AsyncStorage.getItem("driverDetailsD0");
       const driverDetails = JSON.parse(driveData);
+      console.log("Driver details:", driverDetails);
   
+      // Verify driver by email, phone number, and ID number
+      const resp = await fetch(`${APILINK}/driver/driver_verify/${email}/${phoneNumber}/${driverDetails.idnumber.trim()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const result = await resp.json();
+  
+      if (result.length > 0) {
+        Alert.alert("Error", "A user with the same email, phone number, or ID number already exists.");
+        return; // Early return if verification fails
+      }
+  
+      // Send OTP to phone number
       const otpSent = await sendOtpToPhone(phoneNumber);
       if (!otpSent) {
         setLoading(false);
         return;
       }
   
+      // Fetch the last inserted user ID
       const idResponse = await fetch(`${APILINK}/users/last_user_id/`, {
         method: "GET",
         headers: {
@@ -239,11 +257,10 @@ const SignUpDriver1 = () => {
   
       const idResult = await idResponse.json();
       const lastUserId = idResult[0].userid;
-  
-      let user_id = incrementId(lastUserId);
+      const user_id = incrementId(lastUserId);
   
       // Save user ID in local storage
-      await AsyncStorage.setItem("user_id", user_id); // Store user_id for OTP page
+      await AsyncStorage.setItem("user_id", user_id);
   
       const user = {
         userId: user_id,
@@ -252,13 +269,13 @@ const SignUpDriver1 = () => {
         email: email.trim(),
         password: password,
         otp: otp,
-        notify: false, // Set default values
+        notify: false,
         activesession: false,
         addproperty: false,
         editproperty: false,
         approverequests: false,
         delivery: false,
-        status: "Pending OTP Verification", // Set status as pending
+        status: "Pending OTP Verification",
         employee_id: null,
         company_id: null,
         branch_id: null,
@@ -269,13 +286,12 @@ const SignUpDriver1 = () => {
       };
   
       console.log("User object to be sent:", user);
-      
+  
       // Save user details to local storage
       await AsyncStorage.setItem("driverDetails", JSON.stringify(user));
+      await AsyncStorage.setItem("driver_id", JSON.stringify(user_id));
   
-      await AsyncStorage.setItem("driver_id", JSON.stringify(user_id)); 
-      console.log("wadzanai anopenga", user_id);
-  
+      // Post user details to the server
       const userResp = await fetch(`${APILINK}/users/`, {
         method: "POST",
         headers: {
@@ -286,7 +302,7 @@ const SignUpDriver1 = () => {
   
       if (!userResp.ok) {
         const errorText = await userResp.text();
-        console.error("Error posting to user details:", userResp.status, errorText);
+        console.error("Error posting user details:", userResp.status, errorText);
         showToast("Error", "Failed to create user.");
         return;
       }
@@ -318,6 +334,7 @@ const SignUpDriver1 = () => {
         membershipstatus: "Pending OTP Verification",
       };
   
+      // Post driver details to the server
       const driverResp = await fetch(`${APILINK}/driver/`, {
         method: "POST",
         headers: {
@@ -328,15 +345,16 @@ const SignUpDriver1 = () => {
   
       if (!driverResp.ok) {
         const errorText = await driverResp.text();
-        console.error("Error posting to driver details:", driverResp.status, errorText);
+        console.error("Error posting driver details:", driverResp.status, errorText);
         showToast("Error", "Failed to create driver.");
         return;
       }
   
       const driverResponse = await driverResp.json();
-      
+  
+      // Handle new account creation
       await newAccount(driver.driver_id, driverResponse);
-      navigation.navigate("OTPDriver", { userId: user_id }); // Ensure userId is passed correctly
+      navigation.navigate("OTPDriver", { userId: user_id }); // Navigate to OTP page
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "Failed to save details. Please try again.");

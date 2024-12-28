@@ -464,6 +464,34 @@ crudsObj.deleteCustomer = (id) => {
 };
 
 
+
+//verification on login
+crudsObj.getVerifyCustomer = (email, phone, idnumber) => {
+  return new Promise((resolve, reject) => {
+    if (!email && !phone && !idnumber) {
+      return reject(new Error("At least one parameter (email, phone, or idnumber) must be provided."));
+    }
+
+    const query = `
+      SELECT * FROM customer_details 
+      WHERE email = ? OR phone = ? OR idnumber = ?
+    `;
+  
+    pool.query(query, [email, phone, idnumber], (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return reject(err);
+      }
+      
+      if (results.length === 0) {
+        console.log("No driver found with the given details.");
+      }
+
+      return resolve(results);
+    });
+  });
+};
+
   //customer crud
   crudsObj.updateCustomerStatus = (customerid, updatedValues) => {
     const { membershipstatus } = updatedValues; // Only extract membershipstatus

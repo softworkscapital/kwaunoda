@@ -24,7 +24,7 @@ const OTPCustomer = ({ navigation }) => {
     const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
     const updateUserStatus = async () => {
-        const status = { status: "Pending Verification" };
+        const status = { status: "Verified" };
         try {
             const response = await fetch(`${APILINK}/users/update_status/${userId}`, {
                 method: "PUT",

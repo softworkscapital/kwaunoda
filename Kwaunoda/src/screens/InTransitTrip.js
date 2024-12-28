@@ -189,6 +189,18 @@ const InTransitTrip = () => {
     }
   }, [driverId]);
 
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Text key={i} style={styles.star}>
+          {i < rating ? "★" : "☆"}
+        </Text>
+      );
+    }
+    return <View style={styles.starContainer}>{stars}</View>;
+  };
+
   const webViewUrl =
     driverLocation && pickUpLocation && destinationLocation
       ? `https://kwaunoda.softworkscapital.com/mapWithDriver?latDriver=${driverLocation.latitude}&lngDriver=${driverLocation.longitude}&lat1=${pickUpLocation.latitude}&lng1=${pickUpLocation.longitude}&lat2=${destinationLocation.latitude}&lng2=${destinationLocation.longitude}`
@@ -198,7 +210,6 @@ const InTransitTrip = () => {
     <View style={styles.container}>
       <TopView id={driverId} />
 
-      {/* Conditional rendering of LocationSender */}
       {driverId && (
         <LocationSender userId={driverId} userType={driver2} interval={60000} />
       )}
@@ -213,7 +224,7 @@ const InTransitTrip = () => {
         <WebView source={{ uri: webViewUrl }} style={styles.webview} />
       )}
 
-      <View>
+     
         {currentTrip && (
           <View style={styles.fixedCurrentTripContainer}>
             <View style={styles.tripCard}>
@@ -224,17 +235,25 @@ const InTransitTrip = () => {
                 Current Trip: {currentTrip.trip_id}
               </Text>
               <View style={styles.profileContainer}>
-                <Text style={styles.profileName}></Text>
-
                 <Image
                   source={{ uri: profilePic }}
                   style={[styles.profileImage, { marginTop: 5 }]}
                 />
-                <Text style={styles.tripDetailsText}>
-                  {customer ? customer.name : "Loading customer..."}{" "}
-                  {customer ? customer.surname : "Loading customer..."}
-                </Text>
+                <View style={styles.nameContainer}>
+                  {customer && renderStars(customer.rating)}
+                  <Text style={styles.tripDetailsText}>
+                    {customer ? customer.name : "Loading customer..."}{" "}
+                    {customer ? customer.surname : "Loading customer..."}
+                  </Text>
+                </View>
               </View>
+
+              <Text style={styles.tripDetailsText}>
+                {currentTrip.distance < 1
+                  ? (currentTrip.distance * 1000).toFixed(0) + " m"
+                  : currentTrip.distance + " Km"}
+              </Text>
+
               <Text style={styles.tripDetailsText}>
                 Start Time: {currentTrip.request_start_datetime}
               </Text>
@@ -244,6 +263,17 @@ const InTransitTrip = () => {
               <Text style={styles.tripDetailsText}>
                 From: {currentTrip.dest_location || "N/A"}
               </Text>
+
+
+              <View style={styles.horizontalRule} />
+              <View style={styles.paymentContainer}>
+                <Text style={styles.currentTripText}>
+                {currentTrip.currency_symbol}{currentTrip.accepted_cost || "N/A"} {currentTrip.currency_code} {" "}
+                </Text>
+                <Text style={styles.tripDetailsText}>
+                 {currentTrip.payment_type || "N/A"}  {currentTrip.paying_when || "N/A"}
+              </Text>
+              </View>
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -265,7 +295,7 @@ const InTransitTrip = () => {
           </View>
         )}
       </View>
-    </View>
+  
   );
 };
 
@@ -277,6 +307,12 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
   },
+  nameContainer: {
+    flexDirection: "column", // Stack stars and name vertically
+    justifyContent: "center", // Center items vertically
+    marginLeft: 5,
+    marginBottom: 20, // Space between image and text
+  },
   loadingContainer: {
     position: "absolute",
     top: 0,
@@ -287,13 +323,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
+  starContainer: {
+    flexDirection: "row",
+    marginTop: 5,
+  },
+  star: {
+    fontSize: 18, // Adjust size as needed
+    color: "gold", // Star color
+  },
   fixedCurrentTripContainer: {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 260,
+    height: 430,
+    padding: 30,
     // backgroundColor: "#FFC000",
-
+    marginRight: 100,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
@@ -308,9 +353,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     width: "100%",
-    maxHeight: 300,
+    maxHeight: 425,
     paddingBottom: 10,
-    marginBottom: 10,
+    marginBottom: 1,
   },
   profileContainer: {
     flexDirection: "row",
@@ -321,8 +366,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   profileImage: {
-    width: 40,
-    height: 40,
+    width: 60,
+    height: 60,
     borderRadius: 30,
     marginLeft: 3,
     marginRight: 5,
@@ -347,10 +392,10 @@ const styles = StyleSheet.create({
   },
   endTripButton: {
     backgroundColor: "#FFA500",
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
-    marginRight: 10,
+    borderRadius: 15, // Smaller border radius
+    paddingVertical: 9, // Reduced padding
+    paddingHorizontal: 12, // Reduced padding
+    marginRight: 5, 
   },
   endTripText: {
     fontWeight: "bold",
@@ -359,10 +404,10 @@ const styles = StyleSheet.create({
   },
   chatButton: {
     backgroundColor: "#007BFF",
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    elevation: 5,
+    borderRadius: 15, // Smaller border radius
+    paddingVertical: 9, // Reduced padding
+    paddingHorizontal: 12, // Reduced padding
+    marginRight: 5, 
   },
   chatText: {
     fontWeight: "bold",
@@ -372,6 +417,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#595959",
   },
+  horizontalRule: {
+    height: 1,
+    backgroundColor: '#ccc', // Color for the horizontal rule
+    marginVertical: 10, // Space above and below the rule
+    width: '100%', // Full width
+  },
+  paymentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Space items evenly
+  },
+  divider: {
+    width: 1,
+    height: 5, // Height of the divider line
+    backgroundColor: '#ccc', // Color for the divider
+    marginHorizontal: 10, // Space on the sides of the divider
+  },
 });
+
 
 export default InTransitTrip;

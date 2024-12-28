@@ -5,6 +5,7 @@ const tripDbOperations = require("../cruds/trip");
 tripRouter.post("/", async (req, res, next) => {
   try {
     let postedValues = req.body;
+    console.log("from frontend:", postedValues);
     let driver_id = postedValues.driver_id;
     let cust_id = postedValues.cust_id;
     let request_start_datetime = postedValues.request_start_datetime;
@@ -27,7 +28,7 @@ tripRouter.post("/", async (req, res, next) => {
     let paying_when = postedValues.paying_when;
     let payment_type = postedValues.payment_type;
     let currency_id = postedValues.currency_id;
-    let currency_code = postedValues.urrency_code;
+    let currency_code = postedValues.currency_code;
     let usd_rate = postedValues.usd_rate;
     let customer_comment = postedValues.customer_comment;
     let driver_comment = postedValues.driver_comment;

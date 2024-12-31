@@ -23,7 +23,7 @@ const DriverEndTrip = () => {
   const tripId = route.params?.tripId;
 
   const redirectHome = () => {
-    navigation.navigate("DriverNewOrderList");
+    navigation.navigate("DriverNewOrderList", {});
   };
 
   const handleRatingPress = (value) => {

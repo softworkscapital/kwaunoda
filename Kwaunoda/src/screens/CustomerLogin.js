@@ -265,7 +265,6 @@ const CustomerLogin = () => {
           </Text>
         </Text>
       </View>
-      {/* <Toast /> */}
     </SafeAreaView>
   );
 };

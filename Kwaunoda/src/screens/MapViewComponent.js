@@ -220,8 +220,18 @@ const MapViewComponent = () => {
             editable={false}
             accessibilityLabel="Destination Location"
           />
+          <TextInput
+            style={styles.input}
+            placeholder="Notes, hse no etc..."
+            value={destinationLocation}
+            editable={false}
+            accessibilityLabel="Destination Location"
+          />
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.button} onPress={handleGetDirections}>
+          <Text style={styles.buttonText}>Cancel</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleGetDirections}>
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>

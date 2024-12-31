@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'; // Import the MaterialIcons for the back arrow
+import { MaterialIcons } from '@expo/vector-icons';
 import { API_URL } from "./config";
 
-const CustomerAdminChat = ({ navigation }) => { // Add navigation prop
+const CustomerAdminChat = ({ navigation }) => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
+  const scrollViewRef = useRef();
   const tripId = 12; // Hardcoded trip ID
   const customerid = 4; // Hardcoded customer ID for comparison
 
@@ -23,12 +24,18 @@ const CustomerAdminChat = ({ navigation }) => { // Add navigation prop
         console.log('Fetched response:', result);
 
         if (result && result.status === "200" && Array.isArray(result.data)) {
-          const sortedMessages = result.data.sort((a, b) => {
-            const dateA = new Date(`${a.date_chat} ${a.time_chat}`);
-            const dateB = new Date(`${b.date_chat} ${b.time_chat}`);
+          const newMessages = result.data.sort((a, b) => {
+            const dateA = new Date(`${a.date_chat}T${a.time_chat}`);
+            const dateB = new Date(`${b.date_chat}T${b.time_chat}`);
             return dateA - dateB; // Ascending order
           });
-          setChatHistory(sortedMessages);
+
+          // Update chat history only if new messages are fetched
+          setChatHistory(prevHistory => {
+            const existingIds = new Set(prevHistory.map(chat => chat.customer_admin_chat_id));
+            const filteredMessages = newMessages.filter(chat => !existingIds.has(chat.customer_admin_chat_id));
+            return [...prevHistory, ...filteredMessages];
+          });
         } else {
           console.error('Failed to retrieve messages:', result.message || 'No message provided');
         }
@@ -45,6 +52,13 @@ const CustomerAdminChat = ({ navigation }) => { // Add navigation prop
     // Cleanup function to clear the interval
     return () => clearInterval(intervalId);
   }, [tripId]);
+
+  useEffect(() => {
+    // Automatically scroll to the bottom when chat history updates
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [chatHistory]);
 
   const handleSend = async () => {
     if (message.trim()) {
@@ -76,6 +90,7 @@ const CustomerAdminChat = ({ navigation }) => { // Add navigation prop
 
         // Append the new message to the chat history
         setChatHistory(prevHistory => [...prevHistory, newMessage]);
+        
         setMessage(''); // Clear input
       } catch (error) {
         console.error('Error posting message:', error);
@@ -89,15 +104,19 @@ const CustomerAdminChat = ({ navigation }) => { // Add navigation prop
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <MaterialIcons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Let's Chat</Text>
+        <Text style={styles.headerText}>Chat with Us</Text>
       </View>
-      <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
-        {chatHistory.map((chat, index) => (
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.chatContainer} 
+        contentContainerStyle={styles.chatContent}
+      >
+        {chatHistory.map((chat) => (
           <View
-            key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
+            key={chat.customer_admin_chat_id} // Use unique ID for key
             style={[
               styles.messageContainer,
-              chat.origin === customerid ? styles.sentMessage : styles.receivedMessage,
+              chat.origin === '1' ? styles.receivedMessage : styles.sentMessage,
             ]}
           >
             <Text style={styles.messageText}>{chat.message}</Text>
@@ -129,16 +148,17 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'goldenrod', // Golden yellow background
-    paddingVertical: 30, // Increased vertical padding
-    flexDirection: 'row', // Align items horizontally
-    alignItems: 'center', // Center items vertically
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 1,
+    paddingTop: 50, 
+    paddingVertical: 20,
   },
   backButton: {
-    paddingLeft: 20
-
+    paddingLeft: 5,
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 14,
     color: '#000', // Black text color
     fontWeight: 'bold',
     flex: 1, // Allow header text to take available space
@@ -153,27 +173,29 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     marginVertical: 5,
-    padding: 15, // Increased padding for better spacing
+    padding: 15,
     borderRadius: 15,
-    maxWidth: '80%', // Limit the width of the message bubble
-    overflow: 'hidden', // Prevent the message from overflowing its container
+    maxWidth: '80%',
+    overflow: 'hidden',
   },
   sentMessage: {
-    backgroundColor: '#dcf8c6', // Light #FFC000 for sent messages
-    alignSelf: 'flex-end', // Align sent messages to the right
+    backgroundColor: '#dcf8c6', // Light green for sent messages
+    alignSelf: 'flex-end',
   },
   receivedMessage: {
-    backgroundColor: '#fff', // White for received messages
-    alignSelf: 'flex-start', // Align received messages to the left
+    backgroundColor: '#f0f0f0', // Gray for received messages
+    borderColor: '#ccc',
+    borderWidth: 1,
+    alignSelf: 'flex-start',
   },
   messageText: {
     fontSize: 16,
-    color: '#000', // Set message text color to black
+    color: '#000',
   },
   dateText: {
     fontSize: 12,
     color: '#888',
-    marginTop: 5, // Add some space above the date text
+    marginTop: 5,
   },
   inputContainer: {
     flexDirection: 'row',

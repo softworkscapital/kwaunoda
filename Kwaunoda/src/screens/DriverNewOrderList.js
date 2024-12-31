@@ -47,10 +47,10 @@ const DriverNewOrderList = () => {
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
         setDriver(parsedIds.driver_id); // Set driver_id
-  
+        console.log("honaiwo iffect iri", parsedIds.driver_id)
         // Fetch driver details and top-up history immediately
         await fetchDriverDetails(parsedIds.driver_id);
-        await fetchTopUpHistory(); // Fetch top-up history immediately after setting driver
+        await fetchTopUpHistory(parsedIds.driver_id); // Fetch top-up history immediately after setting driver
       } else {
         Alert.alert("Driver ID not found", "Please log in again.");
         setLoading(false);
@@ -60,9 +60,9 @@ const DriverNewOrderList = () => {
     fetchData();
   
     const intervalId = setInterval(() => {
-      if (driverId) {
+      fetchData();
+      if (driver) {
         fetchTrips();
-        fetchTopUpHistory();
       }
     }, 3000);
   
@@ -87,10 +87,6 @@ const DriverNewOrderList = () => {
       backAction
     );
 
-    if (driverId) {
-      // If driverId changes, fetch top-up history
-      fetchTopUpHistory();
-    }
     return () => backHandler.remove(); // Cleanup on unmount
 
   }, [driverId]); // Fetch top-up history when driverId is set
@@ -113,11 +109,15 @@ const DriverNewOrderList = () => {
     }
   };
 
-  const fetchTopUpHistory = async () => {
-    if (!driverId) return; // Early return if driverId is not set
+  const fetchTopUpHistory = async (driverID) => {
+    console.log("Honai driver id:", driverID)
+    if (!driverID){
+      Alert.alert("Error", "Failed to fetch Top Up History.");
+      return;
+    }  // Early return if driverId is not set
 
     try {
-      const resp = await fetch(`${APILINK}/topUp/topup/${driverId}`, {
+      const resp = await fetch(`${APILINK}/topUp/topup/${driverID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +254,6 @@ const DriverNewOrderList = () => {
   };
 
   const handlePress = (location) => {
-    fetchTopUpHistory();
     const origin = {
       latitude: parseFloat(location.origin_lat),
       longitude: parseFloat(location.origin_long),
@@ -312,7 +311,9 @@ const DriverNewOrderList = () => {
 
   const fetchTrips = async () => {
     setRefreshing(true);
+    
     try {
+      console.log("takutanga manje")
       const response = await fetch(`${API_URL}/trip/driver/notify/`);
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -530,36 +531,30 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  tripCard: {
-    marginVertical: 10,
-    padding: 15,
-    borderRadius: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    width: "100%",
-    maxHeight: 500,
-    paddingBottom: 60,
-    marginBottom: 10,
-  },
   cardAccept: {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 400,
+    height: 298,
     padding: 20,
-    // backgroundColor: "",
-    borderRadius: 8,
-    margin: 20,
-    marginRight: 60,
-    paddingBottom: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
-    minHeight: 200,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 5,
+    marginBottom: 60,
+  },
+  tripCard: {
+    marginVertical: 5,
+    padding: 30,
+    borderRadius: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "110%",
+    maxHeight: 425,
+    paddingBottom: 20,
+    marginBottom: 1,
+    marginLeft: -30,  // Adjust this value as needed
+    marginRight: -40, // Adjust this value as needed
   },
 
   card: {

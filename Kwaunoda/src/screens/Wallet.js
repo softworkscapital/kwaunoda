@@ -16,8 +16,11 @@ import { useNavigation } from "@react-navigation/native";
 import { API_URL, API_URL_UPLOADS } from "./config";
 import { Picker } from "@react-native-picker/picker"; // Import Picker
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoute } from '@react-navigation/native';
 
 const Wallet = () => {
+    const route = useRoute();
+    const { userId, Data } = route.params;
   const [topUpHistory, setTopUpHistory] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [client_profile_id, setClient_profile_id] = useState("");
@@ -32,7 +35,7 @@ const Wallet = () => {
   const [driver, setDriver] = useState();
   const [name, setName] = useState();
   const [surname, setSurname] = useState();
-  const [userId, setUserId] = useState();
+  const [user_Id, setuser_Id] = useState();
   const [profileImage, setPic] = useState();
 
   const APILINK = API_URL;
@@ -49,15 +52,16 @@ const Wallet = () => {
     setDriver(driverData);
     setName(driverData.name);
     setSurname(driverData.surname);
-    setUserId(driverData.driver_id);
+    setuser_Id(driverData.driver_id);
     setPic(`${API_URL_UPLOADS}/${driverData.profilePic.replace(/\\/g, '/')}`);
 
   }
   useEffect(() => {
     const fetchDriver = async () => {
       try {
-        const response = await AsyncStorage.getItem("userDetails");
-        const driverData = JSON.parse(response);
+        // const response = await AsyncStorage.getItem("userDetails");
+        // const driverData = JSON.parse(response);
+        const driverData = Data;
     
         if (driverData) {
           setter(driverData);
@@ -69,13 +73,19 @@ const Wallet = () => {
         console.error("Error fetching driver data:", error);
       }
     };
-  
+
     fetchDriver();
+  
+    const interval = setInterval(() => {
+      fetchDriver();
+    }, 3000);
+
+    return () => clearInterval(interval); 
   }, []);
   
   useEffect(() => {
     const fetchTopUpHistory = async () => {
-      if (!userId) return; // Early return if userId is not set
+      // if (!userId) return; // Early return if user_Id is not set
   
       try {
         const resp = await fetch(`${APILINK}/topUp/topup/${userId}`, {
@@ -107,7 +117,7 @@ const Wallet = () => {
     }, 7000);
   
     return () => clearInterval(interval); // Cleanup on unmount
-  }, [userId]); // Depend on userId
+  }, [user_Id]); // Depend on user_Id
 
   const initiatePayment = async (paymentDetails) => {
     try {
@@ -238,7 +248,7 @@ const Wallet = () => {
       {/* hoyooo */}
       <View
         style={{
-          borderWidth: 1, // Add border width
+          // borderWidth: 1, // Add border width
           borderColor: "goldenrod", // Set border color to gray
           borderRadius: 8, // Optional: round the corners
           backgroundColor: "white", // Set background color to white
@@ -255,7 +265,7 @@ const Wallet = () => {
             <Text style={styles.username}>
               {name} {surname}
             </Text>
-            <Text style={styles.userid}>{userId}</Text>
+            <Text style={styles.user_Id}>{user_Id}</Text>
           </View>
         </View>
 
@@ -309,7 +319,7 @@ const Wallet = () => {
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
-          marginBottom: 90,
+          marginBottom: 10,
           alignSelf: "center",
         }}
       >
@@ -411,8 +421,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 1,
+    marginTop: 0,
+    paddingTop: 20, 
+    paddingVertical: 20,
   },
   btnSignUp: {
     backgroundColor: "#ffc000",
@@ -426,14 +438,16 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     padding: 8,
+    marginTop: 14,
   },
   topBarContent: {
+    marginTop: 15,
     flex: 1,
     alignSelf: "center",
     alignItems: "center",
   },
   title: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
   },
   deliveryList: {
@@ -473,7 +487,7 @@ const styles = StyleSheet.create({
     height: 50, // Height for the Picker
     width: "100%", // Full width
   },
-  userid: {
+  user_Id: {
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -498,11 +512,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   orderNumber: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "bold",
   },
   bal: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
     paddingVertical: 1,
     paddingHorizontal: 8,

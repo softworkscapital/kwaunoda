@@ -135,7 +135,7 @@ const App = () => {
         <Stack.Screen name="pesepay" component={PesePaymentScreen} />
         {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>
-      <Toast/>
+      {/* <Toast/> */}
     </NavigationContainer>
     </ToastWrapper>
   );

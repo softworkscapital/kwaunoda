@@ -19,7 +19,6 @@ import { API_URL, API_URL_UPLOADS } from "../screens/config";
 import Icon from "react-native-vector-icons/FontAwesome";
 import "font-awesome/css/font-awesome.min.css";
 
-
 const { height } = Dimensions.get("window");
 
 const TopView = () => {
@@ -36,10 +35,7 @@ const TopView = () => {
   const APILINK = API_URL;
   const progressAnimations = useRef({});
   const [refreshing, setRefreshing] = useState(false);
-
-
-
-
+  const [data, setData] = useState();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,9 +67,12 @@ const TopView = () => {
 
         if (result && result.length > 0) {
           await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-          setPic(`${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, '/')}`);
+          setPic(
+            `${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, "/")}`
+          );
           setType(result[0].account_type);
           setName(result[0].username);
+          setData(result[0]);
         } else {
           Alert.alert(
             `${type === "driver" ? "Driver" : "Customer"} details not found.`
@@ -92,7 +91,7 @@ const TopView = () => {
         );
         console.log("response:", response);
         const offers = await response.json();
-        console.log("hoyoo", offers)
+        console.log("hoyoo", offers);
 
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
@@ -145,30 +144,28 @@ const TopView = () => {
     return () => clearInterval(intervalId);
   }, [id]);
 
-
-
   const iconMap = {
-    "Standard Account": 'user',
-    "Profile Info": 'user-edit',
-    "Wallet": 'wallet',
-    "History": 'history',
-    "Settings": 'cog',
-    "FAQ": 'question-circle',
-    "Safety": 'shield-alt',
-    "Chat": 'comments',
-    "Feedback": 'comment',
-    "About Us": 'info-circle',
-    "Complaint": 'exclamation-triangle',
-    "Tell A Friend": 'share-alt',
-    "Log Out": 'sign-out',
+    // "Standard Account": "user",
+    "Profile Info": "user",
+    Wallet: "money",
+    History: "history",
+    Settings: "cog",
+    FAQ: "question-circle",
+    Safety: "shield",
+    Chat: "comments",
+    Feedback: "comment",
+    "About Us": "info-circle",
+    Complaint: "exclamation-triangle",
+    "Tell A Friend": "share-alt",
+    "Log Out": "sign-out",
   };
 
   const menuOptions = [
-    {
-      id: "0",
-      title: "Standard Account",
-      onPress: () => handleMenuPress("StandardAccount"),
-    },
+    // {
+    //   id: "0",
+    //   // title: "Standard Account",
+    //   onPress: () => handleMenuPress("StandardAccount"),
+    // },
     {
       id: "1",
       title: "Profile Info",
@@ -199,12 +196,9 @@ const TopView = () => {
     { id: "12", title: "Log Out", onPress: () => handleLogout() },
   ];
 
-
-
-
   const handleMenuPress = (screen) => {
     setMenuModalVisible(false);
-    navigation.navigate(screen, { userId: id });
+    navigation.navigate(screen, { userId: id, Data: data });
   };
 
   const handleLogout = async () => {
@@ -290,19 +284,17 @@ const TopView = () => {
       );
     });
   };
+
   const renderStars = (rating) => {
     const stars = [];
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 0; i < 5; i++) {
       stars.push(
-        <Icon
-          key={i}
-          name={i <= rating ? "star" : "star-o"} // Filled star or empty star
-          size={20}
-          color="#FFD700" // Gold color for stars
-        />
+        <Text key={i} style={styles.star}>
+          {i < rating ? "★" : "☆"}
+        </Text>
       );
     }
-    return stars;
+    return <View style={styles.starContainer}>{stars}</View>;
   };
 
   const startOfferTimer = (offerId) => {
@@ -397,9 +389,7 @@ const TopView = () => {
 
   return (
     <View style={styles.container}>
-     
       <View style={styles.notificationContainer}>
-
         <TouchableOpacity
           onPress={() => setMenuModalVisible(true)}
           style={styles.menuButton}
@@ -407,9 +397,13 @@ const TopView = () => {
           <FontAwesome name="bars" size={24} color="black" />
         </TouchableOpacity>
 
-
         <TouchableOpacity onPress={() => setCounterOfferModalVisible(true)}>
-          <FontAwesome name="bell" size={24} color="black"    style={styles.menuButton}/>
+          <FontAwesome
+            name="bell"
+            size={24}
+            color="black"
+            style={styles.menuButton}
+          />
           {notificationCount > 0 && (
             <View style={styles.notificationCount}>
               <Text style={styles.countText}>x{notificationCount}</Text>
@@ -428,28 +422,20 @@ const TopView = () => {
         >
           <FontAwesome name="shopping-cart" size={24} color="black" />
         </TouchableOpacity>
-      
-
-
       </View>
       <View style={styles.profileContainer}>
-
         <View>
-        <Text style={styles.profileName}>
-        </Text>
-        <Text style={styles.profileName}>
-             {name}
-        </Text>
-        <Text style={{marginBottom: 3, fontSize: 11}}>
+          <Text style={styles.profileName}></Text>
+          <Text style={styles.profileName}>{name}</Text>
+          <Text style={{ marginBottom: 3, fontSize: 11 }}>
             {customerType === "customer" ? "Customer" : "Driver"}
-        </Text>
+          </Text>
         </View>
         <Image
           source={{ uri: profileImage }}
-          style={[styles.profileImage, { marginTop: 8}]}
+          style={[styles.profileImage, { marginTop: 8 }]}
         />
       </View>
-
 
       {/* Counter Offer Modal */}
       <Modal
@@ -480,8 +466,8 @@ const TopView = () => {
         </View>
       </Modal>
 
-{/* Menu Options Modal */}
-<Modal
+      {/* Menu Options Modal */}
+      <Modal
         transparent={true}
         animationType="slide"
         visible={isMenuModalVisible}
@@ -489,6 +475,21 @@ const TopView = () => {
       >
         <View style={styles.modalBackground}>
           <View style={[styles.modalContainer, { height: height * 0.9 }]}>
+            <View style={styles.profileContainerModal}>
+            <Image
+                source={{ uri: profileImage }}
+                style={[styles.profileImage]}
+              />
+              <View style={styles.nameContainer}>
+              
+                <Text style={styles.profileName}></Text>
+                <Text style={styles.profileName}>{name}</Text>
+                <Text style={{ marginBottom: 3, fontSize: 11 }}>
+                {data && renderStars(data.rating)}
+                </Text>
+              </View>
+            </View>
+            
             <FlatList
               data={menuOptions}
               keyExtractor={(item) => item.id}
@@ -497,10 +498,10 @@ const TopView = () => {
                   style={styles.menuItem}
                   onPress={item.onPress}
                 >
-                  <FontAwesome 
-                    name={iconMap[item.title] || 'question'} // Default icon if not found
-                    size={20} 
-                    style={styles.icon} 
+                  <FontAwesome
+                    name={iconMap[item.title] || "question"} // Default icon if not found
+                    size={35}
+                    style={styles.icon}
                   />
                   <Text style={styles.menuText}>{item.title}</Text>
                 </TouchableOpacity>
@@ -521,7 +522,6 @@ const TopView = () => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -549,6 +549,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
+
+
+
+
+
+  profileContainerModal: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginLeft: 5,
+    marginright: 10,
+ 
+  },
+  profileNameModal: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+
+  nameContainer: {
+
+    flexDirection: "column", // Stack stars and name vertically
+    justifyContent: "center", // Center items vertically
+    marginLeft: 10,
+    // Space between image and text
+  },
+
+
+  starContainer: {
+    flexDirection: "row",
+    marginTop: 5,
+  },
+  star: {
+    fontSize: 18, // Adjust size as needed
+    color: "gold", // Star color
+  },
+
+
+
   notificationContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -667,8 +710,8 @@ const styles = StyleSheet.create({
   },
 
   menuItem: {
-    flexDirection: 'row', // Align items in a row
-    alignItems: 'center', // Center vertically
+    flexDirection: "row", // Align items in a row
+    alignItems: "center", // Center vertically
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
@@ -677,7 +720,7 @@ const styles = StyleSheet.create({
     marginRight: 10, // Space between icon and text
   },
   menuText: {
-    fontSize: 16, // Adjust font size as needed
+    fontSize: 11, // Adjust font size as needed
     flex: 1, // Allows text to take available space
   },
   counterOffersContainer: {
@@ -753,6 +796,3 @@ const styles = StyleSheet.create({
 });
 
 export default TopView;
-
-
-

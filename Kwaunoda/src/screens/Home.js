@@ -34,11 +34,12 @@ const Home = ({ navigation }) => {
       const storedIds = await AsyncStorage.getItem("theIds");
       const parsedIds = JSON.parse(storedIds);
       setUserId(parsedIds.customerId);
+      fetchUserTrips(parsedIds.customerId);
 
       const intervalId = setInterval(() => {
         fetchUserTrips(parsedIds.customerId);
         fetchCounterOffers(parsedIds.customerId);
-      }, 60000);
+      }, 500);
 
       return () => clearInterval(intervalId);
     };

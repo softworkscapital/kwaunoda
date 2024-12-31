@@ -101,7 +101,7 @@ const History = () => {
         contentContainerStyle={styles.deliveryList}
         showsVerticalScrollIndicator={false}
       />
-      <BottomFooter/>
+      {/* <BottomFooter/> */}
     </View>
   );
 };
@@ -116,10 +116,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 50,
+    paddingBottom: 12,
   },
   goldenYellow: {
-    backgroundColor: '#FFD700',
+    backgroundColor: '#FFc000',
   },
   backArrow: {
     padding: 8,

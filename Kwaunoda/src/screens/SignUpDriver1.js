@@ -171,14 +171,44 @@ const SignUpDriver1 = () => {
 
 
     const data = {
+
       currency: "USD",
       exchange_rate: 1.0,
       date: formattedDate,
-      debit: 0,
-      credit: 0,
-      balance: 0,
       description: "New Account",
       client_profile_id: driver,
+      vendor_id: "",
+      payment_gateway_id: "",
+      main_wallet_id: 1,
+      revenue_wallet_id: "",
+      total_usage: 0,
+      trip_id: "N/A",
+      trxn_code: "1",
+      user_wallet_debit: 10,
+      user_wallet_credit: 0,
+      user_wallet_balance: 10,
+      user_wallet_total_balance: 10,
+      main_wallet_debit: 0,
+      main_wallet_credit: 0,
+      main_wallet_balance: 0,
+      main_wallet_total_balance: 0,
+      payment_gateway_charges_debit : 0,
+      payment_gateway_charges_credit: 0,
+      payment_gateway_charges_balance: 0,
+      payment_gateway_charges_total_balance: 0,
+      revenue_wallet_debit: 0,
+      revenue_wallet_credit: 0,
+      revenue_wallet_balance: 0,
+      revenue_wallet_total_balance: 0,
+      vendor_wallet_debit: 0,
+      vendor_wallet_credit: 0,
+      vendor_wallet_balance: 0,
+      vendor_wallet_total_balance: 0,
+      escrow_debit: 0,
+      escrow_credit: 0,
+      escrow_balance: 0,
+      escrow_total_balance: 0,
+      folio: "RW"
     };
 
     console.log("Zvikuenda izvo", data);

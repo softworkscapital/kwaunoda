@@ -110,94 +110,92 @@ const DriverNewOrderList = () => {
   };
 
   const fetchTopUpHistory = async (driverID) => {
-    console.log("Honai driver id:", driverID)
-    if (!driverID){
+    console.log("Honai driver id:", driverID);
+    
+    if (!driverID) {
       Alert.alert("Error", "Failed to fetch Top Up History.");
-      return;
-    }  // Early return if driverId is not set
-
+      return; // Early return if driverId is not set
+    }
+  
     try {
-      const resp = await fetch(`${APILINK}/topUp/topup/${driverID}`, {
+      const resp = await fetch(`${APILINK}/topUp/userBalance/${driverID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
+  
       const result = await resp.json();
       console.log("Top Up History:", result);
-      if (result && result.length > 0) {
-        setBalance(result[0]?.balance || 0); // Ensure balance is set
+      
+      // Check if the response was successful and contains the balance
+      if (result && result.success && result.data && result.data.length > 0) {
+        const userWalletBalance = result.data[0].user_wallet_balance;
+        console.log("User Wallet Balance:", userWalletBalance);
+        
+        // Assuming you have a function or state to set the balance
+        setBalance(userWalletBalance); // Call setBalance with the fetched balance
       } else {
         Alert.alert("Error", "Failed to fetch Top Up History.");
       }
     } catch (error) {
-      console.error("Error fetching History:", error);
+      console.log("Error fetching History:", error);
       Alert.alert("Error", "An error occurred while fetching History.");
     }
   };
 
   const handleAcceptTrip = async () => {
-    
+    // Check if driver and selectedTrip are defined
     if (!driver || !selectedTrip) {
       Alert.alert("Error", "Some values are missing.");
       return;
     }
-
+  
     // Ensure selectedTrip.accepted_cost is valid before proceeding
     if (!selectedTrip.accepted_cost) {
       Alert.alert("Error", "Trip cost is not defined.");
       return;
     }
-
-    const fee = 0.15 * selectedTrip.accepted_cost; // Calculate fee based on accepted cost
   
-
-    if (balance <= 0) {
+    // Calculate fee based on accepted cost
+    const fee = 0.15 * selectedTrip.accepted_cost; 
+    console.log("ziBalance iri", balance);
+  
+    // Check if balance is sufficient
+    if (balance < fee || balance <= 0) {
       Alert.alert("Error", `Your floating balance is too low. You need to top up to at least ${fee}`);
       return;
     }
-
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getFullYear()}-${String(
-      currentDate.getMonth() + 1
-    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
-      2,
-      "0"
-    )} ${String(currentDate.getHours()).padStart(2, "0")}:${String(
-      currentDate.getMinutes()
-    ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
-
- // Update balance after fee deduction
-// Calculate fee based on accepted cost
- const newBalance = balance - fee;
-
+  
+    // Update balance after fee deduction
+    const newBalance = balance - fee;
+  
+    // Prepare data for the API request
     const data = {
-      currency: "USD",
-      exchange_rate: 1.0,
-      date: formattedDate,
-      debit: fee,
-      credit: 0,
-      balance: newBalance,
-      description: `${"Trip ID: "} ${
-        selectedTrip.trip_id
-      } ${" Commission "} ${"\n"} ${selectedTrip.detail} ${"\nFrom: "} ${
-        selectedTrip.origin_location
-      } ${"\nTo: "} ${selectedTrip.dest_location}`,
-      client_profile_id: driver,
+      commission: fee,
+      description: `Trip ID: ${selectedTrip.trip_id} Commission\n${selectedTrip.detail}\nFrom: ${selectedTrip.origin_location}\nTo: ${selectedTrip.dest_location}`,
     };
-
+  
     console.log("Zvikuenda izvo", data);
-
+  
     try {
-      const resp = await fetch(`${APILINK}/topUp/`, {
+      // Make the API call to process the trip commission
+      const resp = await fetch(`${APILINK}/topUp/trip_commission_settlement/${1}/${driver}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-
+  
+      // Check if the response is OK
+      if (!resp.ok) {
+        const errorText = await resp.text(); // Get the text response for debugging
+        Alert.alert("Error", "Failed to process top-up");
+        return;
+      }
+  
+      // Parse the JSON response
       const result = await resp.json();
       if (result) {
         setBalance(newBalance); // Update balance state
@@ -239,7 +237,7 @@ const DriverNewOrderList = () => {
         type: "success",
         text1: "Trip accepted successfully",
         text2: "Settlement Occurred",
-        position: "center",
+        position: "middle",
         visibilityTime: 5000,
       });
       setSelectedTrip(null);

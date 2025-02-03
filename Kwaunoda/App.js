@@ -60,6 +60,9 @@ import ToastWrapper from './src/screens/ToastWrapper';
 import PesePaymentScreen from "./src/screens/Pesepay";
 
 
+import WebView1 from "./src/screens/WebView1.js";
+
+
 const Stack = createStackNavigator();
 const App = () => {
   return (
@@ -68,12 +71,17 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
+        <Stack.Screen name="WebView1" component={WebView1} />
         <Stack.Screen name="Invite" component={Invite} />
         <Stack.Screen
           name="DriverNewOrderList"
           component={DriverNewOrderList}
         />
         <Stack.Screen name="InTransitTrip" component={InTransitTrip} />
+
+
+
+
         <Stack.Screen name="CustomerEndTrip" component={CustomerEndTrip} />
         <Stack.Screen name="CustomerNewDelivery" component={CustomerNewDelivery} />
         <Stack.Screen name="DeliveryMap" component={DeliveryMap} />

@@ -15,7 +15,7 @@ const Dashboard = () => {
        <Navbar/>
       <Container fluid>
         <Row>
-          <Col md={9} className="order-2 order-md-1">
+          <Col md={9} className="order-1 order-md-1">
             <MainContent selectedTrip={selectedTrip} /> {/* Pass selectedTrip */}
             <Row>
               <Col>

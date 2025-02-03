@@ -17,6 +17,7 @@ import TopView from "../components/TopView";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import LocationSender from "./LocationTracker";
 import Icon from 'react-native-vector-icons/FontAwesome'; 
+import { FontAwesome } from '@expo/vector-icons';
 
 const InTransitTrip = () => {
   const navigation = useNavigation();
@@ -98,9 +99,14 @@ const InTransitTrip = () => {
       const customerData = await resp.json(); // Await the JSON parsing
       console.log("Customer Info:", customerData[0]);
       setCustomer(customerData[0]);
-      setPicture(
-        `${API_URL_UPLOADS}/${customerData[0].profilePic.replace(/\\/g, "/")}`
-      );
+      if(customerData[0].profilePic){
+        setPicture(
+          `${API_URL_UPLOADS}/${customerData[0].profilePic.replace(/\\/g, "/")}`
+        );
+      }else{
+        setPicture(null);
+      }
+    
 
       // Do something with customerData, e.g., update state or UI
     } catch (error) {
@@ -296,38 +302,48 @@ const InTransitTrip = () => {
       
                 <View style={styles.horizontalRule} />
       
-                {/* Icon area below the horizontal rule */}
-                <View style={styles.paymentContainer}>
-                  <View style={styles.iconRow}>
-                    <View style={styles.iconContainerProfile}>
-                      <TouchableOpacity onPress={() => {
-                        setModalContent('profile');
-                        setModalVisible(true);
-                      }}>
-                        <Image
-                          source={{ uri: profilePic }}
-                          style={styles.profileImageIntrans}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.iconContainer}>
-                      <TouchableOpacity onPress={() => {
-                        setModalContent('package');
-                        setModalVisible(true);
-                      }}>
-                        <Icon name="cube" size={50} color="#ffc000" />
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.iconContainer}>
-                      <TouchableOpacity onPress={() => {
-                        setModalContent('payment');
-                        setModalVisible(true);
-                      }}>
-                        <Icon name="money" size={50} color="green" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
+{/* Icon area below the horizontal rule */}
+<View style={styles.paymentContainer}>
+  <View style={styles.iconRow}>
+  // Inside your component render method
+<View style={styles.iconContainerProfile}>
+  <TouchableOpacity onPress={() => {
+    setModalContent('profile');
+    setModalVisible(true);
+  }}>
+    {profilePic ? (
+      <Image
+        source={{ uri: profilePic }}
+        style={styles.profileImageIntrans}
+      />
+    ) : (
+      <FontAwesome
+        name="user" // Specify the icon name
+        size={80} // Adjust size as needed
+        color="gray" // Specify color as needed
+        style={styles.profileImageIntrans} // Ensure it matches your style
+      />
+    )}
+  </TouchableOpacity>
+</View>
+    <View style={styles.iconContainer}>
+      <TouchableOpacity onPress={() => {
+        setModalContent('package');
+        setModalVisible(true);
+      }}>
+        <Icon name="cube" size={50} color="#ffc000" />
+      </TouchableOpacity>
+    </View>
+    <View style={styles.iconContainer}>
+      <TouchableOpacity onPress={() => {
+        setModalContent('payment');
+        setModalVisible(true);
+      }}>
+        <Icon name="money" size={50} color="green" />
+      </TouchableOpacity>
+    </View>
+  </View>
+</View>
       
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
@@ -561,6 +577,8 @@ const InTransitTrip = () => {
         width: 130,
         height: 123,
         borderRadius: 15,
+        paddingLeft: 30,
+        paddingTop: 10,
       },
       statusText: {
         fontWeight: "bold",

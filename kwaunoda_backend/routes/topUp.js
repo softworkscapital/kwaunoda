@@ -19,16 +19,328 @@ topUpRouter.get("/", authenticateToken, async (req, res, next) => {
   }
 });
 
-// Get Admin Balance all
-topUpRouter.get("/adminBal", authenticateToken, async (req, res, next) => {
+// get all entity total balances
+topUpRouter.get("/get_all_entity_total_balances", async (req, res, next) => {
   try {
-    let results = await topUpsDbOperations.getAdminBlance();
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
+    // Fetching all entity total balances
+    const results = await topUpsDbOperations.getAllEntityTotalBalances();
+
+    // Responding with a structured JSON response
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: "Fetched all entity total balances successfully",
+    });
+  } catch (error) {
+    // Logging the error for debugging
+    console.error("Error fetching entity total balances:", error);
+
+    // Sending a structured error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+    // Optionally pass the error to error-handling middleware
+    next(error);
   }
 });
+
+// Get userbalance by client profile id and folio
+///done
+topUpRouter.get("/userBalance/:clientProfileId", authenticateToken, async (req, res, next) => {
+  const clientProfileId = req.params.clientProfileId;
+
+  try {
+    // Fetching the user balance using the clientProfileId
+    const results = await topUpsDbOperations.getUserWalletBalance(clientProfileId);
+
+    // Responding with a structured JSON response
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: "Fetched user balance successfully",
+    });
+  } catch (error) {
+    // Logging the error for debugging
+    console.error("Error fetching user balance:", error);
+
+    // Sending a structured error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+    // Optionally pass the error to error-handling middleware
+    next(error);
+  }
+});
+
+
+topUpRouter.get("/escrow_security_end_with_penalty", authenticateToken, async (req, res, next) => {
+  const clientProfileId = req.params.clientProfileId;
+
+  const RevenueId = 1 ;
+  const VendorId = 1;
+  const receivedValues = req.body;
+  const withdrawalAmount = receivedValues.withdrawalAmount;
+  const customer_Id = receivedValues.customer_Id;
+  const driver_Id = receivedValues.driver_Id;
+  const trip_id = receivedValues.trip_id;
+
+  try {
+ 
+    const results = await topUpsDbOperations.getEscrowSecurityEndWithPenalty(RevenueId,VendorId,withdrawalAmount,customer_Id,driver_Id,trip_id);
+
+    // Responding with a structured JSON response
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: "Done",
+    });
+  } catch (error) {
+    // Logging the error for debugging
+    console.error("Error fetching user balance:", error);
+
+    // Sending a structured error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+    // Optionally pass the error to error-handling middleware
+    next(error);
+  }
+});
+
+// get wallet by folio, datefor , dateto
+topUpRouter.get("/userReportBalance", authenticateToken, async (req, res, next) => {
+  const { dateFor, dateTo, folio } = req.body; // Extracting variables from the request body
+
+  try {
+    // Fetching the user wallet balance based on the provided date range and folio
+    const results = await topUpsDbOperations.getReport(dateFor, dateTo, folio);
+
+    // Responding with a structured JSON response
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: "Fetched user wallet balance successfully",
+    });
+  } catch (error) {
+    // Logging the error for debugging
+    console.error("Error fetching user wallet balance:", error);
+
+    // Sending a structured error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+    // Optionally pass the error to error-handling middleware
+    next(error);
+  }
+});
+
+// get wallet by folio, datefor , dateto, client_profile_id
+topUpRouter.get("/wallet_by_client_id", authenticateToken, async (req, res, next) => {
+  const { dateFor, dateTo, folio , client_profile_id} = req.body; // Extracting variables from the request body
+
+  try {
+    // Fetching the user wallet balance based on the provided date range and folio
+    const results = await topUpsDbOperations.getReportByClientId(dateFor, dateTo, folio , client_profile_id);
+
+    // Responding with a structured JSON response
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: "Fetched user wallet balance successfully",
+    });
+  } catch (error) {
+    // Logging the error for debugging
+    console.error("Error fetching user wallet balance:", error);
+
+    // Sending a structured error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+    // Optionally pass the error to error-handling middleware
+    next(error);
+  }
+});
+
+// withdrawal from revenue
+topUpRouter.get(
+  "/wallet_withdrawal_from_revenue/:mainWalletId/:RevenueWalletId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let withdrawalAmount = postedAmount.withdrawalAmount;
+    let mainWalletId = req.params.mainWalletId;
+    let RevenueWalletId = req.params.RevenueWalletId;
+    try {
+      let results = await topUpsDbOperations.getWalletWithdrawFromRevenue(
+        withdrawalAmount,
+        mainWalletId,
+        RevenueWalletId
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+//withdrawal by vendor
+topUpRouter.get(
+  "/wallet_withdrawal_by_vendor/:mainWalletId/:VendorId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let withdrawalAmount = postedAmount.withdrawalAmount;
+    let mainWalletId = req.params.mainWalletId;
+    let VendorId = req.params.UserWalletId;
+    try {
+      let results = await topUpsDbOperations.getWalletWithdrawByVendor(
+        withdrawalAmount,
+        mainWalletId,
+        VendorId
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+//withdrawal by user
+topUpRouter.get(
+  "/wallet_withdrawal_by_user/:mainWalletId/:UserWalletId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let withdrawalAmount = postedAmount.withdrawalAmount;
+    let mainWalletId = req.params.mainWalletId;
+    let UserWalletId = req.params.UserWalletId;
+    try {
+      let results = await topUpsDbOperations.getWalletWithdrawByUser(
+        withdrawalAmount,
+        mainWalletId,
+        UserWalletId
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+//trip settlement
+topUpRouter.post(
+  "/trip_commission_settlement/:RevenueWalletId/:UserWalletId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let commission = postedAmount.commission;
+    let description = postedAmount.description;
+    let RevenueWalletId = req.params.RevenueWalletId;
+    let UserWalletId = req.params.UserWalletId;
+    try {
+      let results = await topUpsDbOperations.getTripCommissionSettlement(
+        commission,
+        RevenueWalletId,
+        UserWalletId,
+        description
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+
+//top Up
+topUpRouter.get(
+  "/topUp_User_Wallet/:RevenueWalletId/:UserWalletId/:MainWalletId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let depositedAmount = postedAmount.depositedAmount;
+    let RevenueWalletId = req.params.RevenueWalletId;
+    let UserWalletId = req.params.UserWalletId;
+    let mainWalletId = req.params.MainWalletId;
+    try {
+      let results = await topUpsDbOperations.getTopUpUserWallet(
+        depositedAmount,
+        UserWalletId,
+        mainWalletId,
+        RevenueWalletId,
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+
+//escrow_security_intransit
+topUpRouter.get(
+  "/escrow_security_intransit/:UserWalletId/:EscrowId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let withdrawalAmount = postedAmount.withdrawalAmount;
+    let UserWalletId = req.params.UserWalletId;
+    let EscrowId = req.params.EscrowId;
+    try {
+      let results = await topUpsDbOperations.getEscrowSecurityIntransit(
+        withdrawalAmount,
+        UserWalletId,
+        EscrowId
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+
+//escrow_security_end_with_success
+topUpRouter.get(
+  "/escrow_security_end_with_success/:UserWalletId/:EscrowId",
+  authenticateToken,
+  async (req, res, next) => {
+    const postedAmount = req.body;
+    let withdrawalAmount = postedAmount.withdrawalAmount;
+    let UserWalletId = req.params.UserWalletId;
+    let EscrowId = req.params.EscrowId;
+    try {
+      let results = await topUpsDbOperations.getEscrowSecurityEndWithSuccess(
+        withdrawalAmount,
+        UserWalletId,
+        EscrowId
+      );
+      res.json(results);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
+
+
+
 
 // Get topUps by id
 topUpRouter.get("/:top_up_id", authenticateToken, async (req, res, next) => {
@@ -80,11 +392,39 @@ topUpRouter.post("/", authenticateToken, async (req, res, next) => {
       currency,
       exchange_rate,
       date,
-      debit,
-      credit,
-      balance,
       description,
       client_profile_id,
+      vendor_id,
+      payment_gateway_id,
+      main_wallet_id,
+      amount,
+      trip_id,
+      trxn_code,
+      user_wallet_debit,
+      user_wallet_credit,
+      user_wallet_balance,
+      user_wallet_total_balance,
+      main_wallet_debit,
+      main_wallet_credit,
+      main_wallet_balance,
+      main_wallet_total_balance,
+      payment_gateway_charges_debit,
+      payment_gateway_charges_credit,
+      payment_gateway_charges_balance,
+      payment_gateway_charges_total_balance,
+      revenue_wallet_debit,
+      revenue_wallet_credit,
+      revenue_wallet_balance,
+      revenue_wallet_total_balance,
+      vendor_wallet_debit,
+      vendor_wallet_credit,
+      vendor_wallet_balance,
+      vendor_wallet_total_balance,
+      escrow_debit,
+      escrow_credit,
+      escrow_balance,
+      escrow_total_balance,
+      folio,
     } = postedValues;
 
     console.log(req.body);
@@ -93,11 +433,39 @@ topUpRouter.post("/", authenticateToken, async (req, res, next) => {
       currency,
       exchange_rate,
       date,
-      debit,
-      credit,
-      balance,
       description,
-      client_profile_id
+      client_profile_id,
+      vendor_id,
+      payment_gateway_id,
+      main_wallet_id,
+      amount,
+      trip_id,
+      trxn_code,
+      user_wallet_debit,
+      user_wallet_credit,
+      user_wallet_balance,
+      user_wallet_total_balance,
+      main_wallet_debit,
+      main_wallet_credit,
+      main_wallet_balance,
+      main_wallet_total_balance,
+      payment_gateway_charges_debit,
+      payment_gateway_charges_credit,
+      payment_gateway_charges_balance,
+      payment_gateway_charges_total_balance,
+      revenue_wallet_debit,
+      revenue_wallet_credit,
+      revenue_wallet_balance,
+      revenue_wallet_total_balance,
+      vendor_wallet_debit,
+      vendor_wallet_credit,
+      vendor_wallet_balance,
+      vendor_wallet_total_balance,
+      escrow_debit,
+      escrow_credit,
+      escrow_balance,
+      escrow_total_balance,
+      folio
     );
     res.json(results);
   } catch (e) {
@@ -114,20 +482,80 @@ topUpRouter.put("/:id", authenticateToken, async (req, res, next) => {
     let {
       currency,
       exchange_rate,
-      amount,
-      balance,
+      date,
       description,
       client_profile_id,
+      vendor_id,
+      payment_gateway_id,
+      main_wallet_id,
+      amount,
+      trip_id,
+      trxn_code,
+      user_wallet_debit,
+      user_wallet_credit,
+      user_wallet_balance,
+      user_wallet_total_balance,
+      main_wallet_debit,
+      main_wallet_credit,
+      main_wallet_balance,
+      main_wallet_total_balance,
+      payment_gateway_charges_debit,
+      payment_gateway_charges_credit,
+      payment_gateway_charges_balance,
+      payment_gateway_charges_total_balance,
+      revenue_wallet_debit,
+      revenue_wallet_credit,
+      revenue_wallet_balance,
+      revenue_wallet_total_balance,
+      vendor_wallet_debit,
+      vendor_wallet_credit,
+      vendor_wallet_balance,
+      vendor_wallet_total_balance,
+      escrow_debit,
+      escrow_credit,
+      escrow_balance,
+      escrow_total_balance,
+      folio,
     } = postedValues;
 
     let results = await topUpsDbOperations.putTopUp(
       top_up_id,
       currency,
       exchange_rate,
-      amount,
-      balance,
+      date,
       description,
-      client_profile_id
+      client_profile_id,
+      vendor_id,
+      payment_gateway_id,
+      main_wallet_id,
+      amount,
+      trip_id,
+      trxn_code,
+      user_wallet_debit,
+      user_wallet_credit,
+      user_wallet_balance,
+      user_wallet_total_balance,
+      main_wallet_debit,
+      main_wallet_credit,
+      main_wallet_balance,
+      main_wallet_total_balance,
+      payment_gateway_charges_debit,
+      payment_gateway_charges_credit,
+      payment_gateway_charges_balance,
+      payment_gateway_charges_total_balance,
+      revenue_wallet_debit,
+      revenue_wallet_credit,
+      revenue_wallet_balance,
+      revenue_wallet_total_balance,
+      vendor_wallet_debit,
+      vendor_wallet_credit,
+      vendor_wallet_balance,
+      vendor_wallet_total_balance,
+      escrow_debit,
+      escrow_credit,
+      escrow_balance,
+      escrow_total_balance,
+      folio
     );
     res.json(results);
   } catch (e) {
@@ -154,7 +582,6 @@ topUpRouter.post("/topupcr", authenticateToken, async (req, res, next) => {
 
     // Validate request data
 
-    
     // Call the postCrTopUp function with the extracted data
     let results = await topUpsDbOperations.postCrTopUp(
       cr,
@@ -196,3 +623,4 @@ topUpRouter.post("/topupdr", authenticateToken, async (req, res, next) => {
   }
 });
 module.exports = topUpRouter;
+

@@ -25,6 +25,12 @@ import ViewConfig from './components/ViewConfig';
 import Configurations from './components/Configurations';
 import MapView from './components/Location';
 import MapViewWithDriver from './components/TripTrack';
+import ReportAnalysis from './components/reportAnalysis';
+
+import Home from './components/Home';
+import Confirmation from './components/ConfirmPage';
+import Map from './components/MapPointer';
+import Maps from './components/Maps';
 
 function App() {
     const [tripData, setTripData] = useState([]);
@@ -96,7 +102,14 @@ function App() {
                     <Route path="/Configurations" element={<Configurations />} />
                     <Route path="/map" element={<MapView />} />
                     <Route path="/mapWithDriver" element={<MapViewWithDriver />} />
+                    <Route path="/ReportAnalysis" element={<ReportAnalysis />} />
 
+
+
+                    <Route path="/Home" element={<Home />} />
+                    <Route path="/Confirmation" element={<Confirmation />} />
+                    <Route path="/Map" element={<Map />} />
+                    <Route path="/Maps" element={<Maps />} />
 
                 </Routes>
             </div>

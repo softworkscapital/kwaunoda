@@ -416,6 +416,22 @@ const SideBar = () => {
                   <li className="nav-item">
                     <a
                       className="nav-link"
+                      href="/ReportAnalysis"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        color: "black",
+                        padding: "10px 20px",
+                      }}
+                    >
+                      REPORT ANALYSIS
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
                       href="/pesepay"
                       style={{
                         display: "flex",
@@ -460,6 +476,22 @@ const SideBar = () => {
                       }}
                     >
                       APPLICATION STATISTICS
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
+                      href="/Hom"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        color: "black",
+                        padding: "10px 20px",
+                      }}
+                    >
+                       Home
                     </a>
                   </li>
                   <li

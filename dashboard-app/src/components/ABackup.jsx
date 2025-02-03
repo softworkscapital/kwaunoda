@@ -1,140 +1,127 @@
-import React, { useState, useEffect } from 'react';
-import './CustomerAdmin.css'; // Importing CSS for styles
-import { API_URL } from './config';
+import React, { useState, useEffect } from "react";
+import { API_URL } from "./config";
+import SideBar from "./SideBar";
+import { Col, Row, Container } from "react-bootstrap";
+import Navbar from "./Navbar";
 
+const ReportAnalysis = ({ customersData }) => {
+  const [account_type, setAccount_type] = useState();
+  const [account_category, setAccount_category] = useState();
+  const [signed_on, setSigned_on] = useState();
+  const [name, setName] = useState();
+  const [hseNo, setHseNo] = useState();
+  const [surbub, setSurbub] = useState();
+  const [city, setCity] = useState();
+  const [country, setCountry] = useState();
+  const [email, setEmail] = useState();
+  const [membershipstatus, setMembershipStatus] = useState();
+  const [topUpList, setTopUpList] = useState([]);
+  const [isAdmin, setIsAdmin] = useState("");
+  const [usage, setUsage] = useState("0");
+  const [balanceData, setBalanceData] = useState({});
+  const APILINK = API_URL;
 
-const CustomerAdminChat = () => {
-  const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([]);
- 
+  // Fetch top-up data and balance
   useEffect(() => {
-    // const fetchChatMessages = async () => {
-    //   try {
-    //     const response = await fetch(`${API_URL}/customer_admin_chats/customer_admin_chats/${tripId}`);
-        
-    //     if (!response.ok) {
-    //       console.error('Network response was not ok:', response.statusText);
-    //       return;
-    //     }
+    fetchTopUp();
+    getBalance();
+    getClientDetails();
+    const interval = setInterval(() => {
+      fetchTopUp();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-    //     const result = await response.json();
-    //     console.log('Fetched response:', result);
-
-    //     if (result && result.status === "200" && Array.isArray(result.data)) {
-    //       const sortedMessages = result.data.sort((a, b) => {
-    //         const dateA = new Date(`${a.date_chat} ${a.time_chat}`);
-    //         const dateB = new Date(`${b.date_chat} ${b.time_chat}`);
-    //         return dateA - dateB; // Ascending order
-    //       });
-    //       setChatHistory(sortedMessages);
-    //     } else {
-    //       console.error('Failed to retrieve messages:', result.message || 'No message provided');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching chat messages:', error);
-    //   }
-    // };
-    const fetchChatMessages = async () => {
-      try {
-        const response = await fetch(`${API_URL}/customeradminchat/`);
-        
-        if (!response.ok) {
-          console.error('Network response was not ok:', response.statusText);
-          return;
-        }
-
-        const result = await response.json();
-        console.log('Fetched response:', result);
-
-        // if (result && result.status === "200" && Array.isArray(result.data)) {
-        //   const sortedMessages = result.data.sort((a, b) => {
-        //     const dateA = new Date(`${a.date_chat} ${a.time_chat}`);
-        //     const dateB = new Date(`${b.date_chat} ${b.time_chat}`);
-        //     return dateA - dateB; // Ascending order
-        //   });
-        //   setChatHistory(sortedMessages);
-        // } else {
-        //   console.error('Failed to retrieve messages:', result.message || 'No message provided');
-        // }
-      } catch (error) {
-        console.error('Error fetching chat messages:', error);
-      }
-    };
-
-    fetchChatMessages();
-
-    // Set up an interval to fetch messages every 5 seconds
-    const intervalId = setInterval(fetchChatMessages, 5000);
-
-    // Cleanup function to clear the interval
-    return () => clearInterval(intervalId);
-  }, [tripId]);
-
-  const handleSend = async () => {
-    if (message.trim()) {
-      const now = new Date();
-      const dateChat = now.toISOString().split('T')[0]; // Current date
-      const timeChat = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); // Current time with seconds
-
-      const newMessage = {
-        date_chat: dateChat,
-        time_chat: timeChat,
-        trip_id: tripId,
-        admin_id: 1, // Hardcoded for demonstration
-        customerid: customerid, // Hardcoded customer ID
-        message: message.trim(),
-        origin: customerid, // Use customerid as origin for sent messages
-      };
-
-      try {
-        const response = await fetch(`${API_URL}/customer_admin_chats`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newMessage),
-        });
-
-        const result = await response.json();
-        console.log('Message sent:', result);
-
-        // Append the new message to the chat history
-        setChatHistory(prevHistory => [...prevHistory, newMessage]);
-        setMessage(''); // Clear input
-      } catch (error) {
-        console.error('Error posting message:', error);
-      }
+  const fetchTopUp = async () => {
+    try {
+      const response = await fetch(`${APILINK}/topUp/`);
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
+      setTopUpList(data.results || []);
+    } catch (error) {
+      console.error("Failed to fetch top-up data:", error);
+      setTopUpList([]);
     }
   };
 
+  const getBalance = () => {
+    fetch(`${API_URL}/topUp/adminbal`)
+      .then((res) => res.json())
+      .then((resp) => {
+        setBalanceData(resp.results[0] || {});
+        setUsage(resp.results[0]?.total_usage || "0");
+      })
+      .catch((err) => console.log(err.message));
+  };
+
+  const getClientDetails = () => {
+    const async_client_profile_id = localStorage.getItem("async_client_profile_id");
+    fetch(`${API_URL}/clients/${async_client_profile_id}`)
+      .then((res) => res.json())
+      .then((resp) => {
+        const client = resp[0] || {};
+        setName(client.name);
+        setAccount_type(client.account_type);
+        setAccount_category(client.account_category);
+        setSigned_on(client.signed_on);
+        setCountry(client.country);
+        setEmail(client.email);
+        setMembershipStatus(client.membershipstatus);
+        setHseNo(client.house_number_and_street_name);
+        setSurbub(client.surbub);
+        setCity(client.city);
+      })
+      .catch((err) => console.log(err.message));
+  };
+
+  // Mapping the total balance keys
+  const totalBalanceKeys = [
+    'escrow_total_balance',
+    'main_wallet_total_balance',
+    'payment_gateway_charges_total_balance',
+    'revenue_wallet_total_balance',
+    'user_wallet_total_balance',
+    'vendor_wallet_total_balance',
+  ];
+
   return (
-    <div className="container">
-      <div className="chat-container">
-        {chatHistory.map((chat, index) => (
-          <div
-            key={`${chat.date_chat}-${chat.time_chat}-${index}`} // Ensure a unique key with seconds
-            className={`message-container ${chat.origin === customerid ? 'sent-message' : 'received-message'}`}
-          >
-            <p className="message-text">{chat.message}</p>
-            <p className="date-text">{`${chat.date_chat} ${chat.time_chat}`}</p>
-          </div>
-        ))}
-      </div>
-      <div className="input-container">
-        <input
-          type="text"
-          className="input"
-          placeholder="Type a message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-        />
-        <button className="send-button" onClick={handleSend}>
-          ➤
-        </button>
-      </div>
+    <div>
+      <Navbar />
+      <Container fluid>
+        <Row>
+          <Col md={9} className="order-2 order-md-1">
+            <div className="dashboard">
+              <h1 style={{ marginTop: "20px" }}>.</h1>
+              <div style={{ marginTop: "30px" }}>
+                <h1>REPORTS</h1>
+                <div className="col-xl-12">
+                  <div className="card">
+                    <h2 className="card-header">Reports</h2>
+                    <div className="row">
+                      <div className="col-xl-12">
+                        <div className="d-flex overflow-x-auto">
+                          {totalBalanceKeys.map((key) => (
+                            <div className="card bg-white text-black mb-4" style={{ minWidth: "200px", marginRight: "10px" }} key={key}>
+                              <h5>${balanceData[key] !== null ? balanceData[key] : 0}</h5>
+                              <h5>{key.replace('_total_balance', '').replace(/_/g, ' ')} Total Balance</h5>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Rest of your existing code here */}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Col>
+          <Col md={3} className="order-1 order-md-1">
+            <SideBar />
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
 
-export default CustomerAdminChat;
+export default ReportAnalysis;

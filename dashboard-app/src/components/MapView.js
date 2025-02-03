@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
-import { API_URL, GOOGLE_MAPS_API_KEY } from './config';
+import { API_URL,API_URL_UPLOADS,GOOGLE_MAPS_API_KEY } from './config';
+import motorcycleIcon from '../assets/black-motorcycle.png';
 
 const MapView = ({ selectedTrip }) => {
   const [markers, setMarkers] = useState([]);
@@ -20,10 +21,18 @@ const MapView = ({ selectedTrip }) => {
       const newMarkers = data.map((driver) => ({
         lat: parseFloat(driver.lat_cordinates),
         lng: parseFloat(driver.long_cordinates),
+        driver_id: driver.driver_id,
+        plate: driver.plate,
         name: driver.name,
+        surname: driver.surname,
+        rating: driver.rating,
+        profilePic: driver.profilePic,
         status: driver.membershipstatus
-      }));
+        
 
+
+      }));
+ console.log("newMarkers",data);
       setMarkers(newMarkers);
       setDriversData(data);
     } catch (error) {
@@ -148,26 +157,56 @@ const MapView = ({ selectedTrip }) => {
             <Marker 
               key={index} 
               position={marker} 
+              icon={{ url: motorcycleIcon, scaledSize: new window.google.maps.Size(80, 80) }} // Use your custom icon path
+            
               onClick={() => setSelectedDriver(marker)}
             />
           ))}
           
           {selectedDriver && (
-            <InfoWindow 
-              position={{ lat: selectedDriver.lat, lng: selectedDriver.lng }} 
-              onCloseClick={() => setSelectedDriver(null)}
-            >
-              <div>
-                <h2>{selectedDriver.name}</h2>
-                <p>Status: {selectedDriver.status || 'N/A'}</p>
-              </div>
-            </InfoWindow>
+<InfoWindow 
+  position={{ lat: selectedDriver.lat, lng: selectedDriver.lng }} 
+  onCloseClick={() => setSelectedDriver(null)}
+>
+  <div>
+                <div className="image-preview-container" align="center">
+                <img
+                src={`${API_URL_UPLOADS}/${selectedDriver.profilePic .replace(/\\/g, '/')}`}
+                style={{
+                width: "80px",
+                borderRadius: "30px",
+                height: "auto",
+                cursor: "pointer",
+                marginRight: "10px",
+                }}
+                />
+                </div>
+    <h6>Name :{selectedDriver.name} {selectedDriver.surname}</h6>
+    <div>USER ID: {selectedDriver.driver_id}</div>
+    <div>No. Plate: {selectedDriver.plate}{"\n"}</div>
+  
+    {/* Displaying stars based on rating */}
+    <div>Rated :
+      {Array.from({ length: 5 }, (v, i) => (
+        <span key={i} style={{ color: i < selectedDriver.rating ? 'gold' : 'lightgray' }}>
+          ★
+        </span>
+      ))}
+    </div>
+
+    
+
+    <p>Status: {selectedDriver.status || 'N/A'}</p>
+  </div>
+</InfoWindow>
           )}
 
           {/* Start Location Marker (Origin) */}
           {startLocation && (
             <Marker 
-              position={startLocation} 
+              position={startLocation}
+               // Use your custom icon path
+            
             />
           )}
 
@@ -175,6 +214,8 @@ const MapView = ({ selectedTrip }) => {
           {endLocation && (
             <Marker 
               position={endLocation}
+              // Use your custom icon path
+           
             />
           )}
 
@@ -182,7 +223,7 @@ const MapView = ({ selectedTrip }) => {
           {pickedLocation && (
             <Marker 
               position={pickedLocation} 
-              icon={{ url: '/src/assets/icons8-motorcycle-30.png', scaledSize: new window.google.maps.Size(30, 30) }} // Use your custom icon path
+       e your custom icon path
             />
           )}
 

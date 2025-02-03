@@ -96,10 +96,10 @@ const Wallet = () => {
         });
   
         const result = await resp.json();
-        console.log("Top Up History:", userId);
+        console.log("Top Up History:", result);
         if (result) {
           setTopUpHistory(result);
-          setBalance(result[0]?.balance || 0);
+          setBalance(result[0]?.user_wallet_balance || 0);
           setDate(new Date().toISOString());
         } else {
           Alert.alert("Error", "Failed to fetch History.");
@@ -201,21 +201,21 @@ const Wallet = () => {
       <View style={styles.deliveryItemHeader}>
         <Text style={styles.orderNumber}>Ref: {item.top_up_id}</Text>
         <Text style={styles.bal}>
-          ${Number(item.balance).toFixed(2)} {item.currency}
+          ${Number(item.user_wallet_balance).toFixed(2)} {item.currency}
         </Text>
       </View>
       <Text style={styles.status}>{item.date}</Text>
       <Text style={styles.status}>{item.description}</Text>
       <Text style={styles.status}>
         Amount Affected:
-         {item.debit ? (
+         {item.user_wallet_debit ? (
           <Text style={{ color: "red", fontWeight: "bold" }}>
             {" "}
-            - {item.debit} {item.currency}
+            - {item.user_wallet_debit} {item.currency}
           </Text>
-        ) : item.credit ? (
+        ) : item.user_wallet_credit ? (
           <Text style={{ color: "green", fontWeight: "bold" }}>
-           {" "}{item.credit} {item.currency}
+           {" "}{item.user_wallet_credit} {item.currency}
           </Text>
         ) : (
           " N/A"

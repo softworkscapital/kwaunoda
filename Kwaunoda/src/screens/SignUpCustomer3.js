@@ -235,7 +235,7 @@ const SignUpCustomer3 = () => {
           // Create user object
           const user = {
             userId: newUserId,
-            role: "driver",
+            role: "customer",
             username: username.trim(),
             email: userDetails.email.trim(),
             password: userDetails.password,

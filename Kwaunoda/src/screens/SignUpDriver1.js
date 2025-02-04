@@ -208,7 +208,7 @@ const SignUpDriver1 = () => {
       escrow_credit: 0,
       escrow_balance: 0,
       escrow_total_balance: 0,
-      folio: "RW"
+      folio: "UW"
     };
 
     console.log("Zvikuenda izvo", data);

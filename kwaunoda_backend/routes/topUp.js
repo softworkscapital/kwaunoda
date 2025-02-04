@@ -50,6 +50,7 @@ topUpRouter.get("/get_all_entity_total_balances", async (req, res, next) => {
 ///done
 topUpRouter.get("/userBalance/:clientProfileId", authenticateToken, async (req, res, next) => {
   const clientProfileId = req.params.clientProfileId;
+  console.log(clientProfileId);
 
   try {
     // Fetching the user balance using the clientProfileId
@@ -388,15 +389,18 @@ topUpRouter.get("/lasttopup/:client_profile_id", async (req, res, next) => {
 topUpRouter.post("/", authenticateToken, async (req, res, next) => {
   try {
     let postedValues = req.body;
+        // Log the entire request body
+        console.log("Request Body:", req.body);
     let {
       currency,
       exchange_rate,
-      date,
+      date, // Ensure this is formatted correctly
       description,
       client_profile_id,
       vendor_id,
       payment_gateway_id,
       main_wallet_id,
+      revenue_wallet_id,
       amount,
       trip_id,
       trxn_code,
@@ -427,17 +431,22 @@ topUpRouter.post("/", authenticateToken, async (req, res, next) => {
       folio,
     } = postedValues;
 
-    console.log(req.body);
+
+    
+    // Log the posted values and folio
+    console.log("Posted Values Before Destructuring:", postedValues);
+    console.log("Folio Value After Destructuring:", folio);
 
     let results = await topUpsDbOperations.postTopUp(
       currency,
       exchange_rate,
-      date,
+      date, // Ensure this is formatted correctly
       description,
       client_profile_id,
       vendor_id,
       payment_gateway_id,
       main_wallet_id,
+      revenue_wallet_id,
       amount,
       trip_id,
       trxn_code,

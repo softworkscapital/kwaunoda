@@ -87,10 +87,7 @@ crudsObj.getUserWalletBalance = (clientProfileId) => {
       if (err) {
         return reject(err);
       }
-      // Check if results are found
-      if (results.length === 0) {
-        return resolve({ message: "No balance found for this user." });
-      }
+      
       return resolve(results);
     });
   });
@@ -3387,7 +3384,7 @@ crudsObj.postTopUp = (
 
   currency,
   exchange_rate,
-  date,
+  date, // Ensure this is formatted correctly
   description,
   client_profile_id,
   vendor_id,
@@ -3424,6 +3421,7 @@ crudsObj.postTopUp = (
   folio
 ) => {
   return new Promise((resolve, reject) => {
+    console.log("Folio from Crud", folio);
     // Get Total Balance
     pool.query(
       "SELECT user_wallet_total_balance, amount FROM top_up ORDER BY top_up_id DESC LIMIT 1",
@@ -3439,92 +3437,94 @@ crudsObj.postTopUp = (
         const user_wallet_total_balance =
           parseFloat(getTotalBal) + parseFloat(user_wallet_debit); // Ensure user_wallet_debit is defined
 
-        pool.query(
-          "INSERT INTO top_up ( \
-            currency, \
-            exchange_rate, \
-            date, \
-            description, \
-            client_profile_id, \
-            vendor_id, \
-            payment_gateway_id, \
-            main_wallet_id, \
-            revenue_wallet_id, \
-            amount, \
-            trip_id, \
-            trxn_code, \
-            user_wallet_debit, \
-            user_wallet_credit, \
-            user_wallet_balance, \
-            user_wallet_total_balance, \
-            main_wallet_debit, \
-            main_wallet_credit, \
-            main_wallet_balance, \
-            main_wallet_total_balance, \
-            payment_gateway_charges_debit, \
-            payment_gateway_charges_credit, \
-            payment_gateway_charges_balance, \
-            payment_gateway_charges_total_balance, \
-            revenue_wallet_debit, \
-            revenue_wallet_credit, \
-            revenue_wallet_balance, \
-            revenue_wallet_total_balance, \
-            vendor_wallet_debit, \
-            vendor_wallet_credit, \
-            vendor_wallet_balance, \
-            vendor_wallet_total_balance, \
-            escrow_debit, \
-            escrow_credit, \
-            escrow_balance, \
-            escrow_total_balance, \
-            folio \
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [
-            currency,
-            exchange_rate,
-            date,
-            description,
-            client_profile_id,
-            vendor_id,
-            payment_gateway_id,
-            main_wallet_id,
-            revenue_wallet_id,
-            amount,
-            trip_id,
-            trxn_code,
-            user_wallet_debit,
-            user_wallet_credit,
-            user_wallet_balance,
-            user_wallet_total_balance,
-            main_wallet_debit,
-            main_wallet_credit,
-            main_wallet_balance,
-            main_wallet_total_balance,
-            payment_gateway_charges_debit,
-            payment_gateway_charges_credit,
-            payment_gateway_charges_balance,
-            payment_gateway_charges_total_balance,
-            revenue_wallet_debit,
-            revenue_wallet_credit,
-            revenue_wallet_balance,
-            revenue_wallet_total_balance,
-            vendor_wallet_debit,
-            vendor_wallet_credit,
-            vendor_wallet_balance,
-            vendor_wallet_total_balance,
-            escrow_debit,
-            escrow_credit,
-            escrow_balance,
-            escrow_total_balance,
-            folio,
-          ],
-          (err, results) => {
-            if (err) {
-              return reject(err);
+          pool.query(
+            "INSERT INTO top_up ( \
+              currency, \
+              exchange_rate, \
+              date, \
+              description, \
+              client_profile_id, \
+              vendor_id, \
+              payment_gateway_id, \
+              main_wallet_id, \
+              revenue_wallet_id, \
+              amount, \
+              trip_id, \
+              trxn_code, \
+              user_wallet_debit, \
+              user_wallet_credit, \
+              user_wallet_balance, \
+              user_wallet_total_balance, \
+              main_wallet_debit, \
+              main_wallet_credit, \
+              main_wallet_balance, \
+              main_wallet_total_balance, \
+              payment_gateway_charges_debit, \
+              payment_gateway_charges_credit, \
+              payment_gateway_charges_balance, \
+              payment_gateway_charges_total_balance, \
+              revenue_wallet_debit, \
+              revenue_wallet_credit, \
+              revenue_wallet_balance, \
+              revenue_wallet_total_balance, \
+              vendor_wallet_debit, \
+              vendor_wallet_credit, \
+              vendor_wallet_balance, \
+              vendor_wallet_total_balance, \
+              escrow_debit, \
+              escrow_credit, \
+              escrow_balance, \
+              escrow_total_balance, \
+              folio \
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+              currency,
+              exchange_rate,
+              date, // Ensure this is formatted correctly
+              description,
+              client_profile_id,
+              vendor_id,
+              payment_gateway_id,
+              main_wallet_id,
+              revenue_wallet_id,
+              amount,
+              trip_id,
+              trxn_code,
+              user_wallet_debit,
+              user_wallet_credit,
+              user_wallet_balance,
+              user_wallet_total_balance,
+              main_wallet_debit,
+              main_wallet_credit,
+              main_wallet_balance,
+              main_wallet_total_balance,
+              payment_gateway_charges_debit,
+              payment_gateway_charges_credit,
+              payment_gateway_charges_balance,
+              payment_gateway_charges_total_balance,
+              revenue_wallet_debit,
+              revenue_wallet_credit,
+              revenue_wallet_balance,
+              revenue_wallet_total_balance,
+              vendor_wallet_debit,
+              vendor_wallet_credit,
+              vendor_wallet_balance,
+              vendor_wallet_total_balance,
+              escrow_debit,
+              escrow_credit,
+              escrow_balance,
+              escrow_total_balance,
+              folio,
+            ],
+            (err, results) => {
+              if (err) {
+                console.error("Error inserting data:", err); // Log error
+                return reject(err);
+              }
+              console.log("Data inserted successfully:", results); // Log success
+              return resolve([{ status: "200", message: "Saving successful" }]);
             }
-            return resolve([{ status: "200", message: "Saving successful" }]);
-          }
-        );
+          );
       }
     );
   });

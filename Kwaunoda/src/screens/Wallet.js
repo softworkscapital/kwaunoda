@@ -85,7 +85,7 @@ const Wallet = () => {
   
   useEffect(() => {
     const fetchTopUpHistory = async () => {
-      // if (!userId) return; // Early return if user_Id is not set
+      if (!userId) return; // Early return if user_Id is not set
   
       try {
         const resp = await fetch(`${APILINK}/topUp/topup/${userId}`, {

@@ -28,6 +28,7 @@ const OTPDriver = ({ navigation }) => {
   const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   useEffect(() => {
+    console.log("Ziiiiiiiiiii ID", userId)
     fetchDriverDetails();
   }, []);
 

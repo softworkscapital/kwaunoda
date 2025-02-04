@@ -156,7 +156,8 @@ const CustomerLogin = () => {
                 navigation.navigate("AccountInError");
             } else if (userStatus === "Pending OTP Verification") {
                 if (userType === "driver") {
-                    navigation.navigate("OTPDriver", result[0].driver_id);
+               
+                    navigation.navigate("OTPDriver", { userId: ids.driver_id.toString() });
                 } else {
                     navigation.navigate("OTPCustomer", { userId: ids.customerId.toString() });
                 }

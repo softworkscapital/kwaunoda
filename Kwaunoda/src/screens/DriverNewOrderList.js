@@ -93,6 +93,7 @@ const DriverNewOrderList = () => {
 
 
   const fetchDriverDetails = async (driverId) => {
+    console.log("fetch details ID", driverId);
     try {
       const response = await fetch(`${API_URL}/driver/${driverId}`);
       const result = await response.json();
@@ -110,12 +111,12 @@ const DriverNewOrderList = () => {
   };
 
   const fetchTopUpHistory = async (driverID) => {
-    console.log("Honai driver id:", driverID);
+    console.log("Honai driver id yeduuuuuu:", driverID);
     
-    if (!driverID) {
-      Alert.alert("Error", "Failed to fetch Top Up History.");
-      return; // Early return if driverId is not set
-    }
+    // if (!driverID) {
+    //   Alert.alert("Error", "Failed to fetch Top Up History.");
+    //   return; // Early return if driverId is not set
+    // }
   
     try {
       const resp = await fetch(`${APILINK}/topUp/userBalance/${driverID}`, {
@@ -125,6 +126,7 @@ const DriverNewOrderList = () => {
         },
       });
   
+      console.log("maziBalance eduuuu:", resp);
       const result = await resp.json();
       console.log("Top Up History:", result);
       

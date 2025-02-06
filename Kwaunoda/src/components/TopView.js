@@ -53,26 +53,39 @@ const TopView = () => {
           Alert.alert("Driver ID not found", "Please log in again.");
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
         Alert.alert("Error", "An error occurred while fetching data.");
       }
     };
 
     const fetchUserDetails = async (id, type) => {
+      console.log("kaID:", id);
+      console.log("kaType:", type);
+
       try {
         const endpoint =
           type === "driver" ? `driver/${id}` : `customerdetails/${id}`;
         const response = await fetch(`${APILINK}/${endpoint}`);
         const result = await response.json();
 
+        console.log("TopView:", result[0]);
+
         if (result && result.length > 0) {
           await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-          setPic(
-            `${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, "/")}`
-          );
-          setType(result[0].account_type);
-          setName(result[0].username);
-          setData(result[0]);
+          if(result[0].profilePic === null || result[0].profilePic === ""){
+            setPic(
+              null
+            );
+            setType(result[0].account_type);
+            setName(result[0].username);
+            setData(result[0]);
+          }else{
+            setPic(
+              `${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, "/")}`
+            );
+            setType(result[0].account_type);
+            setName(result[0].username);
+            setData(result[0]);
+          }
         } else {
           Alert.alert(
             `${type === "driver" ? "Driver" : "Customer"} details not found.`
@@ -84,7 +97,6 @@ const TopView = () => {
     };
 
     const fetchCounterOffers = async (userId) => {
-      console.log(userId);
       try {
         const response = await fetch(
           `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
@@ -241,10 +253,16 @@ const TopView = () => {
       return (
         <View key={offer.counter_offer_id} style={styles.offerCard}>
           <View style={styles.profileContainer}>
-            <Image
-              source={{ uri: offer.profileImage }}
-              style={[styles.profileImage, { marginTop: 5 }]}
-            />
+            {offer.profileImage && offer.profileImage.trim() ? (
+              <Image
+                source={{ uri: offer.profileImage }}
+                style={[styles.profileImage, { marginTop: 5 }]}
+              />
+            ) : (
+              <View style={[styles.profileImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
+                <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
+              </View>
+            )}
           </View>
           <Text style={styles.offerText}>
             {offer.name} {renderStars(offer.stars)}
@@ -257,9 +275,7 @@ const TopView = () => {
             style={[
               styles.progressBarContainer,
               {
-                width: progressAnimations.current[
-                  offer.counter_offer_id
-                ]?.interpolate({
+                width: progressAnimations.current[offer.counter_offer_id]?.interpolate({
                   inputRange: [0, 100],
                   outputRange: ["100%", "0%"],
                 }),
@@ -396,7 +412,7 @@ const TopView = () => {
         >
           <FontAwesome name="bars" size={24} color="black" />
         </TouchableOpacity>
-
+  
         <TouchableOpacity onPress={() => setCounterOfferModalVisible(true)}>
           <FontAwesome
             name="bell"
@@ -423,20 +439,36 @@ const TopView = () => {
           <FontAwesome name="shopping-cart" size={24} color="black" />
         </TouchableOpacity>
       </View>
+      
       <View style={styles.profileContainer}>
         <View>
-          <Text style={styles.profileName}></Text>
           <Text style={styles.profileName}>{name}</Text>
           <Text style={{ marginBottom: 3, fontSize: 11 }}>
             {customerType === "customer" ? "Customer" : "Driver"}
           </Text>
         </View>
-        <Image
-          source={{ uri: profileImage }}
-          style={[styles.profileImage, { marginTop: 8 }]}
-        />
+        {profileImage && profileImage.trim() ? (
+          <Image
+            source={{ uri: profileImage }}
+            style={[styles.profileImage, { marginTop: 8 }]}
+          />
+        ) : (
+          <View
+            style={[
+              styles.profileImage,
+              {
+                marginTop: 8,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#f0f0f0",
+              },
+            ]}
+          >
+            <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
+          </View>
+        )}
       </View>
-
+  
       {/* Counter Offer Modal */}
       <Modal
         transparent={true}
@@ -465,7 +497,7 @@ const TopView = () => {
           </View>
         </View>
       </Modal>
-
+  
       {/* Menu Options Modal */}
       <Modal
         transparent={true}
@@ -476,20 +508,33 @@ const TopView = () => {
         <View style={styles.modalBackground}>
           <View style={[styles.modalContainer, { height: height * 0.9 }]}>
             <View style={styles.profileContainerModal}>
-            <Image
-                source={{ uri: profileImage }}
-                style={[styles.profileImage]}
-              />
+              {profileImage && profileImage.trim() ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={[styles.profileImage]}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.profileImage,
+                    {
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "#f0f0f0",
+                    },
+                  ]}
+                >
+                  <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
+                </View>
+              )}
               <View style={styles.nameContainer}>
-              
-                <Text style={styles.profileName}></Text>
                 <Text style={styles.profileName}>{name}</Text>
                 <Text style={{ marginBottom: 3, fontSize: 11 }}>
-                {data && renderStars(data.rating)}
+                  {data && renderStars(data.rating)}
                 </Text>
               </View>
             </View>
-            
+  
             <FlatList
               data={menuOptions}
               keyExtractor={(item) => item.id}
@@ -550,10 +595,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-
-
-
-
   profileContainerModal: {
     flexDirection: "row",
     alignItems: "center",
@@ -564,22 +605,18 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginLeft: 5,
     marginright: 10,
- 
   },
   profileNameModal: {
     fontSize: 12,
     fontWeight: "bold",
   },
 
-
   nameContainer: {
-
     flexDirection: "column", // Stack stars and name vertically
     justifyContent: "center", // Center items vertically
     marginLeft: 10,
     // Space between image and text
   },
-
 
   starContainer: {
     flexDirection: "row",
@@ -589,8 +626,6 @@ const styles = StyleSheet.create({
     fontSize: 18, // Adjust size as needed
     color: "gold", // Star color
   },
-
-
 
   notificationContainer: {
     flexDirection: "row",

@@ -62,6 +62,7 @@ const Home = ({ navigation }) => {
   }, []);
 
   const fetchUserTrips = async (userId) => {
+    console.log("userId iyii:", userId);
     try {
       const response = await fetch(`${API_URL}/trip/customer/notify/${userId}`);
       const userTrips = await response.json();

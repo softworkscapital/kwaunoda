@@ -36,7 +36,7 @@ const CustomerLogin = () => {
     navigation.navigate("SignUpDriver");
   };
 
-  const redirectHome = async (type, driverId) => {
+  const redirectHome = async (type, driverId, customerID) => {
     if (type === "driver") {
       try {
         const response = await fetch(
@@ -88,7 +88,7 @@ const CustomerLogin = () => {
         });
       }
     } else if (type === "customer") {
-      navigation.navigate("Home", { customerID });
+      navigation.navigate("Home");
     } else {
       Toast.show({
         text1: "Please Input the Correct Data",
@@ -162,7 +162,7 @@ const CustomerLogin = () => {
                     navigation.navigate("OTPCustomer", { userId: ids.customerId.toString() });
                 }
             } else {
-                redirectHome(ids.last_logged_account, ids.driver_id);
+                redirectHome(ids.last_logged_account, ids.driver_id, ids.customerId);
             }
         } else {
             Alert.alert("Error", "No user found or wrong password/email.");

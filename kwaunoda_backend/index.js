@@ -5,16 +5,16 @@ const multer = require("multer");
 const https = require("https");
 const path = require("path");
 const fs = require("fs");
-require('dotenv').config();
-const { Pesepay } = require('pesepay');
-
-
+require("dotenv").config();
+const { Pesepay } = require("pesepay");
 
 const pesepay = new Pesepay(
   process.env.PESEPAY_INTERGRATION_KEY,
   process.env.PESEPAY_ENCRYPTION_KEY
 );
+
 const PORT = process.env.APPORT || 3011;
+
 // Route path
 const tripRouter = require("./routes/trip");
 const userRouter = require("./routes/users");
@@ -34,7 +34,6 @@ const TripStatusAnalyticRouter = require("./routes/trip_status_analytics");
 const ConfigRouter = require("./routes/application_configs");
 const StatisticRouter = require("./routes/application_statistics");
 const WithdrawalRouter = require("./routes/application_withdrawals");
-
 
 const pool = require("./cruds/poolfile");
 const bodyParser = require("body-parser");
@@ -105,35 +104,75 @@ app.use("/application_configs", ConfigRouter);
 app.use("/application_statistics", StatisticRouter);
 app.use("/application_withdrawals", WithdrawalRouter);
 
+pesepay.resultUrl = "https://localhost:3011/payment-result";
+pesepay.returnUrl = "XgoLife://wallet";
 
+app.post("/initiate-payment", async (req, res) => {
+  const {
+    currencyCode,
+    paymentMethodCode,
+    customerEmail,
+    customerPhone,
+    customerName,
+    amount,
+    paymentReason,
+  } = req.body;
 
+  console.log("Payment Details:", {
+    amount,
+    currencyCode,
+    paymentReason,
+    customerEmail,
+    customerPhone,
+    customerName,
+    paymentMethodCode,
+  });
 
-pesepay.resultUrl = 'https://localhost:3011/payment-result';
-pesepay.returnUrl = 'https://192.168.43.210:8081';
+  // Create a transaction object
+  const transaction = pesepay.createTransaction(
+    amount,
+    currencyCode,
+    paymentReason,
 
+    {
+      customerEmail,
+      customerPhone,
+      customerName,
+      paymentMethodCode,
+    }
+  );
 
-app.post('/initiate-payment', async (req, res) => {
-  const { currencyCode, paymentMethodCode, customerEmail, customerPhone, customerName, amount, paymentReason } = req.body;
-
-  const transaction = pesepay.createTransaction(amount, currencyCode, paymentReason);
-  
   try {
-      const response = await pesepay.initiateTransaction(transaction);
-      console.log("our response", response);
+    // Initiate the transaction
+    // const response = await pesepay.initiateTransaction(transaction);
+    // console.log("Our response:", response);
 
+    // if (response.success) {
+    //     const redirectUrl = response.redirectUrl; // Ensure this is provided by the API
+    //     return res.json({ success: true, redirectUrl });
+    // } else {
+    //     return res.status(400).json({ success: false, message: response.message || 'Payment initiation failed' });
+    // }
+
+    pesepay.initiateTransaction(transaction).then((response) => {
+      console.log("Our response:", response);
       if (response.success) {
-          const redirectUrl = response.redirectUrl;
-          return res.json({ success: true, redirectUrl });
+        const redirectUrl = response.redirectUrl; // Ensure this is provided by the API
+        return res.json({ success: true, redirectUrl });
       } else {
-          return res.status(400).json({ success: false, message: response.message });
+        return res.status(400).json({
+          success: false,
+          message: response.message || "Payment initiation failed",
+        });
       }
+    });
   } catch (error) {
-      console.log(error);
-      return res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error initiating payment:", error); // Use console.error for errors
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 });
-
-
 
 app.get("/", (req, res) => {
   res.send("Kwaunoda");
@@ -164,16 +203,15 @@ app.post("/driver/login", async (req, res) => {
   }
 });
 
-const options = {
-  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-};
+// const options = {
+//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+// };
 
-https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
-  console.log('app is listening to port' + process.env.APPPORT);
-});
-
-// app.listen(PORT, () => {
-//   console.log("app is listening to port" + " " + PORT);
+// https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+//   console.log('app is listening to port' + process.env.APPPORT);
 // });
 
+app.listen(PORT, () => {
+  console.log("app is listening to port" + " " + PORT);
+});

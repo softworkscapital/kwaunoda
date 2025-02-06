@@ -212,7 +212,7 @@ const SignUpCustomer3 = () => {
   
     try {
       // Verify driver details
-      const resp = await fetch(`${APILINK}/driver/driver_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`, {
+      const resp = await fetch(`${APILINK}/customerdetails/customer_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

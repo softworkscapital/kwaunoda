@@ -14,6 +14,7 @@ const PesePaymentScreen = ({ route }) => {
   console.log("Navigating to URL:", url); // Log the URL
 
   const topUplocal = async () => {
+
     const topup = await AsyncStorage.getItem("Topup_Details");
     const topupDetails = JSON.parse(topup);
 
@@ -62,35 +63,35 @@ const PesePaymentScreen = ({ route }) => {
     }
   };
 
-  const handleHttpError = (syntheticEvent) => {
-    const { nativeEvent } = syntheticEvent;
-    console.log("HTTP Error:", nativeEvent);
+  // const handleHttpError = (syntheticEvent) => {
+  //   const { nativeEvent } = syntheticEvent;
+  //   console.log("HTTP Error:", nativeEvent);
     
-    Alert.alert("Loading Error", `Unable to load the payment page.`, [
-      { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
-    ]);
-  };
+  //   Alert.alert("Loading Error", `Unable to load the payment page.`, [
+  //     { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
+  //   ]);
+  // };
 
-  const handleNavigationStateChange = (navState) => {
-    console.log("Navigated to:", navState.url);
+  // const handleNavigationStateChange = (navState) => {
+  //   console.log("Navigated to:", navState.url);
     
-    // Check if the URL indicates a successful payment
-    if (navState.url === 'http://localhost:8081/pesepay/return') {
-      topUplocal();
-      Alert.alert("Payment Successful", "Your payment was completed successfully.", [
-        { text: "OK", onPress: () => navigation.navigate("Wallet") },
-      ]);
-    } else if (navState.url === 'http://localhost:8081/error') {
-      Alert.alert("Payment Failed", "There was an error with your payment.", [
-        { text: "OK", onPress: () => navigation.navigate("Wallet") },
-      ]);
-    } else if (navState.url === 'http://localhost:8081') {
-      // Handle the case where the user returns to the base URL
-      Alert.alert("Returning to Home", "Navigating back to Wallet.", [
-        { text: "OK", onPress: () => navigation.navigate("Wallet") },
-      ]);
-    }
-  };
+  //   // Check if the URL indicates a successful payment
+  //   if (navState.url === 'http://localhost:8081/pesepay/return') {
+  //     topUplocal();
+  //     Alert.alert("Payment Successful", "Your payment was completed successfully.", [
+  //       { text: "OK", onPress: () => navigation.navigate("Wallet") },
+  //     ]);
+  //   } else if (navState.url === 'http://localhost:8081/error') {
+  //     Alert.alert("Payment Failed", "There was an error with your payment.", [
+  //       { text: "OK", onPress: () => navigation.navigate("Wallet") },
+  //     ]);
+  //   } else if (navState.url === 'http://localhost:8081') {
+  //     // Handle the case where the user returns to the base URL
+  //     Alert.alert("Returning to Home", "Navigating back to Wallet.", [
+  //       { text: "OK", onPress: () => navigation.navigate("Wallet") },
+  //     ]);
+  //   }
+  // };
 
   const injectedJavaScript = `
     (function() {
@@ -116,8 +117,8 @@ const PesePaymentScreen = ({ route }) => {
       <WebView
         source={{ uri: url }}
         style={{ flex: 1 }}
-        onNavigationStateChange={handleNavigationStateChange}
-        onHttpError={handleHttpError} // Handle HTTP errors
+        // onNavigationStateChange={handleNavigationStateChange}
+        // onHttpError={handleHttpError} // Handle HTTP errors
         onMessage={onMessage} // Listen for messages from the WebView
         injectedJavaScript={injectedJavaScript} // Inject JavaScript to handle messages
       />

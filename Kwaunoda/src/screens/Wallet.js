@@ -30,7 +30,7 @@ const Wallet = () => {
   const [credit, setCredit] = useState(0);
   const [date, setDate] = useState();
   const [exchangeRate, setExchangeRate] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethodCode, setPaymentMethod] = useState("");
   const [currencyCode, setCurrencyCode] = useState("");
   const [driver, setDriver] = useState();
   const [name, setName] = useState();
@@ -120,6 +120,7 @@ const Wallet = () => {
   }, [user_Id]); // Depend on user_Id
 
   const initiatePayment = async (paymentDetails) => {
+    console.log("zvikuenda izvi:", paymentDetails);
     try {
       const response = await fetch(`${API_URL}/initiate-payment`, {
         method: "POST",
@@ -128,12 +129,12 @@ const Wallet = () => {
         },
         body: JSON.stringify(paymentDetails),
       });
-
+  
       const data = await response.json();
       console.log("Kupese kwauya izvi.....", data);
-
+  
       if (data.success && data.redirectUrl) {
-        navigation.navigate("PesepayView", { url: data.redirectUrl });
+        navigation.navigate("pesepay", { url: data.redirectUrl });
       } else {
         Alert.alert(
           "Payment Error",
@@ -177,7 +178,7 @@ const Wallet = () => {
 
     const topupDetails = {
       currencyCode,
-      paymentMethod,
+      paymentMethodCode,
       customerEmail,
       customerPhone,
       customerName,
@@ -344,16 +345,16 @@ const Wallet = () => {
 
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={paymentMethod}
+              selectedValue={paymentMethodCode}
               onValueChange={(itemValue) => setPaymentMethod(itemValue)}
               style={styles.picker}
             >
               <Picker.Item label="Select Payment Method" value="" />
-              <Picker.Item label="InnBucks" value="InnBucks" />
-              <Picker.Item label="Ecocash" value="Ecocash" />
-              <Picker.Item label="Master card" value="Master Card" />
+              <Picker.Item label="InnBucks" value="INNBUCKS" />
+              <Picker.Item label="Ecocash" value="ECOCASH" />
+              <Picker.Item label="Master card" value="CARD" />
               <Picker.Item label="Visa" value="Visa" />
-              <Picker.Item label="Bank" value="Bank" />
+              <Picker.Item label="Bank" value="BANK_TRANSFER" />
               <Picker.Item label="Telecash" value="Telecash" />
               <Picker.Item label="OneMoney" value="OneMoney" />
             </Picker>
@@ -370,7 +371,7 @@ const Wallet = () => {
             </Picker>
           </View>
 
-          {paymentMethod === "Ecocash" ? (
+          {paymentMethodCode === "ECOCASH" ? (
             <TextInput
               placeholder="Phone"
               value={description}

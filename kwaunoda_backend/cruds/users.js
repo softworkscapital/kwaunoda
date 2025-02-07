@@ -9,7 +9,7 @@ let crudsObj = {};
 crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
     let User = user;
-    console.log("honai user:", User);
+    // console.log("honai user:", User);
     
     pool.query(
       "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -61,7 +61,7 @@ crudsObj.getLastUser = () => {
 };
 
 crudsObj.postUsernNew = (companyId, username, role, email, password) => {
-  console.log(password);
+  // console.log(password);
   return new Promise((resolve, reject) => {
     pool.query(
       "INSERT INTO users(username,role,email,password,client_profile_id) VALUES (?,?,?,?,?)",
@@ -125,8 +125,8 @@ crudsObj.postUser2 = (
           return reject(err);
         }
 
-        console.log(user_phone);
-        console.log(email);
+        // console.log(user_phone);
+        // console.log(email);
 
         const originalUrl = `https://sms.vas.co.zw/client/api/sendmessage?apikey=e28bb49ae7204dfe&mobiles=${user_phone}&sms=Hi ${username}! Your Tell Them Message Service account has been activated, you can proceed to login. Your first time password is ${otp}&senderid=softworks`;
         //const originalUrl = `http://196.43.100.209:8901/teleoss/sendsms.jsp?user=Softwork&password=Soft@012&mobiles=${user_phone}&sms=Hi ${username}! Your Tell Them Message Service account has been activated, you can proceed to login. Your first time password is ${otp}&unicode=1&clientsmsid=10001&senderid=Softwork`;

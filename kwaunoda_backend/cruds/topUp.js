@@ -26,7 +26,7 @@ crudsObj.getAllEntityTotalBalances = () => {
       if (err) {
         return reject(err);
       }
-      
+
       connection.beginTransaction(err => {
         if (err) {
           connection.release();
@@ -36,41 +36,44 @@ crudsObj.getAllEntityTotalBalances = () => {
         const queries = [
           "SELECT user_wallet_total_balance FROM top_up WHERE folio = 'UW' ORDER BY top_up_id DESC LIMIT 1",
           "SELECT main_wallet_total_balance FROM top_up WHERE folio = 'MW' ORDER BY top_up_id DESC LIMIT 1",
+          "SELECT main_wallet_balance FROM top_up WHERE folio = 'MW' ORDER BY top_up_id DESC LIMIT 1",
           "SELECT revenue_wallet_total_balance FROM top_up WHERE folio = 'RW' ORDER BY top_up_id DESC LIMIT 1",
           "SELECT vendor_wallet_total_balance FROM top_up WHERE folio = 'VW' ORDER BY top_up_id DESC LIMIT 1",
           "SELECT escrow_total_balance FROM top_up WHERE folio = 'EW' ORDER BY top_up_id DESC LIMIT 1"
         ];
 
-        const results = [];
-        let completedQueries = 0;
+        const queryPromises = queries.map(query =>
+          new Promise((resolveQuery, rejectQuery) => {
+            connection.query(query, (err, result) => {
+              if (err) {
+                return rejectQuery(err);
+              }
+              resolveQuery(result);
+            });
+          })
+        );
 
-        queries.forEach((query, index) => {
-          connection.query(query, (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                connection.release();
-                reject(err);
-              });
-            }
-
-            results[index] = result;
-            completedQueries += 1;
-
-            if (completedQueries === queries.length) {
-              connection.commit(err => {
-                connection.release();
-                if (err) {
-                  return reject(err);
-                }
-                return resolve(results);
-              });
-            }
+        Promise.all(queryPromises)
+          .then(results => {
+            connection.commit(err => {
+              connection.release();
+              if (err) {
+                return reject(err);
+              }
+              resolve(results);
+            });
+          })
+          .catch(err => {
+            connection.rollback(() => {
+              connection.release();
+              reject(err);
+            });
           });
-        });
       });
     });
   });
 };
+
 
 
 // get user balance by folio and client profile id
@@ -3424,7 +3427,8 @@ crudsObj.postTopUp = (
     console.log("Folio from Crud", folio);
     // Get Total Balance
     pool.query(
-      "SELECT user_wallet_total_balance, amount FROM top_up ORDER BY top_up_id DESC LIMIT 1",
+      "SELECT user_wallet_total_balance, amount FROM top_up WHERE folio = ?  ORDER BY top_up_id DESC LIMIT 1",
+      [folio],
       (err, results) => {
         if (err) {
           return reject(err);
@@ -3773,7 +3777,7 @@ crudsObj.deleteTopUpById = (top_up_id) => {
 
 
 
-// crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
+ crudsObj.postDrTopUp = (dr, trip_id, client_profile_id, desc, trxn_code) => {
 //   return new Promise((resolve, reject) => {
 //     // First query to get the latest total balance, total usage, and escroll
 //     pool.query(
@@ -3922,7 +3926,7 @@ crudsObj.deleteTopUpById = (top_up_id) => {
 //       }
 //     );
 //   });
-// };
+};
 
 
 module.exports = crudsObj;

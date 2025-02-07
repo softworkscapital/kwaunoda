@@ -29,11 +29,11 @@ const CustomerLogin = () => {
   const navigation = useNavigation();
 
   const redirectSignUpCustomer = () => {
-    navigation.navigate("SignUpCustomer");
+    navigation.navigate("TermsConditions");
   };
 
   const redirectSignUpDriver = () => {
-    navigation.navigate("SignUpDriver");
+    navigation.navigate("DriverTerms");
   };
 
   const redirectHome = async (type, driverId, customerID) => {

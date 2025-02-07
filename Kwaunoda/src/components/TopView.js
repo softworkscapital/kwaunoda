@@ -53,28 +53,24 @@ const TopView = () => {
           Alert.alert("Driver ID not found", "Please log in again.");
         }
       } catch (error) {
+        console.error("Error fetching data:", error);
         Alert.alert("Error", "An error occurred while fetching data.");
       }
     };
 
     const fetchUserDetails = async (id, type) => {
-      console.log("kaID:", id);
-      console.log("kaType:", type);
-
       try {
         const endpoint =
           type === "driver" ? `driver/${id}` : `customerdetails/${id}`;
         const response = await fetch(`${APILINK}/${endpoint}`);
         const result = await response.json();
-
-        console.log("TopView:", result[0]);
+       
 
         if (result && result.length > 0) {
           await AsyncStorage.setItem("userDetails", JSON.stringify(result[0]));
-          if(result[0].profilePic === null || result[0].profilePic === ""){
-            setPic(
-              null
-            );
+
+          if(result[0].profilePic === null || result[0].profilePic ===""){
+            setPic(null);
             setType(result[0].account_type);
             setName(result[0].username);
             setData(result[0]);
@@ -82,10 +78,12 @@ const TopView = () => {
             setPic(
               `${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, "/")}`
             );
+
             setType(result[0].account_type);
             setName(result[0].username);
             setData(result[0]);
           }
+        
         } else {
           Alert.alert(
             `${type === "driver" ? "Driver" : "Customer"} details not found.`
@@ -97,13 +95,14 @@ const TopView = () => {
     };
 
     const fetchCounterOffers = async (userId) => {
+      // console.log(userId);
       try {
         const response = await fetch(
           `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
         );
-        console.log("response:", response);
+        // console.log("response:", response);
         const offers = await response.json();
-        console.log("hoyoo", offers);
+        // console.log("hoyoo", offers);
 
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
@@ -252,18 +251,18 @@ const TopView = () => {
 
       return (
         <View key={offer.counter_offer_id} style={styles.offerCard}>
-          <View style={styles.profileContainer}>
-            {offer.profileImage && offer.profileImage.trim() ? (
-              <Image
-                source={{ uri: offer.profileImage }}
-                style={[styles.profileImage, { marginTop: 5 }]}
-              />
-            ) : (
-              <View style={[styles.profileImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
-                <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
-              </View>
-            )}
-          </View>
+       <View style={styles.profileContainer}>
+  {offer.profileImage && offer.profileImage.trim() ? (
+    <Image
+      source={{ uri: offer.profileImage }}
+      style={[styles.profileImage, { marginTop: 5 }]}
+    />
+  ) : (
+    <View style={[styles.profileImage, { marginTop: 5, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
+      <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
+    </View>
+  )}
+</View>
           <Text style={styles.offerText}>
             {offer.name} {renderStars(offer.stars)}
           </Text>
@@ -275,7 +274,9 @@ const TopView = () => {
             style={[
               styles.progressBarContainer,
               {
-                width: progressAnimations.current[offer.counter_offer_id]?.interpolate({
+                width: progressAnimations.current[
+                  offer.counter_offer_id
+                ]?.interpolate({
                   inputRange: [0, 100],
                   outputRange: ["100%", "0%"],
                 }),
@@ -426,47 +427,44 @@ const TopView = () => {
             </View>
           )}
         </TouchableOpacity>
+  
         <TouchableOpacity
-          onPress={() => navigation.navigate("CustomerAdminChat")} // Replace with your chat screen name
+          onPress={() => navigation.navigate("CustomerAdminChat")}
           style={styles.menuButton}
         >
           <FontAwesome name="comments" size={24} color="black" />
         </TouchableOpacity>
+  
         <TouchableOpacity
-          onPress={() => navigation.navigate("OnlineStore")} // Replace with your store screen name
+          onPress={() => navigation.navigate("OnlineStore")}
           style={styles.menuButton}
         >
           <FontAwesome name="shopping-cart" size={24} color="black" />
         </TouchableOpacity>
       </View>
-      
+  
       <View style={styles.profileContainer}>
         <View>
-          <Text style={styles.profileName}>{name}</Text>
+          <Text style={styles.profileName}>{name || "No Name"}</Text>
           <Text style={{ marginBottom: 3, fontSize: 11 }}>
             {customerType === "customer" ? "Customer" : "Driver"}
           </Text>
         </View>
         {profileImage && profileImage.trim() ? (
-          <Image
-            source={{ uri: profileImage }}
-            style={[styles.profileImage, { marginTop: 8 }]}
-          />
-        ) : (
-          <View
-            style={[
-              styles.profileImage,
-              {
-                marginTop: 8,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "#f0f0f0",
-              },
-            ]}
-          >
-            <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
-          </View>
-        )}
+                <Image
+                  source={{ uri: profileImage }}
+                  style={[styles.profileImage]}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.profileImage,
+                    {justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }
+                  ]}
+                >
+                  <FontAwesome name="user" size={40} color="gray" />
+                </View>
+              )}
       </View>
   
       {/* Counter Offer Modal */}
@@ -483,9 +481,7 @@ const TopView = () => {
               keyExtractor={(item) => item.counter_offer_id.toString()}
               renderItem={renderCounterOffer}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>
-                  No counter offers available.
-                </Text>
+                <Text style={styles.emptyText}>No counter offers available.</Text>
               }
             />
             <TouchableOpacity
@@ -517,18 +513,15 @@ const TopView = () => {
                 <View
                   style={[
                     styles.profileImage,
-                    {
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "#f0f0f0",
-                    },
+                    { marginTop: 5, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }
                   ]}
                 >
-                  <FontAwesome name="user" size={50} color="gray" /> {/* Default user icon */}
+                  <FontAwesome name="user" size={50} color="gray" />
                 </View>
               )}
+  
               <View style={styles.nameContainer}>
-                <Text style={styles.profileName}>{name}</Text>
+                <Text style={styles.profileName}>{name || "No Name"}</Text>
                 <Text style={{ marginBottom: 3, fontSize: 11 }}>
                   {data && renderStars(data.rating)}
                 </Text>
@@ -544,7 +537,7 @@ const TopView = () => {
                   onPress={item.onPress}
                 >
                   <FontAwesome
-                    name={iconMap[item.title] || "question"} // Default icon if not found
+                    name={iconMap[item.title] || "question"}
                     size={35}
                     style={styles.icon}
                   />
@@ -555,6 +548,7 @@ const TopView = () => {
                 <Text style={styles.emptyText}>No menu options available.</Text>
               }
             />
+  
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setMenuModalVisible(false)}
@@ -584,8 +578,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     borderRadius: 30,
     marginLeft: 10,
     marginBottom: 8,
@@ -594,6 +588,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
+
+
+
+
 
   profileContainerModal: {
     flexDirection: "row",
@@ -605,18 +603,22 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginLeft: 5,
     marginright: 10,
+ 
   },
   profileNameModal: {
     fontSize: 12,
     fontWeight: "bold",
   },
 
+
   nameContainer: {
+
     flexDirection: "column", // Stack stars and name vertically
     justifyContent: "center", // Center items vertically
     marginLeft: 10,
     // Space between image and text
   },
+
 
   starContainer: {
     flexDirection: "row",
@@ -626,6 +628,8 @@ const styles = StyleSheet.create({
     fontSize: 18, // Adjust size as needed
     color: "gold", // Star color
   },
+
+
 
   notificationContainer: {
     flexDirection: "row",

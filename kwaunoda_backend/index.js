@@ -105,42 +105,38 @@ app.use("/application_statistics", StatisticRouter);
 app.use("/application_withdrawals", WithdrawalRouter);
 
 pesepay.resultUrl = "https://localhost:3011/payment-result";
-pesepay.returnUrl = "XgoLife://wallet";
+pesepay.returnUrl = "XgoLife://Wallet";
 
 app.post("/initiate-payment", async (req, res) => {
   const {
-    currencyCode,
-    paymentMethodCode,
-    customerEmail,
-    customerPhone,
-    customerName,
-    amount,
-    paymentReason,
+
+    CURRENCY_CODE,
+    PAYMENT_METHOD_CODE,
+    CUSTOMER_EMAIL,
+    CUSTOMER_PHONE,
+    CUSTOMER_NAME,
+    AMOUNT,
+    PAYMENT_REASON
+
   } = req.body;
 
-  console.log("Payment Details:", {
-    amount,
-    currencyCode,
-    paymentReason,
-    customerEmail,
-    customerPhone,
-    customerName,
-    paymentMethodCode,
-  });
+  const payment = pesepay.createPayment(CURRENCY_CODE, PAYMENT_METHOD_CODE, CUSTOMER_EMAIL, CUSTOMER_PHONE, CUSTOMER_NAME)
+
+  // const requiredFields = {Password: int}
 
   // Create a transaction object
-  const transaction = pesepay.createTransaction(
-    amount,
-    currencyCode,
-    paymentReason,
+  // const transaction = pesepay.createTransaction(
+  //   amount,
+  //   currencyCode,
+  //   paymentReason,
 
-    {
-      customerEmail,
-      customerPhone,
-      customerName,
-      paymentMethodCode,
-    }
-  );
+  //   // {
+  //   //   customerEmail,
+  //   //   customerPhone,
+  //   //   customerName,
+  //   //   paymentMethodCode,
+  //   // }
+  // );
 
   try {
     // Initiate the transaction
@@ -154,20 +150,37 @@ app.post("/initiate-payment", async (req, res) => {
     //     return res.status(400).json({ success: false, message: response.message || 'Payment initiation failed' });
     // }
 
-    pesepay.initiateTransaction(transaction).then((response) => {
-      console.log("Our response:", response);
+
+    pesepay.makeSeamlessPayment(payment, PAYMENT_REASON, AMOUNT).then(response => {
       if (response.success) {
-        const redirectUrl = response.redirectUrl; // Ensure this is provided by the API
-        return res.json({ success: true, redirectUrl });
+          // Save the reference number and/or poll url (used to check the status of a transaction)
+          const referenceNumber = response.referenceNumber;
+          const pollUrl = response.pollUrl
+          console.log("our response: ", response);
+          return res.json({ success: true, referenceNumber});
+  
       } else {
-        return res.status(400).json({
-          success: false,
-          message: response.message || "Payment initiation failed",
-        });
+          // Get Error Message  
+          const message = res.message;
+          return res.json({ success: true, message });
       }
-    });
+  });
+
+
+    // pesepay.initiateTransaction(transaction).then((response) => {
+    //   console.log("Our response:", response);
+    //   if (response.success) {
+    //     const redirectUrl = response.redirectUrl; // Ensure this is provided by the API
+    //     return res.json({ success: true, redirectUrl });
+    //   } else {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: response.message || "Payment initiation failed",
+    //     });
+    //   }
+    // });
   } catch (error) {
-    console.error("Error initiating payment:", error); // Use console.error for errors
+    console.log("Error initiating payment:", error); // Use console.error for errors
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
@@ -203,15 +216,15 @@ app.post("/driver/login", async (req, res) => {
   }
 });
 
-// const options = {
-//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-// };
+const options = {
+  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+};
 
-// https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
-//   console.log('app is listening to port' + process.env.APPPORT);
-// });
-
-app.listen(PORT, () => {
-  console.log("app is listening to port" + " " + PORT);
+https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+  console.log('app is listening to port' + process.env.APPPORT);
 });
+
+// app.listen(PORT, () => {
+//   console.log("app is listening to port" + " " + PORT);
+// });

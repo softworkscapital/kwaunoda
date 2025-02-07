@@ -175,9 +175,11 @@ CustomerRouter.post('/', async (req, res, next) => {
             selling_price,
             payment_style,
             bp_number,
-            vat_number
+            vat_number,
+            profilePic
         } = postedValues;
 
+// console.log("from front:", postedValues);
         let results = await CustomersDbOperations.postCustomer(
             customerid,
             ecnumber,
@@ -224,7 +226,8 @@ CustomerRouter.post('/', async (req, res, next) => {
             selling_price,
             payment_style,
             bp_number,
-            vat_number
+            vat_number,
+            profilePic
         );
 
         res.json(results);

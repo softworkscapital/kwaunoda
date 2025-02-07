@@ -62,7 +62,7 @@ const Home = ({ navigation }) => {
   }, []);
 
   const fetchUserTrips = async (userId) => {
-    console.log("userId iyii:", userId);
+    // console.log("userId iyii:", userId);
     try {
       const response = await fetch(`${API_URL}/trip/customer/notify/${userId}`);
       const userTrips = await response.json();
@@ -86,7 +86,7 @@ const Home = ({ navigation }) => {
 
         setTrips(tripsWithDrivers);
       } else {
-        console.log("No trips found for user ID");
+        // console.log("No trips found for user ID");
       }
     } catch (error) {
       console.error("Error fetching trips:", error);
@@ -117,7 +117,7 @@ const Home = ({ navigation }) => {
       }
 
       const responseText = await response.text();
-      console.log("Counter Offers Response:", responseText);
+      // console.log("Counter Offers Response:", responseText);
 
       try {
         const offers = JSON.parse(responseText);

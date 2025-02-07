@@ -169,13 +169,10 @@ crudsObj.postCustomer = (
     payment_style,
     bp_number,
     vat_number,
-     // The URL of the uploaded image\
+    profilePic
 
 ) => {
 
-    console.log("_______________________________vat_number",vat_number);
-    console.log("payment_style",payment_style);
-    console.log("bp_number",bp_number);
     return new Promise((resolve, reject) => {
         pool.query(
             `INSERT INTO customer_details (
@@ -224,8 +221,9 @@ crudsObj.postCustomer = (
                 selling_price,
                 payment_style,
                 bp_number,
-                vat_number
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`,
+                vat_number,
+                   profilePic
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`,
             [
                 customerid, 
                 ecnumber, // Added ecnumber to the values
@@ -273,7 +271,7 @@ crudsObj.postCustomer = (
                 payment_style,
                 bp_number,
                 vat_number,
-                 // Include profilePic in the VALUES
+                profilePic
             ],
             (err, result) => {
                 if (err) {

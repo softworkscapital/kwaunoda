@@ -58,6 +58,9 @@ import StoreInventory from "./src/screens/StoreInventory.js";
 import MapCompo from "./src/screens/MapCompo.js";
 import ToastWrapper from './src/screens/ToastWrapper'; 
 import PesePaymentScreen from "./src/screens/Pesepay";
+import TermsConditions from "./src/screens/TermsConditions.js";
+import DriverTerms from "./src/screens/DriverTerms.js";
+import PaymentSuccessful from "./src/screens/PaymentSuccessful.js";
 
 
 import WebView1 from "./src/screens/WebView1.js";
@@ -70,7 +73,10 @@ const App = () => {
     <ToastWrapper>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        
         <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
+        <Stack.Screen name="TermsConditions" component={TermsConditions} />
+        <Stack.Screen name="DriverTerms" component={DriverTerms} />
         <Stack.Screen name="WebView1" component={WebView1} />
         <Stack.Screen name="Invite" component={Invite} />
         <Stack.Screen
@@ -140,6 +146,7 @@ const App = () => {
         <Stack.Screen name="OnlineStore" component={OnlineStore} />
         <Stack.Screen name="StoreCategories" component={StoreCategories} />
         <Stack.Screen name="StoreInventory" component={StoreInventory} />
+        <Stack.Screen name="PaymentSuccessful" component={PaymentSuccessful} />
         <Stack.Screen name="pesepay" component={PesePaymentScreen} />
         {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>

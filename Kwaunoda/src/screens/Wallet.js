@@ -65,7 +65,7 @@ const Wallet = () => {
     
         if (driverData) {
           setter(driverData);
-          console.log("Driver email:", driverData); // Check if email is available
+          // console.log("Driver email:", driverData); // Check if email is available
         } else {
           console.log("No driver data found.");
         }
@@ -96,7 +96,7 @@ const Wallet = () => {
         });
   
         const result = await resp.json();
-        console.log("Top Up History:", result);
+        // console.log("Top Up History:", result);
         if (result) {
           setTopUpHistory(result);
           setBalance(result[0]?.user_wallet_balance || 0);
@@ -119,81 +119,187 @@ const Wallet = () => {
     return () => clearInterval(interval); // Cleanup on unmount
   }, [user_Id]); // Depend on user_Id
 
-  const initiatePayment = async (paymentDetails) => {
-    console.log("zvikuenda izvi:", paymentDetails);
+  // const initiatePayment = async (paymentDetails) => {
+  //   console.log("zvikuenda izvi:", paymentDetails);
+  //   try {
+  //     const response = await fetch(`${API_URL}/initiate-payment`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(paymentDetails),
+  //     });
+  
+  //     const data = await response.json();
+  //     console.log("Kupese kwauya izvi.....", data);
+  
+  //     if (data.success) {
+  //       // navigation.navigate("pesepay", { url: data.redirectUrl });
+  //       Alert.alert("Yessss");
+  //     } else {
+  //       Alert.alert(
+  //         "Payment Error",
+  //         data.message || "Failed to initiate payment."
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Payment initiation error:", error);
+  //     Alert.alert("Error", "An error occurred while initiating payment.");
+  //   }
+  // };
+
+
+
+  const getTotalBalances = async () => {
     try {
-      const response = await fetch(`${API_URL}/initiate-payment`, {
-        method: "POST",
+      const resp = await fetch(`${APILINK}/topUp/get_all_entity_total_balances`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(paymentDetails),
       });
   
-      const data = await response.json();
-      console.log("Kupese kwauya izvi.....", data);
-  
-      if (data.success && data.redirectUrl) {
-        navigation.navigate("pesepay", { url: data.redirectUrl });
-      } else {
-        Alert.alert(
-          "Payment Error",
-          data.message || "Failed to initiate payment."
-        );
+      if (!resp.ok) {
+        throw new Error(`HTTP error! status: ${resp.status}`);
       }
+  
+      const result = await resp.json();
+    
+      return result.data[2][0].main_wallet_balance;
     } catch (error) {
-      console.error("Payment initiation error:", error);
-      Alert.alert("Error", "An error occurred while initiating payment.");
+      console.error("Error fetching balances:", error);
+      Alert.alert("Error", "An error occurred while fetching balances.");
+      return null; // Return null on error
     }
   };
 
+
+
+
+
+
+  const getUserBalances = async (clientProfileId) => {
+    try {
+      const resp = await fetch(`${APILINK}/topUp/userBalance/${clientProfileId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!resp.ok) {
+        throw new Error(`HTTP error! status: ${resp.status}`);
+      }
+  
+      const result = await resp.json();
+     
+      return result.data[0].user_wallet_balance;
+    } catch (error) {
+      console.error("Error fetching user balances:", error);
+      Alert.alert("Error", "An error occurred while fetching user balances.");
+      return null; // Return null on error
+    }
+  };
+
+
+
+
+  const topUplocal = async (data) => {
+    console.log("izviiiii zvikubaya", data);
+    try {
+      const res = await fetch(`${APILINK}/TopUp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data), // Use the data parameter
+      });
+  
+      console.log(res);
+  
+      if (res.ok) { // Checks for any successful response (2xx)
+        Alert.alert("Success", "Top up successful!");
+      } else {
+        const errorData = await res.json(); // Get error data if available
+        Alert.alert("Error", errorData.message || "Top up failed."); // Show error message
+      }
+    } catch (err) {
+      console.error("Error during top up:", err.message); // Provide more context
+    }
+  };
+
+
+
+
+
+
   const handleAddTopUp = async (e) => {
     e.preventDefault();
-
-    let balance = oldbalance + parseFloat(debit); // Ensure debit is a number
-    let client_profile_id = 1003;
-    let exchange_rate = 1;
-    let currency = currencyCode;
-    let amount = parseFloat(debit); // Ensure amount is a number
-
+  
     if (!driver) {
       console.error("Driver data is not available.");
       return; // Early return or handle as needed
     }
+  
+    try {
+      const userBal = await getUserBalances(userId); // Await the promise
+      const total = await getTotalBalances(); // Await the promise
+  
+      const topupDetails = {
+    // Ensure this is the expected format
 
-    const userObj = {
-      currency,
-      exchange_rate,
-      date,
-      credit,
-      debit: amount,
-      balance,
-      description,
-      client_profile_id,
-    };
-    let paymentReason = "TopUp";
-    let customerEmail = driver.email || ""; // Fallback to an empty string
-    let customerPhone = driver.phone || ""; // Fallback to an empty string
-    let customerName = driver.name || ""; // Fallback to an empty string
 
-    const topupDetails = {
-      currencyCode,
-      paymentMethodCode,
-      customerEmail,
-      customerPhone,
-      customerName,
-      amount,
-      paymentReason,
-    };
-
-    console.log("Topup Details:", topupDetails);
-    await AsyncStorage.setItem("Topup_Details", JSON.stringify(topupDetails));
-
-    const response = await initiatePayment(topupDetails);
-    if (response) {
-      setModalVisible(false);
-    } else {
-      Alert.alert(response);
+        currency: "USD",
+        exchange_rate: 1.0,
+        date: "",
+        description: "Top Up",
+        client_profile_id: userId,
+        vendor_id: "",
+        payment_gateway_id: "",
+        main_wallet_id: 1,
+        revenue_wallet_id: "",
+        total_usage: 0,
+        trip_id: "N/A",
+        trxn_code: "1",
+        user_wallet_debit: parseFloat(debit),
+        user_wallet_credit: 0,
+        user_wallet_balance: userBal + parseFloat(debit),
+        user_wallet_total_balance: "",
+        main_wallet_debit: parseFloat(debit),
+        main_wallet_credit: 0,
+        main_wallet_balance: total + parseFloat(debit),
+        main_wallet_total_balance: 0,
+        payment_gateway_charges_debit : 0,
+        payment_gateway_charges_credit: 0,
+        payment_gateway_charges_balance: 0,
+        payment_gateway_charges_total_balance: 0,
+        revenue_wallet_debit: 0,
+        revenue_wallet_credit: 0,
+        revenue_wallet_balance: 0,
+        revenue_wallet_total_balance: 0,
+        vendor_wallet_debit: 0,
+        vendor_wallet_credit: 0,
+        vendor_wallet_balance: 0,
+        vendor_wallet_total_balance: 0,
+        escrow_debit: 0,
+        escrow_credit: 0,
+        escrow_balance: 0,
+        escrow_total_balance: 0,
+        folio: "UW"
+  
+      };
+  
+      console.log("Topup Details:", JSON.stringify(topupDetails, null, 2)); // Log the details
+  
+      // Uncomment and ensure you have the initiatePayment function defined
+      const response = await topUplocal(topupDetails);
+      
+      // if (response) {
+      //   setModalVisible(false);
+      // } else {
+      //   Alert.alert("Error", "Payment initiation failed.");
+      // }
+    } catch (error) {
+      console.error("Error in handleAddTopUp:", error.message); // Log any errors
+      Alert.alert("Error", "An error occurred while processing the top-up.");
     }
   };
 

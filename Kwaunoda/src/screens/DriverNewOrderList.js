@@ -47,7 +47,7 @@ const DriverNewOrderList = () => {
       if (storedIds) {
         const parsedIds = JSON.parse(storedIds);
         setDriver(parsedIds.driver_id); // Set driver_id
-        console.log("honaiwo iffect iri", parsedIds.driver_id)
+        // console.log("honaiwo iffect iri", parsedIds.driver_id)
         // Fetch driver details and top-up history immediately
         await fetchDriverDetails(parsedIds.driver_id);
         await fetchTopUpHistory(parsedIds.driver_id); // Fetch top-up history immediately after setting driver
@@ -93,7 +93,7 @@ const DriverNewOrderList = () => {
 
 
   const fetchDriverDetails = async (driverId) => {
-    console.log("fetch details ID", driverId);
+    // console.log("fetch details ID", driverId);
     try {
       const response = await fetch(`${API_URL}/driver/${driverId}`);
       const result = await response.json();
@@ -111,7 +111,7 @@ const DriverNewOrderList = () => {
   };
 
   const fetchTopUpHistory = async (driverID) => {
-    console.log("Honai driver id yeduuuuuu:", driverID);
+    // console.log("Honai driver id yeduuuuuu:", driverID);
     
     // if (!driverID) {
     //   Alert.alert("Error", "Failed to fetch Top Up History.");
@@ -126,14 +126,14 @@ const DriverNewOrderList = () => {
         },
       });
   
-      console.log("maziBalance eduuuu:", resp);
+      // console.log("maziBalance eduuuu:", resp);
       const result = await resp.json();
-      console.log("Top Up History:", result);
+      // console.log("Top Up History:", result);
       
       // Check if the response was successful and contains the balance
       if (result && result.success && result.data && result.data.length > 0) {
         const userWalletBalance = result.data[0].user_wallet_balance;
-        console.log("User Wallet Balance:", userWalletBalance);
+        // console.log("User Wallet Balance:", userWalletBalance);
         
         // Assuming you have a function or state to set the balance
         setBalance(userWalletBalance); // Call setBalance with the fetched balance
@@ -161,7 +161,7 @@ const DriverNewOrderList = () => {
   
     // Calculate fee based on accepted cost
     const fee = 0.15 * selectedTrip.accepted_cost; 
-    console.log("ziBalance iri", balance);
+    // console.log("ziBalance iri", balance);
   
     // Check if balance is sufficient
     if (balance < fee || balance <= 0) {
@@ -178,7 +178,7 @@ const DriverNewOrderList = () => {
       description: `Trip ID: ${selectedTrip.trip_id} Commission\n${selectedTrip.detail}\nFrom: ${selectedTrip.origin_location}\nTo: ${selectedTrip.dest_location}`,
     };
   
-    console.log("Zvikuenda izvo", data);
+    // console.log("Zvikuenda izvo", data);
   
     try {
       // Make the API call to process the trip commission
@@ -313,7 +313,7 @@ const DriverNewOrderList = () => {
     setRefreshing(true);
     
     try {
-      console.log("takutanga manje")
+      // console.log("takutanga manje")
       const response = await fetch(`${API_URL}/trip/driver/notify/`);
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {

@@ -13,55 +13,55 @@ const PesePaymentScreen = ({ route }) => {
 
   console.log("Navigating to URL:", url); // Log the URL
 
-  const topUplocal = async () => {
+  // const topUplocal = async () => {
 
-    const topup = await AsyncStorage.getItem("Topup_Details");
-    const topupDetails = JSON.parse(topup);
+  //   const topup = await AsyncStorage.getItem("Topup_Details");
+  //   const topupDetails = JSON.parse(topup);
 
-    try {
-      const res = await fetch(`${APILINK}/TopUp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(topupDetails),
-      });
+  //   try {
+  //     const res = await fetch(`${APILINK}/TopUp`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(topupDetails),
+  //     });
 
-      console.log(res);
-      if (res.status === 200) {
-        Alert.alert("Success", "Top up successful!");
-      }
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
+  //     console.log(res);
+  //     if (res.status === 200) {
+  //       Alert.alert("Success", "Top up successful!");
+  //     }
+  //   } catch (err) {
+  //     console.log(err.message);
+  //   }
+  // };
 
-  const onMessage = (event) => {
-    const data = event.nativeEvent.data;
-    console.log("Message from WebView:", data);
+  // const onMessage = (event) => {
+  //   const data = event.nativeEvent.data;
+  //   console.log("Message from WebView:", data);
 
-    try {
-      const response = JSON.parse(data);
-      console.log("Full Response from WebView:", response);
+  //   try {
+  //     const response = JSON.parse(data);
+  //     console.log("Full Response from WebView:", response);
 
-      // Handle the data received from the WebView
-      if (response.status === "success") {
-        Alert.alert("Payment Successful", "Your payment was completed successfully.", [
-          { text: "OK", onPress: () => {
-              topUplocal(); // Call topUplocal after success
-              navigation.navigate("Wallet"); // Navigate to Wallet
-            }},
-        ]);
-      } else if (response.status === "error") {
-        Alert.alert("Payment Failed", "There was an error with your payment.", [
-          { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
-        ]);
-      }
-    } catch (error) {
-      console.log("Error parsing message from WebView:", error);
-      Alert.alert("Error", "An unexpected error occurred.", [
-        { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
-      ]);
-    }
-  };
+  //     // Handle the data received from the WebView
+  //     if (response.status === "success") {
+  //       Alert.alert("Payment Successful", "Your payment was completed successfully.", [
+  //         { text: "OK", onPress: () => {
+  //             topUplocal(); // Call topUplocal after success
+  //             navigation.navigate("Wallet"); // Navigate to Wallet
+  //           }},
+  //       ]);
+  //     } else if (response.status === "error") {
+  //       Alert.alert("Payment Failed", "There was an error with your payment.", [
+  //         { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
+  //       ]);
+  //     }
+  //   } catch (error) {
+  //     console.log("Error parsing message from WebView:", error);
+  //     Alert.alert("Error", "An unexpected error occurred.", [
+  //       { text: "OK", onPress: () => navigation.navigate("Wallet") }, // Navigate to Wallet
+  //     ]);
+  //   }
+  // };
 
   // const handleHttpError = (syntheticEvent) => {
   //   const { nativeEvent } = syntheticEvent;
@@ -93,15 +93,15 @@ const PesePaymentScreen = ({ route }) => {
   //   }
   // };
 
-  const injectedJavaScript = `
-    (function() {
-      // Example: Listen for a successful payment and log the response
-      window.onpaymentstatus = function(status, responseData) {
-        const message = JSON.stringify({ status: status, data: responseData });
-        window.ReactNativeWebView.postMessage(message);
-      };
-    })();
-  `;
+  // const injectedJavaScript = `
+  //   (function() {
+  //     // Example: Listen for a successful payment and log the response
+  //     window.onpaymentstatus = function(status, responseData) {
+  //       const message = JSON.stringify({ status: status, data: responseData });
+  //       window.ReactNativeWebView.postMessage(message);
+  //     };
+  //   })();
+  // `;
 
   const redirectHome = () => {
     navigation.navigate("Wallet"); // Navigate to Wallet directly
@@ -118,9 +118,9 @@ const PesePaymentScreen = ({ route }) => {
         source={{ uri: url }}
         style={{ flex: 1 }}
         // onNavigationStateChange={handleNavigationStateChange}
-        // onHttpError={handleHttpError} // Handle HTTP errors
-        onMessage={onMessage} // Listen for messages from the WebView
-        injectedJavaScript={injectedJavaScript} // Inject JavaScript to handle messages
+        // // onHttpError={handleHttpError} // Handle HTTP errors
+        // onMessage={onMessage} // Listen for messages from the WebView
+        // injectedJavaScript={injectedJavaScript} // Inject JavaScript to handle messages
       />
     </View>
   );

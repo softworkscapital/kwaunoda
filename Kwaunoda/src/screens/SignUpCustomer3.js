@@ -17,7 +17,7 @@ import { faCamera, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
-import { API_URL } from "./config";
+import { API_URL, API_URL_UPLOADS } from "./config";
 
 const SignUpCustomer3 = () => {
   const [username, setUsername] = useState("");
@@ -28,13 +28,14 @@ const SignUpCustomer3 = () => {
   const [otp, setOtp] = useState(0);
   const navigation = useNavigation();
   const APILINK = API_URL;
+ 
 
   // Fetch user details from AsyncStorage
   const fetchUserDetails = async () => {
     try {
       const custData = await AsyncStorage.getItem("customerDetailsC0");
       const custDetails = JSON.parse(custData);
-      console.log("honai user", custDetails);
+      // console.log("honai user", custDetails);
       setUser1(custDetails);
 
       const cData = await AsyncStorage.getItem("userDetailsC2");
@@ -166,7 +167,7 @@ const SignUpCustomer3 = () => {
   }
 
 
-  
+  //send ......
   const sendOtpToPhone = async (phoneNumber) => {
     const message = `Your OTP is: ${otp}`;
 
@@ -185,7 +186,7 @@ const SignUpCustomer3 = () => {
         }),
       });
 
-      console.log("muonei", response);
+      // console.log("muonei", response);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -230,7 +231,7 @@ const SignUpCustomer3 = () => {
           // Fetch last user ID and increment it
           const lastUserId = await fetchLastUserId();
           const newUserId = incrementId(lastUserId);
-          console.log("New User ID:", newUserId); // Debug log
+          // console.log("New User ID:", newUserId); // Debug log
   
           // Create user object
           const user = {
@@ -253,7 +254,7 @@ const SignUpCustomer3 = () => {
             customerId: newUserId, // Set customerId to newUserId
           };
   
-          console.log("User object to be created:", user);
+          // console.log("User object to be created:", user);
   
           // Create the user in the database
           await createUser(user);
@@ -280,7 +281,7 @@ const SignUpCustomer3 = () => {
 //   Create user API call
   const createUser = async (user) => {
 
-    console.log(user);
+    // console.log(user);
     const APILINK = API_URL;
     const response = await fetch(`${APILINK}/users/`, {
       method: "POST",
@@ -299,37 +300,34 @@ const SignUpCustomer3 = () => {
 
   };
 
-
-
-
-// ##############################################################################
+// image upload
 const handleImageUpload = async (imageUri) => {
-    const formData = new FormData();
-    const fileName = imageUri.split("/").pop();
-    const type = `image/${fileName.split(".").pop()}`;
+  const formData = new FormData();
+  const fileName = imageUri.split("/").pop();
+  const type = `image/${fileName.split(".").pop()}`;
 
-    formData.append("image", {
-      uri: imageUri,
-      name: fileName,
-      type: type,
+  formData.append("image", {
+    uri: imageUri,
+    name: fileName,
+    type: type,
+  });
+
+  try {
+    const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
-    try {
-      const response = await fetch(`${API_URL}/upload`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const data = await response.json();
-      return `${data.path}`; // Return the full URL
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw new Error("Failed to upload image");
-    }
-  };
+    const data = await response.json();
+    return `${data.path}`; // Return the full URL
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw new Error("Failed to upload image");
+  }
+};
 
 
 
@@ -347,13 +345,16 @@ const handleImageUpload = async (imageUri) => {
 
     const APILINK = API_URL;
     
-    console.log("Creating customer details for userId:", userId); // Debug log
+    // console.log("Creating customer details for userId:", userId); // Debug log
     const profilepic = await handleImageUpload(profileImage);
+
+
+
 
 const newCustomer = {
     customerid: userId, // Ensure this is set correctly
     ecnumber: user1.ecnumber || "",
-    account_type: user1.account_type || "",
+    account_type: user1.accountType || "",
     account_category: user1.account_category || "",
     signed_on: user1.signed_on || new Date().toISOString(),
     name: user1.name || "",
@@ -397,7 +398,7 @@ const newCustomer = {
     payment_style: user1.payment_style || "",
     bp_number: user1.bp_number || "",
     vat_number: user1.vat_number || "",
-    profileImage:  profilepic.trim() || ""
+    profilePic:  profilepic.trim()
 };
 
     // Include profile image if it exists
@@ -410,6 +411,7 @@ const newCustomer = {
     //     name: `profilePic.${fileType}`,
     //   });
     // }
+// console.log("customer akugadzirwa", newCustomer);
 
     const response = await fetch(`${APILINK}/customerdetails/`, {
       method: "POST",
@@ -420,13 +422,7 @@ const newCustomer = {
     });
 
 
-
-
-
-
-
-
-
+//###############################################################################################################################################
     // const newAccount = async (driver) => {
     //   if (!driver) {
     //     Alert.alert("Error", "Some values are missing.");
@@ -479,14 +475,7 @@ const newCustomer = {
     //   }
     // };
 
-
-
-
-
-
-
-
-
+//###############################################################################################################################################
 
     if (!response.ok) {
       const errorText = await response.text();

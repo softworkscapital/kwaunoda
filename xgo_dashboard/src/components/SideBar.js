@@ -481,7 +481,23 @@ const SideBar = () => {
                   <li className="nav-item">
                     <a
                       className="nav-link"
-                      href="/Hom"
+                      href="/DashTracker/1"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        color: "black",
+                        padding: "10px 20px",
+                      }}
+                    >
+                       Trip Track
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
+                      href="/Driversdisplay"
                       style={{
                         display: "flex",
                         justifyContent: "space-between",

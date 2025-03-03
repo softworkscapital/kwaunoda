@@ -10,7 +10,7 @@ crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
     let User = user;
     // console.log("honai user:", User);
-    
+
     pool.query(
       "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
@@ -40,7 +40,11 @@ crudsObj.postUser = (user) => {
         if (err) {
           return reject(err);
         }
-        return resolve({ status: "200", message: "Your account has been created successfully, Now verify your phone number via the OTP sent to your mobile" });
+        return resolve({
+          status: "200",
+          message:
+            "Your account has been created successfully, Now verify your phone number via the OTP sent to your mobile",
+        });
       }
     );
   });
@@ -210,7 +214,7 @@ crudsObj.getUserByOtp = (email, otp) => {
   });
 };
 
-//Update OTP
+//Update OTP status
 crudsObj.updateOTPStatus = (id, otp) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -225,6 +229,30 @@ crudsObj.updateOTPStatus = (id, otp) => {
     );
   });
 };
+
+// Update OTP
+crudsObj.updateOTP = (userId, otp) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "UPDATE users SET OTP = ? WHERE userid = ?",
+      [otp, userId],
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        if (result.affectedRows === 0) {
+          return reject(new Error("No user found with this ID"));
+        }
+        return resolve({
+          status: "200",
+          message: "OTP updated successfully",
+        });
+      }
+    );
+  });
+};
+
+
 
 //Update OTP
 crudsObj.updatePasswordStatus = (id, otp) => {

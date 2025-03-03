@@ -152,6 +152,29 @@ userRouter.put("/update_status/:id", async (req, res, next) => {
   }
 });
 
+// Update OTP route
+userRouter.put("/update_otp/:id", async (req, res) => {
+  const userId = req.params.id; // Get userId from request parameters
+  const { otp } = req.body; // Destructure otp from request body
+
+  // Check if OTP is provided
+  if (!otp) {
+    return res.status(400).json({ message: "New OTP is required" });
+  }
+
+  try {
+    // Call the updateOTP function with userId and otp
+    const result = await usersDbOperations.updateOTP(userId, otp);
+    res.status(200).json(result); // Respond with success message
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "An error occurred", error: err.message }); // Handle errors
+  }
+});
+
+
+
+
 // Delete User by ID
 userRouter.delete("/:id", async (req, res, next) => {
   try {

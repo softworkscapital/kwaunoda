@@ -1,19 +1,18 @@
-const express = require('express')
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const CustomerRouter = express.Router();
-const CustomersDbOperations = require('../cruds/customer_details');
-
+const CustomersDbOperations = require("../cruds/customer_details");
 
 // Specify where to store the uploaded files
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, '../profiles'); // Specify your upload directory
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-    },
+  destination: (req, file, cb) => {
+    cb(null, "../profiles"); // Specify your upload directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
 });
 
 // Initialize multer
@@ -25,10 +24,8 @@ const upload = multer({ storage });
 //         // const { body } = req;
 //         // const check = req.file; // This should hold the file info
 //         // console.log("File uploaded:", check);
-        
+
 //         // const profilePicUrl = check ? `/profiles/${check.filename}` : null;
-
-
 
 //         try {
 //             let postedValues = req.body;
@@ -42,7 +39,7 @@ const upload = multer({ storage });
 //                 message,
 //                 origin
 //                 } = postedValues;
-    
+
 //                 let results = await  CustomerAdminChatsDbOperations.postCustomerAdminChat(
 //                     customer_driver_chat_id,
 //                     date_chat,
@@ -52,10 +49,6 @@ const upload = multer({ storage });
 //                     driver_id,
 //                     message,
 //                     origin
-
-
-
-
 
 //         // Construct the postedValues object with all required fields
 //         const postedValues = {
@@ -109,7 +102,7 @@ const upload = multer({ storage });
 //         };
 
 //         console.log("Request received:", postedValues); // Log the populated object
-        
+
 //         // Ensure that the required fields are present
 //         if (!postedValues.customerid || !postedValues.name || !postedValues.surname) {
 //             return res.status(400).json({ error: 'Misvvvvvvvvvvsing required fields: customerid, name, or surname.' });
@@ -123,201 +116,131 @@ const upload = multer({ storage });
 //     }
 // });
 
-
-
-
-CustomerRouter.post('/', async (req, res, next) => {
-    try {
-        let postedValues = req.body;
-        let {
-            customerid,
-            ecnumber,
-            account_type,
-            account_category,
-            signed_on,
-            name,
-            surname,
-            idnumber,
-            sex,
-            dob,
-            address,
-            house_number_and_street_name,
-            surbub, // Corrected spelling from 'surbub'
-            city,
-            country,
-            lat_cordinates, // Corrected spelling from 'lat_cordinates'
-            long_cordinates, // Corrected spelling from 'long_cordinates'
-            phone,
-            username,
-            email,
-            password,
-            employer,
-            workindustry,
-            workaddress,
-            workphone,
-            workphone2,
-            nok1name,
-            nok1surname,
-            nok1relationship,
-            nok1phone,
-            nok2name,
-            nok2surname,
-            nok2relationship,
-            nok2phone,
-            creditstanding,
-            credit_bar_rule_exception,
-            membershipstatus,
-            defaultsubs,
-            sendmail,
-            sendsms,
-            product_code,
-            cost_price,
-            selling_price,
-            payment_style,
-            bp_number,
-            vat_number,
-            profilePic
-        } = postedValues;
-
-// console.log("from front:", postedValues);
-        let results = await CustomersDbOperations.postCustomer(
-            customerid,
-            ecnumber,
-            account_type,
-            account_category,
-            signed_on,
-            name,
-            surname,
-            idnumber,
-            sex,
-            dob,
-            address,
-            house_number_and_street_name,
-            surbub, // Corrected spelling
-            city,
-            country,
-            lat_cordinates, // Corrected spelling
-            long_cordinates, // Corrected spelling
-            phone,
-            username,
-            email,
-            password,
-            employer,
-            workindustry,
-            workaddress,
-            workphone,
-            workphone2,
-            nok1name,
-            nok1surname,
-            nok1relationship,
-            nok1phone,
-            nok2name,
-            nok2surname,
-            nok2relationship,
-            nok2phone,
-            creditstanding,
-            credit_bar_rule_exception,
-            membershipstatus,
-            defaultsubs,
-            sendmail,
-            sendsms,
-            product_code,
-            cost_price,
-            selling_price,
-            payment_style,
-            bp_number,
-            vat_number,
-            profilePic
-        );
-
-        res.json(results);
-    } catch (e) {
-        console.error(e);
-        res.sendStatus(500);
-    }
-});
-
-
-
-
-
-
-
-CustomerRouter.get('/', async (req, res, next) => {
-    try {
-        let results = await CustomersDbOperations.getCustomers();
-        res.json(results);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
-CustomerRouter.get('/:id', async (req, res, next) => {
-    try {
-        let customer_id = req.params.id;
-        let result = await CustomersDbOperations.getCustomerById(customer_id);
-        res.json(result);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
-CustomerRouter.get('/login/:email', async (req, res, next) => {
-    try {
-        let email = req.params.email;
-        let result = await CustomersDbOperations.getCustomerByEmail(email);
-        res.json(result);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
-CustomerRouter.put('/:id', async (req, res, next) => {
-    try {
-        let customer_id = req.params.id;
-        let updatedValues = req.body;
-
-        let results = await CustomersDbOperations.updateCustomer(customer_id, updatedValues);
-        res.json(results);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
-CustomerRouter.delete('/:id', async (req, res, next) => {
-    try {
-        let id = req.params.id;
-        let result = await CustomersDbOperations.deleteCustomer(id);
-        res.json(result);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
- //customer route
- CustomerRouter.get('/customer_status/:status', async (req, res, next) => {
-    try {
-        let status = req.params.status;
-        let result = await CustomersDbOperations.getCustomerByStatus(status);
-        res.json(result);
-    } catch (e) {
-        console.log(e);
-        res.sendStatus(500);
-    }
-});
-
-/////Verification
-CustomerRouter.get("/customer_verify/:email/:phone/:idnumber", async (req, res, next) => {
+CustomerRouter.post("/", async (req, res, next) => {
   try {
-    let email = req.params.email;
-    let phone = req.params.phone;
-    let idnumber = req.params.idnumber;
-    let result = await CustomersDbOperations.getVerifyCustomer(email,phone,idnumber);
+    let postedValues = req.body;
+    let {
+      customerid,
+      ecnumber,
+      account_type,
+      account_category,
+      signed_on,
+      name,
+      surname,
+      idnumber,
+      sex,
+      dob,
+      address,
+      house_number_and_street_name,
+      surbub, // Corrected spelling from 'surbub'
+      city,
+      country,
+      lat_cordinates, // Corrected spelling from 'lat_cordinates'
+      long_cordinates, // Corrected spelling from 'long_cordinates'
+      phone,
+      username,
+      email,
+      password,
+      employer,
+      workindustry,
+      workaddress,
+      workphone,
+      workphone2,
+      nok1name,
+      nok1surname,
+      nok1relationship,
+      nok1phone,
+      nok2name,
+      nok2surname,
+      nok2relationship,
+      nok2phone,
+      creditstanding,
+      credit_bar_rule_exception,
+      membershipstatus,
+      defaultsubs,
+      sendmail,
+      sendsms,
+      product_code,
+      cost_price,
+      selling_price,
+      payment_style,
+      bp_number,
+      vat_number,
+      profilePic,
+    } = postedValues;
+
+    // console.log("from front:", postedValues);
+    let results = await CustomersDbOperations.postCustomer(
+      customerid,
+      ecnumber,
+      account_type,
+      account_category,
+      signed_on,
+      name,
+      surname,
+      idnumber,
+      sex,
+      dob,
+      address,
+      house_number_and_street_name,
+      surbub, // Corrected spelling
+      city,
+      country,
+      lat_cordinates, // Corrected spelling
+      long_cordinates, // Corrected spelling
+      phone,
+      username,
+      email,
+      password,
+      employer,
+      workindustry,
+      workaddress,
+      workphone,
+      workphone2,
+      nok1name,
+      nok1surname,
+      nok1relationship,
+      nok1phone,
+      nok2name,
+      nok2surname,
+      nok2relationship,
+      nok2phone,
+      creditstanding,
+      credit_bar_rule_exception,
+      membershipstatus,
+      defaultsubs,
+      sendmail,
+      sendsms,
+      product_code,
+      cost_price,
+      selling_price,
+      payment_style,
+      bp_number,
+      vat_number,
+      profilePic
+    );
+
+    res.json(results);
+  } catch (e) {
+    console.error(e);
+    res.sendStatus(500);
+  }
+});
+
+CustomerRouter.get("/", async (req, res, next) => {
+  try {
+    let results = await CustomersDbOperations.getCustomers();
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+CustomerRouter.get("/:id", async (req, res, next) => {
+  try {
+    let customer_id = req.params.id;
+    let result = await CustomersDbOperations.getCustomerById(customer_id);
     res.json(result);
   } catch (e) {
     console.log(e);
@@ -325,59 +248,139 @@ CustomerRouter.get("/customer_verify/:email/:phone/:idnumber", async (req, res, 
   }
 });
 
+CustomerRouter.get("/login/:email", async (req, res, next) => {
+  try {
+    let email = req.params.email;
+    let result = await CustomersDbOperations.getCustomerByEmail(email);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+CustomerRouter.put("/:id", async (req, res, next) => {
+  try {
+    let customer_id = req.params.id;
+    let updatedValues = req.body;
+
+    let results = await CustomersDbOperations.updateCustomer(
+      customer_id,
+      updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+CustomerRouter.delete("/:id", async (req, res, next) => {
+  try {
+    let id = req.params.id;
+    let result = await CustomersDbOperations.deleteCustomer(id);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+//customer route
+CustomerRouter.get("/customer_status/:status", async (req, res, next) => {
+  try {
+    let status = req.params.status;
+    let result = await CustomersDbOperations.getCustomerByStatus(status);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+/////Verification
+CustomerRouter.get(
+  "/customer_verify/:email/:phone/:idnumber",
+  async (req, res, next) => {
+    try {
+      let email = req.params.email;
+      let phone = req.params.phone;
+      let idnumber = req.params.idnumber;
+      let result = await CustomersDbOperations.getVerifyCustomer(
+        email,
+        phone,
+        idnumber
+      );
+      res.json(result);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+);
 
 CustomerRouter.put("/update_status/:id", async (req, res, next) => {
-    try {
-      let customerid = req.params.id;
-      let updatedValues = req.body;
-  
-      let results = await CustomersDbOperations.updateCustomerStatus(
-        customerid,
-        updatedValues
-      );
-      res.json(results);
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(500);
-    }
-  });
+  try {
+    let customerid = req.params.id;
+    let updatedValues = req.body;
 
+    let results = await CustomersDbOperations.updateCustomerStatus(
+      customerid,
+      updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 
+CustomerRouter.put("/update_phone/:id", async (req, res, next) => {
+  try {
+    let customerid = req.params.id;
+    let updatedValues = req.body;
 
+    let results = await CustomersDbOperations.updateCustomerPhone(
+      customerid,
+      updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 
-  CustomerRouter.put("/update_account_type/:id", async (req, res, next) => {
-    try {
-      let customerid = req.params.id;
-      let updatedValues = req.body;
-  
-      let results = await CustomersDbOperations.updateCustomerAccountType(
-        customerid,
-        updatedValues
-      );
-      res.json(results);
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(500);
-    }
-  });
-  CustomerRouter.put("/:id/coordinates", async (req, res, next) => {
-    try {
-      let customer_id = req.params.id;
-      const { lat_cordinates, long_cordinates } = req.body;
-  
-      let results = await CustomersDbOperations.updateCustomerCoordinates(
-        customer_id,
-        lat_cordinates,
-        long_cordinates
-      );
-      res.json(results);
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(500);
-    }
-  });
-  
+CustomerRouter.put("/update_account_type/:id", async (req, res, next) => {
+  try {
+    let customerid = req.params.id;
+    let updatedValues = req.body;
 
+    let results = await CustomersDbOperations.updateCustomerAccountType(
+      customerid,
+      updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+CustomerRouter.put("/:id/coordinates", async (req, res, next) => {
+  try {
+    let customer_id = req.params.id;
+    const { lat_cordinates, long_cordinates } = req.body;
 
+    let results = await CustomersDbOperations.updateCustomerCoordinates(
+      customer_id,
+      lat_cordinates,
+      long_cordinates
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 
 module.exports = CustomerRouter;

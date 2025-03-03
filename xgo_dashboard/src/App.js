@@ -32,6 +32,11 @@ import Confirmation from './components/ConfirmPage';
 import Map from './components/MapPointer';
 import Maps from './components/Maps';
 
+
+
+import DashTracker from './components/DashTracker';
+import Driversdisplay from './components/Driversdisplay';
+
 function App() {
     const [tripData, setTripData] = useState([]);
     const [customersData, setCustomersData] = useState([]);
@@ -110,6 +115,15 @@ function App() {
                     <Route path="/Confirmation" element={<Confirmation />} />
                     <Route path="/Map" element={<Map />} />
                     <Route path="/Maps" element={<Maps />} />
+
+
+
+                    <Route path="/DashTracker/:tripId" element={<DashTracker />} />
+                    <Route path="/Driversdisplay" element={<Driversdisplay />} />
+
+
+
+
 
                 </Routes>
             </div>

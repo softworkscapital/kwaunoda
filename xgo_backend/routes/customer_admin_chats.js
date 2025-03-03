@@ -44,7 +44,19 @@ CustomerAdminChatRouter.get('/', async (req, res, next) => {
         res.sendStatus(500);
     }
 });
-
+CustomerAdminChatRouter.get('/admin-charts', async (req, res, next) => {
+    try {
+        let results = await CustomerAdminChatsDbOperations.getAdminChartsAndUser();
+        if (!results || results.length === 0) {
+            console.log('No data found');
+            return res.status(404).json({ message: 'No data found' });
+        }
+        res.json(results); // Send the results directly
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+});
 CustomerAdminChatRouter.get('/customer_admin_chats/:trip_id', async (req, res) => {
     const trip_id = req.params.trip_id;
 

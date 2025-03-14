@@ -1225,10 +1225,26 @@ crudsObj.getTripCommissionSettlement = (
   //####################################
 ) => {
   return new Promise((resolve, reject) => {
+
+
+
+
+
+    
     let currency = "";
     let exchange_rate = "";
-    let date = "";
-    let description = "";
+    // let date = new Date().toISOString().replace('T', ' ').substring(0, 19).replace(/-/g, '/');
+
+     // Get the current date and time in YYYY/MM/DD HH:mm:ss format
+     let now = new Date();
+     let year = now.getFullYear();
+     let month = String(now.getMonth() + 2).padStart(2, '0'); // Months are zero-based
+     let day = String(now.getDate()).padStart(2, '0');
+     let hours = String(now.getHours()).padStart(2, '0');
+     let minutes = String(now.getMinutes()).padStart(2, '0');
+     let seconds = String(now.getSeconds()).padStart(2, '0');
+ 
+     let date = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     let client_profile_id = "";
     let vendor_id = "";
     let payment_gateway_id = "";
@@ -1339,7 +1355,7 @@ crudsObj.getTripCommissionSettlement = (
                       newRevenueWalletTotalBalance,
                       (currency = ""),
                       (exchange_rate = ""),
-                      (date = ""),
+                      (date = date),
                       (description = description),
                       (client_profile_id = UserWalletId),
                       (vendor_id = " "),
@@ -1430,7 +1446,7 @@ crudsObj.getTripCommissionSettlement = (
                     newRevenueWalletTotalBalance,
                     (currency = ""),
                     (exchange_rate = ""),
-                    (date = ""),
+                    (date = date),
                     (description = description),
                     (client_profile_id = UserWalletId),
                     (vendor_id = " "),

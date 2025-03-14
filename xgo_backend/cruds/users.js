@@ -350,4 +350,58 @@ crudsObj.updateUserStatus = (userid, updatedValues) => {
   });
 };
 
+crudsObj.updateLastLoggedIn = (userid) => {
+
+  const currentDate = new Date();
+  currentDate.setHours(currentDate.getHours() + 2); // Add 2 hours
+  const formattedDate = currentDate
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " "); // Format the date
+  console.log(formattedDate);
+  datefor = formattedDate;  // Only extract membershipstatus
+
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `UPDATE users SET 
+        last_logged_in = ?
+      WHERE userid = ?`,
+      [userid, datefor], // Only pass the necessary parameters
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({ status: "200", message: "Update successful" });
+      }
+    );
+  });
+};
+
+crudsObj.updateLastActivityDateTime = (userid) => {
+
+  const currentDate = new Date();
+  currentDate.setHours(currentDate.getHours() + 2); // Add 2 hours
+  const formattedDate = currentDate
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " "); // Format the date
+  console.log(formattedDate);
+  datefor = formattedDate;  // Only extract membershipstatus
+
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `UPDATE users SET 
+        last_activity_date_time = ?
+      WHERE userid = ?`,
+      [userid, datefor], // Only pass the necessary parameters
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({ status: "200", message: "Update successful" });
+      }
+    );
+  });
+};
+
 module.exports = crudsObj;

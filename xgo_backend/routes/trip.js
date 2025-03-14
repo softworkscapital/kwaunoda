@@ -34,19 +34,12 @@ tripRouter.post("/", async (req, res, next) => {
     let driver_comment = postedValues.driver_comment;
     let driver_stars = postedValues.driver_stars;
     let customer_stars = postedValues.customer_stars;
+    let customer_status = postedValues.customer_status;
     let pascel_pic1 = postedValues.parcel_pic1;
     let pascel_pic2 = postedValues.parcel_pic2;
     let pascel_pic3 = postedValues.parcel_pic3;
     let trip_priority_type = postedValues.trip_priority_type;
-
-
-   
-
-
-    console.log(pascel_pic1);
-
-
-    console.log(status);
+    let delivery_received_confirmation_code = postedValues.delivery_received_confirmation_code;
 
     let results = await tripDbOperations.postTrip(
       driver_id,
@@ -77,10 +70,12 @@ tripRouter.post("/", async (req, res, next) => {
       driver_comment,
       driver_stars,
       customer_stars,
+      customer_status,
       pascel_pic1,
       pascel_pic2,
       pascel_pic3,
-      trip_priority_type
+      trip_priority_type,
+      delivery_received_confirmation_code
     );
 
     res.json(results);
@@ -101,7 +96,7 @@ tripRouter.get("/", async (req, res, next) => {
 });
 
 tripRouter.get("/driver_id/status", async (req, res, next) => {
-  const { driver_id, status } = req.query; // Extract parameters from the query
+  const { driver_id, status } = req.query;
 
   if (!driver_id || !status) {
     return res
@@ -111,16 +106,12 @@ tripRouter.get("/driver_id/status", async (req, res, next) => {
 
   try {
     let results = await tripDbOperations.getNumberofTrips(driver_id, status);
-    res.json({ tripCount: results }); // Return the count in a JSON response
+    res.json({ tripCount: results });
   } catch (e) {
     console.log(e);
     res.sendStatus(500);
   }
 });
-
-
-
-//the route that gets customer, driver, counteroffer,topup,customer driver chat using trip_id
 
 tripRouter.get("/getting_joined_tables_using_trip_id/:trip_id", async (req, res, next) => {
   const tripId = req.params.trip_id;
@@ -137,35 +128,26 @@ tripRouter.get("/getting_joined_tables_using_trip_id/:trip_id", async (req, res,
   }
 });
 
-
-
-
-
-
-
 tripRouter.put("/updateStatusAndDriver/:id", async (req, res, next) => {
   try {
-    const trip_id = req.params.id; // Get trip_id from URL parameters
-    const { driver_id, status } = req.body; // Get driver_id and status from request body
+    const trip_id = req.params.id;
+    const { driver_id, status } = req.body;
 
-    // Validate the input
     if (!driver_id || !status) {
       return res.status(400).json({ error: "Driver ID and status are required." });
     }
 
-    // Call the updateStatusAndDriver function
     const result = await tripDbOperations.updateStatusAndDriver(trip_id, driver_id, status);
-
-    // Send the result back to the client
     res.json(result);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500); // Send a 500 Internal Server Error status
+    res.sendStatus(500);
   }
 });
+
 tripRouter.get("/tripsbystatus/:status", async (req, res, next) => {
   try {
-    let status = req.params.status
+    let status = req.params.status;
     let results = await tripDbOperations.getTripToDash(status);
     res.json(results);
   } catch (e) {
@@ -175,52 +157,42 @@ tripRouter.get("/tripsbystatus/:status", async (req, res, next) => {
 });
 
 tripRouter.get("/byStatus/driver_id/status", async (req, res, next) => {
-  const { driver_id, status } = req.query; // Extract parameters from the query
+  const { driver_id, status } = req.query;
   if (!driver_id || !status) {
     return res
       .status(400)
       .json({ error: "Driver ID and status are required." });
   }
   try {
-    // Fetch trips with the given driver_id and status
     let results = await tripDbOperations.getTripByDriverAndStatus(driver_id, status);
-
-    // Check if any results were found
     if (results.length === 0) {
       return res.status(404).json({ message: "No trips found." });
     }
-    res.json(results); // Return the list of trips in a JSON response
+    res.json(results);
   } catch (e) {
     console.error(e);
-    res.sendStatus(500); // Send a 500 error if something goes wrong
+    res.sendStatus(500);
   }
 });
 
-
-
 tripRouter.get("/byStatus/customer/:cust_id/:status", async (req, res, next) => {
-  const { cust_id, status } = req.params; // Extract parameters from the query
+  const { cust_id, status } = req.params;
   if (!cust_id || !status) {
     return res
       .status(400)
       .json({ error: "Driver ID and status are required." });
   }
   try {
-    // Fetch trips with the given driver_id and status
     let results = await tripDbOperations.getTripByCustomerIdAndStatus(cust_id, status);
-
-    // Check if any results were found
     if (results.length === 0) {
       return res.status(404).json({ message: "No trips found." });
     }
-    res.json(results); // Return the list of trips in a JSON response
+    res.json(results);
   } catch (e) {
     console.error(e);
-    res.sendStatus(500); // Send a 500 error if something goes wrong
+    res.sendStatus(500);
   }
 });
-
-
 
 tripRouter.get("/driver/notify/", async (req, res, next) => {
   try {
@@ -278,12 +250,13 @@ tripRouter.put("/:id", async (req, res, next) => {
   }
 });
 
+
 //#########################
 tripRouter.get('/mylastTwentyTripsById/:customer_id/:driver_id', async (req, res, next) => {
     try {
         let customer_id = req.params.customer_id;
         let driver_id = req.params.driver_id;
-        let result = await tripDbOperations.getMylastTwentyTripsById(customer_id,driver_id);
+        let result = await tripDbOperations.getMylastTwentyTripsById(customer_id, driver_id);
         res.json(result);
     } catch (e) {
         console.log(e);
@@ -293,39 +266,37 @@ tripRouter.get('/mylastTwentyTripsById/:customer_id/:driver_id', async (req, res
 
 tripRouter.put("/customerComment/:id", async (req, res, next) => {
   try {
-    const trip_id = req.params.id; // Get trip_id from URL parameters
-    const updatedValues = req.body; // Get updated values from request body
+    const trip_id = req.params.id;
+    const updatedValues = req.body;
 
-    // Call the updateCustomerComment function
+    console.log("from frontend:", updatedValues);
     const result = await tripDbOperations.updateCustomerComment(
       trip_id,
       updatedValues
     );
 
-    // Send the result back to the client
     res.json(result);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500); // Send a 500 Internal Server Error status
+    res.sendStatus(500);
   }
 });
 
 tripRouter.put("/driverComment/:id", async (req, res, next) => {
   try {
-    const trip_id = req.params.id; // Get trip_id from URL parameters
-    const updatedValues = req.body; // Get updated values from request body
+    const trip_id = req.params.id;
+    const updatedValues = req.body;
+    console.log("From front", updatedValues);
 
-    // Call the updateDriverComment function with updatedValues
     const result = await tripDbOperations.updateDriverComment(
       trip_id,
       updatedValues
     );
 
-    // Send the result back to the client
     res.json(result);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500); // Send a 500 Internal Server Error status
+    res.sendStatus(500);
   }
 });
 
@@ -339,5 +310,20 @@ tripRouter.delete("/:id", async (req, res, next) => {
     res.sendStatus(500);
   }
 });
+tripRouter.post('/end-trip/customer/:trip_id', (req, res) => {
+  const trip_id = req.params.trip_id;
+  tripDbOperations.endTripByCustomer(trip_id)
+    .then(result => res.status(200).json(result))
+    .catch(err => res.status(500).json({ error: err.message }));
+});
+
+// Route to end trip by driver
+tripRouter.post('/end-trip/driver/:trip_id', (req, res) => {
+  const trip_id = req.params.trip_id;
+  tripDbOperations.endTripByDriver(trip_id)
+    .then(result => res.status(200).json(result))
+    .catch(err => res.status(500).json({ error: err.message }));
+});
+
 
 module.exports = tripRouter;

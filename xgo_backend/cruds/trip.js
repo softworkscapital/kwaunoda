@@ -32,11 +32,12 @@ crudsObj.postTrip = (
   driver_comment,
   driver_stars,
   customer_stars,
+  customer_status,
   pascel_pic1,
   pascel_pic2,
   pascel_pic3,
-  trip_priority_type
-
+  trip_priority_type,
+  delivery_received_confirmation_code
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -47,8 +48,8 @@ crudsObj.postTrip = (
              origin_location_lat, origin_location_long, destination_lat, 
              destination_long, distance, delivery_cost_proposed, 
              accepted_cost, paying_when, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment,
-              driver_stars, customer_stars, pascel_pic1, pascel_pic2, pascel_pic3,trip_priority_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              driver_stars, customer_stars, customer_status, pascel_pic1, pascel_pic2, pascel_pic3, trip_priority_type, delivery_received_confirmation_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         driver_id,
         cust_id,
@@ -78,10 +79,12 @@ crudsObj.postTrip = (
         driver_comment,
         driver_stars,
         customer_stars,
+        customer_status,
         pascel_pic1,
         pascel_pic2,
         pascel_pic3,
-        trip_priority_type
+        trip_priority_type,
+        delivery_received_confirmation_code
       ],
       (err, result) => {
         if (err) {
@@ -95,7 +98,7 @@ crudsObj.postTrip = (
 
 crudsObj.getTrips = () => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT * FROM trip", (err, results) => {
+    pool.query("SELECT * FROM trip ORDER BY trip_id DESC", (err, results) => {
       if (err) {
         return reject(err);
       }
@@ -122,7 +125,7 @@ crudsObj.getTripById = (trip_id) => {
 crudsObj.getTripByStatusToDriver = () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE status = "New Order"',
+      'SELECT * FROM trip WHERE status = "New Order" ORDER BY trip_id DESC',
       (err, results) => {
         if (err) {
           return reject(err);
@@ -136,7 +139,7 @@ crudsObj.getTripByStatusToDriver = () => {
 crudsObj.getTripByStatusToDriverEnd = (driver_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE status = "Waiting Driver Rating" AND driver_id = ?',
+      'SELECT * FROM trip WHERE status = "Waiting Driver Rating" AND driver_id = ? ORDER BY trip_id DESC',
       [driver_id],
       (err, results) => {
         if (err) {
@@ -150,24 +153,24 @@ crudsObj.getTripByStatusToDriverEnd = (driver_id) => {
 
 crudsObj.getTripByDriverAndStatus = (driver_id, status) => {
   return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM trip WHERE driver_id = ? AND status = ?";
+    const query = "SELECT * FROM trip WHERE driver_id = ? AND status = ? ORDER BY trip_id DESC";
     pool.query(query, [driver_id, status], (err, results) => {
       if (err) {
-        return reject(err); // Reject the promise if an error occurs
+        return reject(err);
       }
-      return resolve(results); // Resolve with the results
+      return resolve(results);
     });
   });
 };
 
 crudsObj.getTripByCustomerIdAndStatus = (cust_id, status) => {
   return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM trip WHERE cust_id = ? AND status = ?";
+    const query = "SELECT * FROM trip WHERE cust_id = ? AND status = ? ORDER BY trip_id DESC";
     pool.query(query, [cust_id, status], (err, results) => {
       if (err) {
-        return reject(err); // Reject the promise if an error occurs
+        return reject(err);
       }
-      return resolve(results); // Resolve with the results
+      return resolve(results);
     });
   });
 };
@@ -190,7 +193,7 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE cust_id = ? AND (status = "InTransit" OR status = "Arrived At Destination" OR status = "New Order")',
+      'SELECT * FROM trip WHERE cust_id = ? AND (status = "InTransit" OR status = "Waiting customer to end trip" OR status = "New Order") ORDER BY trip_id DESC',
       [cust_id],
       (err, results) => {
         if (err) {
@@ -201,9 +204,6 @@ crudsObj.getTripByStatusToCustomer = (cust_id) => {
     );
   });
 };
-
-
-//the crud that joins customer, driver, counteroffer,topup,customer driver chat using trip_id
 
 crudsObj.getTripDetailsOfTablesById = (trip_id) => {
   return new Promise((resolve, reject) => {
@@ -235,13 +235,10 @@ crudsObj.getTripDetailsOfTablesById = (trip_id) => {
       if (err) {
         return reject(err);
       }
-      // Assuming results contains the joined data
       return resolve(results);
     });
   });
 };
-
-
 
 crudsObj.updateTrip = (trip_id, updatedValues) => {
   const {
@@ -273,10 +270,12 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
     driver_comment,
     driver_stars,
     customer_stars,
+    customer_status,
     pascel_pic1,
     pascel_pic2,
     pascel_pic3,
-    trip_priority_type
+    trip_priority_type,
+    delivery_received_confirmation_code
   } = updatedValues;
 
   return new Promise((resolve, reject) => {
@@ -284,7 +283,7 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
       `UPDATE trip SET 
                 driver_id = ?, cust_id = ?, request_start_datetime = ?, 
                 order_start_datetime = ?, order_end_datetime = ?, status = ?, 
-                deliveray_details = ?,delivery_notes = ?, weight = ?, delivery_contact_details = ?, 
+                deliveray_details = ?, delivery_notes = ?, weight = ?, delivery_contact_details = ?, 
                 dest_location = ?, origin_location = ?, 
                 origin_location_lat = ?, origin_location_long = ?, 
                 destination_lat = ?, destination_long = ?, 
@@ -292,8 +291,8 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
                 accepted_cost = ?, paying_when = ?, payment_type = ?, 
                 currency_id = ?, currency_code = ?,
                 usd_rate = ?, customer_comment = ?, 
-                driver_comment = ?, driver_stars = ?, customer_stars = ? ,
-                pascel_pic1 =?, pascel_pic2 =?, pascel_pic3 =?, trip_priority_type =?
+                driver_comment = ?, driver_stars = ?, customer_stars = ? , customer_status = ?,
+                pascel_pic1 = ?, pascel_pic2 = ?, pascel_pic3 = ?, trip_priority_type = ?, delivery_received_confirmation_code = ?
             WHERE trip_id = ?`,
       [
         driver_id,
@@ -324,11 +323,13 @@ crudsObj.updateTrip = (trip_id, updatedValues) => {
         driver_comment,
         driver_stars,
         customer_stars,
+        customer_status,
         pascel_pic1,
         pascel_pic2,
         pascel_pic3,
         trip_priority_type,
-        trip_id, // This is the value for WHERE clause
+        delivery_received_confirmation_code,
+        trip_id,
       ],
       (err, result) => {
         if (err) {
@@ -353,23 +354,21 @@ crudsObj.deleteTrip = (id) => {
 
 crudsObj.updateCustomerComment = (trip_id, updatedValues) => {
   const {
-    customer_comment, // Field to update
+    customer_comment,
     driver_stars,
-    status, // Field to update
+    status,
   } = updatedValues;
 
   return new Promise((resolve, reject) => {
     pool.query(
       `UPDATE trip SET 
                 customer_comment = ?, 
-                driver_stars = ?,
-                status = ?
+                driver_stars = ?
             WHERE trip_id = ?`,
       [
-        customer_comment, // Value for customer_comment
+        customer_comment,
         driver_stars,
-        status, // Value for driver_stars
-        trip_id, // This is the value for WHERE clause
+        trip_id,
       ],
       (err, result) => {
         if (err) {
@@ -381,11 +380,10 @@ crudsObj.updateCustomerComment = (trip_id, updatedValues) => {
   });
 };
 
-//#########################
 crudsObj.getMylastTwentyTripsById = (customer_id, driver_id) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      'SELECT * FROM trip WHERE cust_id = ? AND cust_id <> "0" OR driver_id=? AND driver_id<>"0"  LIMIT 20',
+      'SELECT * FROM trip WHERE cust_id = ? AND cust_id <> "0" OR driver_id=? AND driver_id<>"0"  LIMIT 20 ORDER BY trip_id DESC',
       [customer_id, driver_id],
       (err, results) => {
         if (err) {
@@ -399,23 +397,21 @@ crudsObj.getMylastTwentyTripsById = (customer_id, driver_id) => {
 
 crudsObj.updateDriverComment = (trip_id, updatedValues) => {
   const {
-    driver_comment, // Field to update
+    driver_comment,
     customer_stars,
-    status, // Field to update
+    status,
   } = updatedValues;
 
   return new Promise((resolve, reject) => {
     pool.query(
       `UPDATE trip SET 
                 driver_comment = ?, 
-                customer_stars = ?,
-                status = ?
+                customer_stars = ?
             WHERE trip_id = ?`,
       [
         driver_comment,
         customer_stars,
-        status, // Value for customer_comment     // Value for driver_stars
-        trip_id, // This is the value for WHERE clause
+        trip_id,
       ],
       (err, result) => {
         if (err) {
@@ -430,7 +426,7 @@ crudsObj.updateDriverComment = (trip_id, updatedValues) => {
 crudsObj.getTripToDash = (status) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "SELECT * FROM trip WHERE status = ?",
+      "SELECT * FROM trip WHERE status = ? ORDER BY trip_id DESC",
       [status],
       (err, results) => {
         if (err) {
@@ -444,6 +440,7 @@ crudsObj.getTripToDash = (status) => {
 
 crudsObj.updateStatusAndDriver = (trip_id, driver_id, status) => {
   return new Promise((resolve, reject) => {
+    // First query: Update trip table
     pool.query(
       `UPDATE trip SET 
                 driver_id = ?, 
@@ -452,9 +449,90 @@ crudsObj.updateStatusAndDriver = (trip_id, driver_id, status) => {
       [driver_id, status, trip_id],
       (err, result) => {
         if (err) {
+          return reject(err); // Reject if there's an error
+        }
+
+        // Calculate the updated date
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + 2); // Add 2 hours
+        const formattedDate = currentDate
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " "); // Format the date
+
+        // Second query: Update users table
+        pool.query(
+          `UPDATE users SET 
+                    last_fin_activity_date_time = ? 
+                WHERE driver_id = ?`,
+          [formattedDate, driver_id], // Correct parameter order
+          (err, result) => {
+            if (err) {
+              return reject(err); // Reject if there's an error
+            }
+
+            // Resolve the promise after both queries succeed
+            return resolve({ status: "200", message: "update successful" });
+          }
+        );
+      }
+    );
+  });
+};
+
+
+
+crudsObj.endTripByCustomer = (trip_id) => {
+  return new Promise((resolve, reject) => {
+    // First, update customer status to 'Ended'
+    pool.query(
+      `UPDATE trip SET customer_status = 'Ended' WHERE trip_id = ?`,
+      [trip_id],
+      (err, result) => {
+        if (err) {
           return reject(err);
         }
-        return resolve({ status: "200", message: "update successful" });
+
+        // Now check if both statuses are 'Ended' to update trip status
+        pool.query(
+          `UPDATE trip SET status = 'Trip Ended' WHERE trip_id = ? 
+           AND customer_status = 'Ended' AND driver_status = 'Ended'`,
+          [trip_id],
+          (err2, result2) => {
+            if (err2) {
+              return reject(err2);
+            }
+            return resolve({ status: "200", message: "Trip ended successfully" });
+          }
+        );
+      }
+    );
+  });
+};
+
+crudsObj.endTripByDriver = (trip_id) => {
+  return new Promise((resolve, reject) => {
+    // First, update driver status to 'Ended'
+    pool.query(
+      `UPDATE trip SET driver_status = 'Ended' WHERE trip_id = ?`,
+      [trip_id],
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+
+        // Now check if both statuses are 'Ended' to update trip status
+        pool.query(
+          `UPDATE trip SET status = 'Trip Ended' WHERE trip_id = ? 
+           AND customer_status = 'Ended' AND driver_status = 'Ended'`,
+          [trip_id],
+          (err2, result2) => {
+            if (err2) {
+              return reject(err2);
+            }
+            return resolve({ status: "200", message: "Trip ended successfully" });
+          }
+        );
       }
     );
   });

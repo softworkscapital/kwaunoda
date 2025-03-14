@@ -61,6 +61,7 @@ crudsObj.getAdminChartsAndUser = () => {
     const query = `
      SELECT u.userid, 
              MAX(c.date_chat) AS last_message_date, 
+             MAX(c.time_chat) AS last_message_time, 
              MAX(c.message) AS last_message, 
              COALESCE(d.name, cu.name) AS user_name, 
              COALESCE(d.surname, cu.surname) AS user_surname,

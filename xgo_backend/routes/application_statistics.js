@@ -96,7 +96,7 @@ StatisticRouter.post('/', async (req, res, next) => {
     }
 });
 
-StatisticRouter.get('/', async (req, res, next) => {
+StatisticRouter.get('/get_last_statistic', async (req, res, next) => {
     try {
         let results = await  StatisticsDbOperations.getStatistics();
         res.json(results);
@@ -105,6 +105,24 @@ StatisticRouter.get('/', async (req, res, next) => {
         res.sendStatus(500);
     }
 });
+
+
+
+StatisticRouter.get('/get_app_stats_by_dates/:date_from/:date_to', async (req, res, next) => {
+    try {
+        let dateFrom = req.params.date_from;
+        let dateTo = req.params.date_to;
+        let results = await  StatisticsDbOperations.getStatisticsByDateRange(dateFrom, dateTo);
+        res.json(results);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
+
+
+
 
 StatisticRouter.get('/:id', async (req, res, next) => {
     try {

@@ -11,6 +11,8 @@ TarrifRouter.post('/', async (req, res, next) => {
             rate,
             lower_bound,
             upper_bound,
+            lower_price_limit,
+            upper_price_limit,
             distance_unit_of_measure,
             account_category,
             status	
@@ -22,6 +24,8 @@ TarrifRouter.post('/', async (req, res, next) => {
                 rate,
                 lower_bound,
                 upper_bound,
+                lower_price_limit,
+                upper_price_limit,
                 distance_unit_of_measure,
                 account_category,
                 status	
@@ -43,11 +47,11 @@ TarrifRouter.get('/', async (req, res, next) => {
     }
 });
 
-TarrifRouter.get('/trip_tarrif_rate', async (req, res, next) => {
+TarrifRouter.get('/trip_tarrif_rate/:distance/:category', async (req, res, next) => {
     try {
         // Extract the given distance and account category from query parameters
-        let givenDistance = parseFloat(req.body.distance); // Use req.query for GET requests
-        let account_category = req.body.category; // Assuming this is a string
+        let givenDistance = parseFloat(req.params.distance); // Use req.query for GET requests
+        let account_category = req.params.category; // Assuming this is a string
 
         console.log(givenDistance);
         console.log(account_category);
@@ -62,6 +66,7 @@ TarrifRouter.get('/trip_tarrif_rate', async (req, res, next) => {
             return res.status(400).json({ error: 'Invalid account category provided.' });
         }
 
+        
         // Call the function to get the active tariff
         const results = await TarrifsDbOperations.getActiveTarrifByDistance(givenDistance, account_category);
 

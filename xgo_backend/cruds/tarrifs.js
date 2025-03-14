@@ -9,6 +9,8 @@ crudsObj.postTarrif= (
     rate,
     lower_bound,
     upper_bound,
+    lower_price_limit,
+    upper_price_limit,
     distance_unit_of_measure,
     account_category,
     status	
@@ -22,16 +24,20 @@ crudsObj.postTarrif= (
         rate,
         lower_bound,
         upper_bound,
+        lower_price_limit,
+        upper_price_limit,
         distance_unit_of_measure,
         account_category,
         status	
-              ) VALUES (?, ?, ?, ?,?,?,?)`,
+              ) VALUES (?, ?, ?, ?,?,?,?,?,?)`,
       [
        
         billing_type,
         rate,
         lower_bound,
         upper_bound,
+        lower_price_limit,
+        upper_price_limit,
         distance_unit_of_measure,
         account_category,
         status	
@@ -85,6 +91,8 @@ crudsObj.updateTarrif = (tarrif_id, updatedValues) => {
         rate,
         lower_bound,
         upper_bound,
+        lower_price_limit,
+        upper_price_limit,
         distance_unit_of_measure,
         account_category,
         status	
@@ -100,6 +108,8 @@ crudsObj.updateTarrif = (tarrif_id, updatedValues) => {
                 rate =?,
                 lower_bound =?,
                 upper_bound =?,
+                lower_price_limit = ?,
+                upper_price_limit = ?,
                 distance_unit_of_measure =?,
                 account_category =?,
                 status =?	
@@ -109,6 +119,8 @@ crudsObj.updateTarrif = (tarrif_id, updatedValues) => {
                 rate,
                 lower_bound,
                 upper_bound,
+                lower_price_limit,
+                upper_price_limit,
                 distance_unit_of_measure,
                 account_category,
                 status	,

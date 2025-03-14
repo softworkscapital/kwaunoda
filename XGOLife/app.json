@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "XGOLife",
+    "slug": "XGOLife",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/splashscreen_logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splashscreen_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ab818cb1-0f08-4111-9cde-13b055369870"
+      }
+    },
+    "owner": "softworkscapital"
+  }
+}

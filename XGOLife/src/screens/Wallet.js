@@ -228,7 +228,7 @@ const Wallet = () => {
         revenue_wallet_id: "",
         total_usage: 0,
         trip_id: "N/A",
-        trxn_code: "1",
+        trxn_code: "TU",
         user_wallet_debit: parseFloat(debit),
         user_wallet_credit: 0,
         user_wallet_balance: userBal + parseFloat(debit),

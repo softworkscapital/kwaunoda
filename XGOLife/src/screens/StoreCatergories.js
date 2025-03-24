@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -8,11 +9,12 @@ import {
   TouchableOpacity,
   Modal,
   Button,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL_STORE } from "./config";
 
 // Sample categories data
 const categoriesData = {
@@ -121,61 +123,100 @@ const StoreCategories = () => {
   const [cartVisible, setCartVisible] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [orderedCategories, setOrderedCategories] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // useEffect(() => {
+
+  //   orderLayout();
+  // }, []);
+
+  // const orderLayout = async () => {
+  //   try {
+  //     const result = await AsyncStorage.getItem("SelectedCategories");
+  //     const selectedCategories = JSON.parse(result) || [];
+
+  //     // Get the default categories
+  //     const allCategories = categoriesData[1] || [];
+
+  //     // Filter and order the categories
+  //     const selectedCategoriesObjects = allCategories.filter(category => selectedCategories.includes(category.name));
+  //     const remainingCategories = allCategories.filter(category => !selectedCategories.includes(category.name));
+
+  //     // Initialize with Pharmacy and Restaurants
+  //     const ordered = [
+  //       allCategories[0], // Pharmacy
+  //       allCategories[1], // Restaurants
+  //       ...selectedCategoriesObjects, // Selected categories
+  //       ...remainingCategories // Remaining categories
+  //     ];
+
+  //     // Ensure Pharmacy and Restaurants are not duplicated
+  //     const uniqueOrdered = ordered.filter((category, index, self) =>
+  //       index === self.findIndex((c) => c.id === category.id)
+  //     );
+
+  //     setOrderedCategories(uniqueOrdered);
+
+  //     console.log('Ordered Categories:', uniqueOrdered);
+  //   } catch (error) {
+  //     console.log('Error retrieving selected categories:', error);
+  //   }
+  // };
+
+  // const addToCart = (category) => {
+  //   setCartItems([...cartItems, category]);
+  // };
+
+  
 
   useEffect(() => {
-    orderLayout();
+    getCatergories();
   }, []);
-
-  const orderLayout = async () => {
+  
+  const getCatergories = async () => {
     try {
-      const result = await AsyncStorage.getItem("SelectedCategories");
-      const selectedCategories = JSON.parse(result) || [];
-
-      // Get the default categories
-      const allCategories = categoriesData[1] || [];
-      
-      // Filter and order the categories
-      const selectedCategoriesObjects = allCategories.filter(category => selectedCategories.includes(category.name));
-      const remainingCategories = allCategories.filter(category => !selectedCategories.includes(category.name));
-
-      // Initialize with Pharmacy and Restaurants
-      const ordered = [
-        allCategories[0], // Pharmacy
-        allCategories[1], // Restaurants
-        ...selectedCategoriesObjects, // Selected categories
-        ...remainingCategories // Remaining categories
-      ];
-
-      // Ensure Pharmacy and Restaurants are not duplicated
-      const uniqueOrdered = ordered.filter((category, index, self) =>
-        index === self.findIndex((c) => c.id === category.id)
+      setLoading(true); // Show loading indicator
+  
+      const resp = await fetch(
+        `${API_URL_STORE}/productdefinition/get_online_all_full_product_definitions`
       );
-
-      setOrderedCategories(uniqueOrdered);
-
-      console.log('Ordered Categories:', uniqueOrdered);
+  
+      const result = await resp.json();
+      console.log("all Pdz", result);
+  
+      const uniqueCategories = new Set(result.map((product) => product.category));
+      const categoriesArray = Array.from(uniqueCategories);
+      console.log("Unique Categories:", categoriesArray);
+  
+      setCategories(categoriesArray);
+  
+      setTimeout(() => {
+        setLoading(false); // Hide loading indicator
+        navigation.navigate("StoreInventory", { selectedCategory: categoriesArray });
+      }, 3000);
+  
     } catch (error) {
-      console.log('Error retrieving selected categories:', error);
+      console.log(error);
+      setLoading(false); // Hide loading indicator in case of error
     }
   };
-
-  const addToCart = (category) => {
-    setCartItems([...cartItems, category]);
-  };
+  
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <MaterialIcons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Store Categories</Text>
-        <TouchableOpacity onPress={() => setCartVisible(true)} style={styles.cartButton}>
+        {/* <TouchableOpacity onPress={() => setCartVisible(true)} style={styles.cartButton}>
           <MaterialIcons name="shopping-cart" size={24} color="#000" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
-
+      {/* 
       <ScrollView style={styles.categoryContainer}>
         {orderedCategories.map((category) => (
           <TouchableOpacity
@@ -191,10 +232,10 @@ const StoreCategories = () => {
             </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </ScrollView> */}
 
       {/* Cart Modal */}
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={true}
         visible={cartVisible}
@@ -213,7 +254,15 @@ const StoreCategories = () => {
             <Button title="Close" onPress={() => setCartVisible(false)} />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
+
+      <View style={styles.modalContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={{ fontSize: 30, fontWeight: "bold", margin: 5 }}>
+          Welcome to Xgo Store
+        </Text>
+        <Text style={{ fontSize: 20 }}>Happy Shopping</Text>
+      </View>
     </View>
   );
 };
@@ -221,7 +270,7 @@ const StoreCategories = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffc000",
   },
   header: {
     backgroundColor: "#ffc000",
@@ -238,7 +287,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
+    // marginTop: 300,
   },
+
   categoryContainer: {
     flex: 1,
     margin: 30,
@@ -268,7 +319,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    paddingBottom: 50,
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: "80%",

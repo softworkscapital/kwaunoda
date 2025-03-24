@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useFocusEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -20,6 +20,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import TopView from "../components/TopView";
 import Toast from "react-native-toast-message";
 import { WebView } from "react-native-webview";
+import { useFocusEffect } from "@react-navigation/native";
+
 
 const DriverNewOrderList = () => {
   const url = "https://xgolifedash.softworkscapital.com/route?";
@@ -32,6 +34,7 @@ const DriverNewOrderList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [smsData,setSmsData] = useState();
   const [counterOffer, setCounterOffer] = useState(null);
   const [showCounterOfferModal, setShowCounterOfferModal] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
@@ -94,6 +97,51 @@ const DriverNewOrderList = () => {
     return () => backHandler.remove(); // Cleanup on unmount
   }, [driverId]); // Fetch top-up history when driverId is set
 
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserIdAndCallLastActivity = async () => {
+        const storedIds = await AsyncStorage.getItem("theIds");
+        const parsedIds = JSON.parse(storedIds);
+        if (parsedIds && parsedIds.customerId !== "0") {
+          lastActivity(parsedIds.customerId);
+        }else{
+            lastActivity(parsedIds.driver_id); 
+        }
+      };
+
+      fetchUserIdAndCallLastActivity();
+    }, [])
+  );
+
+  const lastActivity = async (id) => {
+    console.log("user last acty newOrder logged", id);
+    try {
+      const response = await fetch(
+        `${API_URL}/users/update_last_activity_date_time/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("last loggy:", result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
   const fetchDriverDetails = async (driverId) => {
     // console.log("fetch details ID", driverId);
     try {
@@ -101,6 +149,7 @@ const DriverNewOrderList = () => {
       const result = await response.json();
       if (result && result.length > 0) {
         setDriver(result[0].driver_id);
+        setSmsData(result[0]);
         await fetchTrips();
       } else {
         Alert.alert("Error", "Driver details not found.");
@@ -183,8 +232,6 @@ const DriverNewOrderList = () => {
       description: `Trip ID: ${selectedTrip.trip_id} Commission\n${selectedTrip.detail}\nFrom: ${selectedTrip.origin_location}\nTo: ${selectedTrip.dest_location}`,
     };
 
-    // console.log("Zvikuenda izvo", data);
-
     try {
       // Make the API call to process the trip commission
       const resp = await fetch(
@@ -208,8 +255,8 @@ const DriverNewOrderList = () => {
       // Parse the JSON response
       const result = await resp.json();
       if (result) {
-        setBalance(newBalance); // Update balance state
-        await updateTripStatus(); // Call a function to update trip status
+        setBalance(newBalance);
+        await updateTripStatus();
       } else {
         Alert.alert("Error", "Failed to process top-up.");
       }
@@ -260,6 +307,7 @@ const DriverNewOrderList = () => {
       );
     }
   };
+
 
   const handlePress = (location) => {
     const origin = {
@@ -342,6 +390,8 @@ const DriverNewOrderList = () => {
             payment_type: trip.payment_type,
             currency_code: trip.currency_code,
             currency_symbol: trip.currency_symbol,
+            to: trip.dest_location,
+            from: trip.origin_location,
           }))
         );
       }

@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  TextInput,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -28,13 +29,55 @@ import { API_URL_STORE, API_URL_UPLOADS } from "./config";
     const [selectedSubCategory, setSelectedSubCategory] = useState(null);
     const route = useRoute();
     const { selectedCategory } = route.params;
-    const [dummyStores, setDummyStores] = useState([]);
-    const [currentCat, setCurrentCategory] = useState();
-    const [uniqueSubCategories, setUniqueSubCategories] = useState(new Set());
   
     useEffect(() => {
-
-    fetchData();
+      const fetchData = async () => {
+        try {
+          console.log("selectedCategory", selectedCategory);
+          const resp = await fetch(
+            `${API_URL_STORE}/productdefinition/all_stores_full_products_definitions_by_category/${selectedCategory}`
+          );
+          const result = await resp.json();
+          console.log("result", result);
+  
+          const categoryMap = {};
+          const productIds = new Set();
+  
+          result.forEach((product) => {
+            const category = product.category || "Other";
+            const subCategory = product.sub_category || "Other";
+  
+            if (!categoryMap[category]) {
+              categoryMap[category] = { id: category, name: category, items: [] };
+            }
+  
+            if (!productIds.has(product.product_id)) {
+              productIds.add(product.product_id);
+  
+              const imageRef = product.uploaded_product_image_ref
+                ? product.uploaded_product_image_ref.replace(/\\/g, "/")
+                : "default_image_path.png";
+  
+              categoryMap[category].items.push({
+                id: product.product_id,
+                name: product.product_brand,
+                image: `${API_URL_UPLOADS}/${imageRef}`,
+                price: product.selling_price,
+                notes: product.description_notes,
+                item_count: product.qty_balance,
+                category: product.category,
+                sub_category: subCategory,
+              });
+            }
+          });
+  
+          const categoriesArray = Object.values(categoryMap);
+          setAllProducts(categoriesArray);
+        } catch (error) {
+          console.log("Error fetching data:", error);
+        }
+      };
+  
       const intervalId = setTimeout(() => {
         fetchData();
       }, 2000);
@@ -130,188 +173,12 @@ import { API_URL_STORE, API_URL_UPLOADS } from "./config";
 
 
 
-    const fetchStores = async () => {
-      try {
-        const resp = await fetch(
-          `${API_URL_STORE}/branches/get_branch_by_branch_type/Virtual`
-        );
-        const result = await resp.json();
-        console.log("Stores result", result);
-    
-        // Process the store data
-        const storeMap = {};
-    
-        result.forEach((store) => {
-          const branchName = store.branch_name || "Other";
-          
-          if (!storeMap[branchName]) {
-            storeMap[branchName] = {
-              id: store.branch_id,
-              name: branchName,
-              image: `${API_URL_UPLOADS}/${store.branch_image.replace(/\\/g, "/")}`,
-              location: store.branch_location,
-              phone: store.phone,
-              inventoryLevel: store.inventory_level,
-              companyName: store.company_name,
-            };
-          }
-        });
-    
-        const storesArray = Object.values(storeMap);
-        setDummyStores(storesArray); // Update your state to store the fetched stores
-      } catch (error) {
-        console.log("Error fetching stores:", error);
-      }
-    };
-    
-
-  
-     // Handle category selection
-     const handleCategoryPress = (category) => {
-      setCurrentCategory(category);
-      if(category === "all"){
-        fetchData();
-      }else{
-        fetchAgain(category);
-      }
-    };
-
-    const handleSubCategoryPress = (subCategory) => {
-      setSelectedSubCategory(subCategory); // Save the selected sub-category
-    };
-  
-
-    
-    const fetchData = async () => {
-      await fetchStores(); // Assuming this fetches store data
-  
-      try {
-        console.log("selectedCategory", selectedCategory);
-  
-        // Fetch products for each category in selectedCategory
-        const allProductsByCategory = await Promise.all(
-          selectedCategory.map(async (category) => {
-            const resp = await fetch(
-              `${API_URL_STORE}/productdefinition/all_stores_full_products_definitions_by_category/${category}`
-            );
-            const result = await resp.json();
-            console.log(`Products for ${category}:`, result);
-  
-            return result;
-          })
-        );
-  
-        // Flatten the array of arrays into a single array of products
-        const allProducts = allProductsByCategory.flat();
-  
-        // Process the products to create a category map
-        const categoryMap = {};
-        const productIds = new Set();
-        const subCategoriesSet = new Set(); // To store unique sub-categories
-  
-        allProducts.forEach((product) => {
-          const category = product.category || "Other";
-          const subCategory = product.sub_category || "Other";
-  
-          if (!categoryMap[category]) {
-            categoryMap[category] = { id: category, name: category, items: [] };
-          }
-  
-          if (!productIds.has(product.product_id)) {
-            productIds.add(product.product_id);
-  
-            const imageRef = product.uploaded_product_image_ref
-              ? product.uploaded_product_image_ref.replace(/\\/g, "/")
-              : "default_image_path.png";
-  
-            categoryMap[category].items.push({
-              id: product.product_id,
-              name: product.product_brand,
-              image: `${API_URL_UPLOADS}/${imageRef}`,
-              price: product.selling_price,
-              notes: product.description_notes,
-              item_count: product.qty_balance,
-              category: product.category,
-              sub_category: subCategory,
-            });
-  
-            // Add sub-category to the Set
-            subCategoriesSet.add(subCategory);
-          }
-        });
-  
-        // Convert the category map to an array
-        const categoriesArray = Object.values(categoryMap);
-        setAllProducts(categoriesArray);
-  
-        // Update unique sub-categories
-        setUniqueSubCategories(subCategoriesSet);
-      } catch (error) {
-        console.log("Error fetching data:", error);
-      }
-    };
 
 
-    const fetchAgain = async (category) => {
-      try {
-        console.log("Fetching data for category:", category);
-    
-        // Fetch products for the given category
-        const resp = await fetch(
-          `${API_URL_STORE}/productdefinition/all_stores_full_products_definitions_by_category/${category}`
-        );
-        const result = await resp.json();
-        console.log(`Products for ${category}:`, result);
-    
-        // Process the products to create a category map
-        const categoryMap = {};
-        const productIds = new Set();
-        const subCategoriesSet = new Set(); // To store unique sub-categories
-    
-        result.forEach((product) => {
-          const category = product.category || "Other";
-          const subCategory = product.sub_category || "Other";
-    
-          if (!categoryMap[category]) {
-            categoryMap[category] = { id: category, name: category, items: [] };
-          }
-    
-          if (!productIds.has(product.product_id)) {
-            productIds.add(product.product_id);
-    
-            const imageRef = product.uploaded_product_image_ref
-              ? product.uploaded_product_image_ref.replace(/\\/g, "/")
-              : "default_image_path.png";
-    
-            categoryMap[category].items.push({
-              id: product.product_id,
-              name: product.product_brand,
-              image: `${API_URL_UPLOADS}/${imageRef}`,
-              price: product.selling_price,
-              notes: product.description_notes,
-              item_count: product.qty_balance,
-              category: product.category,
-              sub_category: subCategory,
-            });
-    
-            // Add sub-category to the Set
-            subCategoriesSet.add(subCategory);
-          }
-        });
-    
-        // Convert the category map to an array
-        const categoriesArray = Object.values(categoryMap);
-        setAllProducts(categoriesArray);
-    
-        // Update unique sub-categories
-        setUniqueSubCategories(subCategoriesSet);
-      } catch (error) {
-        console.log("Error fetching data:", error);
-      }
-    };
 
 
-  
+
+    
   
     // Extract unique subcategories
     const subCategories = [...new Set(allProducts.flatMap(category => category.items.map(item => item.sub_category)))];
@@ -345,8 +212,6 @@ import { API_URL_STORE, API_URL_UPLOADS } from "./config";
         };
       });
     
-      const currentCategory = allProducts.find(cat => cat.id === selectedCategory);
-
       // Reorder subcategories based on the selected one
       const orderedSubCategories = groupedProducts.map(category => {
         const sortedSubCategories = [...category.subCategories];
@@ -362,144 +227,255 @@ import { API_URL_STORE, API_URL_UPLOADS } from "./config";
           subCategories: sortedSubCategories
         };
       });
-return (
-  <View style={styles.container}>
-    <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <MaterialIcons name="arrow-back" size={24} color="#000" />
-      </TouchableOpacity>
-      <Text style={styles.headerText}>Store Inventory</Text>
-      <TouchableOpacity onPress={() => setCartVisible(true)} style={styles.cartButton}>
-        <MaterialIcons name="shopping-cart" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
 
-    {/* Subcategory Selection */}
-    <View style={styles.categoryContainer}>
-        {selectedCategory.map((category) => (
-          <TouchableOpacity
-            key={category}
-            onPress={() => handleCategoryPress(category)}
-            style={[
-              styles.categoryButton,
-              currentCategory === category && styles.selectedCategory,
-            ]}
-          >
-            <Text>{category}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      const dummyStores = [
+        {
+          name: "Tech Haven",
+          image: "https://picsum.photos/200",
+          rating: 4.8
+        },
+        {
+          name: "Fashion Hub",
+          image: "https://picsum.photos/201",
+          rating: 4.6
+        },
+        // Add more dummy stores
+      ];
+      
+      const flashDeals = [
+        {
+          id: 1,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 2,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 3,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 1,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 2,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 3,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 1,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 2,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 3,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 1,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 2,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        {
+          id: 3,
+          name: "Wireless Earbuds",
+          image: "https://picsum.photos/202",
+          price: 29.99,
+          discount: 50
+        },
+        // Add more flash deals
+      ];
+      
+      const getCategoryIcon = (category) => {
+        // Return appropriate MaterialIcons name based on category
+        const iconMap = {
+          'Electronics': 'devices',
+          'Fashion': 'style',
+          'Home': 'home',
+          // Add more mappings
+        };
+        return iconMap[category] || 'category';
+      };
 
-      {/* Display current category */}
-      <View style={styles.TitleCat}>
-      {currentCat && (
-        <Text style={styles.categoryTitle}>{currentCat}</Text>
-      )}
-      </View>
- 
-
-      {/* Render unique sub-categories */}
-      <View style={styles.subCategoryContainer}>
-        {Array.from(uniqueSubCategories).map((subCategory) => (
-          <TouchableOpacity
-            key={subCategory}
-            onPress={() => handleSubCategoryPress(subCategory)}
-            style={[
-              styles.subCategoryButton,
-              selectedSubCategory === subCategory && styles.selectedSubCategory,
-            ]}
-          >
-            <Text>{subCategory}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Render featured stores */}
-      <View style={styles.storesSection}>
-        <Text style={styles.sectionTitle}>Featured Stores</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {dummyStores.map((store) => (
-            <TouchableOpacity key={store.id} style={styles.storeCard}>
-              <Image source={{ uri: store.image }} style={styles.storeImage} />
-              <View style={styles.storeInfo}>
-                <Text style={styles.storeName}>{store.name}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Render inventory */}
-      <ScrollView style={styles.inventoryContainer}>
-  {allProducts.map((category) => (
-    <View key={category.id} style={styles.categorySection}>
-      {Array.from(uniqueSubCategories).map((subCategory) => {
-        // Filter products for this sub-category
-        const subCategoryProducts = category.items.filter(
-          (item) => item.sub_category === subCategory
-        );
-
-        // Only render the sub-category if it has products
-        if (subCategoryProducts.length > 0) {
-          return (
-            <View key={subCategory} style={styles.subCategorySection}>
-              <TouchableOpacity
-                onPress={() => {
-                  handleSubCategoryPress(subCategory);
-                }}
-                style={[
-                  styles.subCategoryButton,
-                  selectedSubCategory === subCategory &&
-                    styles.selectedSubCategory,
-                ]}
-              >
-                <Text>{subCategory}</Text>
+      return (
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.searchContainer}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <MaterialIcons name="arrow-back" size={24} color="#000" />
               </TouchableOpacity>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={true}
-                style={styles.itemsScroll}
-              >
-                {subCategoryProducts.map((filteredItem) => (
-                  <TouchableOpacity
-                    key={filteredItem.id}
-                    style={
-                      selectedSubCategory === subCategory
-                        ? styles.itemCard
-                        : styles.alternateProductCard
-                    }
-                    onPress={() => handleCardPress(filteredItem)}
-                  >
-                    <Image
-                      source={{ uri: filteredItem.image }}
-                      style={
-                        selectedSubCategory === subCategory
-                          ? styles.itemImage
-                          : styles.productImage
-                      }
-                      resizeMode="cover"
-                    />
-                    <Text style={styles.productName}>{filteredItem.name}</Text>
-                    <Text style={styles.productPrice}>
-                      Price: ${filteredItem.price.toFixed(2)}
-                    </Text>
-                    <Text style={styles.itemDescription}>
-                      Best Quality {filteredItem.sub_category}
-                    </Text>
+              <View style={styles.searchBox}>
+                <MaterialIcons name="search" size={24} color="#666" />
+                <TextInput 
+                  placeholder="Search products" 
+                  style={styles.searchInput}
+                />
+                <MaterialIcons name="camera-alt" size={24} color="#666" />
+              </View>
+              <TouchableOpacity onPress={() => setCartVisible(true)} style={styles.cartButton}>
+                <MaterialIcons name="shopping-cart" size={24} color="#000" />
+                {cartItems.length > 0 && (
+                  <View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>{cartItems.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+      
+          <ScrollView style={styles.mainContent}>
+            {/* Featured Stores Section */}
+            <View style={styles.storesSection}>
+              <Text style={styles.sectionTitle}>Featured Stores</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {dummyStores.map((store, index) => (
+                  <TouchableOpacity key={index} style={styles.storeCard}>
+                    <Image source={{ uri: store.image }} style={styles.storeImage} />
+                    <View style={styles.storeInfo}>
+                      <Text style={styles.storeName}>{store.name}</Text>
+                      <Text style={styles.storeRating}>
+                        <MaterialIcons name="star" size={16} color="#FFD700" />
+                        {store.rating}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
-          );
-        }
-
-        // If no products exist for this sub-category, return null
-        return null;
-      })}
-    </View>
-  ))}
-</ScrollView>
-
+      
+            {/* Categories Grid */}
+            <View style={styles.categoriesGrid}>
+              <Text style={styles.sectionTitle}>Shop By Category</Text>
+              <View style={styles.gridContainer}>
+                {subCategories.map((category, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    style={styles.categoryGridItem}
+                    onPress={() => setSelectedSubCategory(category)}
+                  >
+                    <MaterialIcons 
+                      name={getCategoryIcon(category)} 
+                      size={32} 
+                      color="#333"
+                    />
+                    <Text style={styles.categoryGridText}>{category}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+      
+            {/* Flash Deals */}
+            <View style={styles.flashDealsSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Flash Deals</Text>
+                <Text style={styles.timerText}>05:23:45</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {flashDeals.map((item, index) => (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={styles.flashDealCard}
+                    onPress={() => handleCardPress(item)}
+                  >
+                    <Image source={{ uri: item.image }} style={styles.flashDealImage} />
+                    <View style={styles.discountBadge}>
+                      <Text style={styles.discountText}>-{item.discount}%</Text>
+                    </View>
+                    <Text style={styles.flashDealPrice}>${item.price.toFixed(2)}</Text>
+                    <Text style={styles.originalPrice}>${(item.price * 1.5).toFixed(2)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+      
+            {/* Main Products Grid */}
+            <View style={styles.productsGrid}>
+              {orderedSubCategories.map((category) => (
+                <View key={category.id}>
+                  <View style={styles.categoryHeader}>
+                    <Text style={styles.categoryTitle}>{category.name}</Text>
+                    <TouchableOpacity>
+                      <Text style={styles.viewAllText}>View All</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.productsRow}>
+                    {category.subCategories.map((subCategory) => (
+                      subCategory.items.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={styles.productCard}
+                          onPress={() => handleCardPress(item)}
+                        >
+                          <Image
+                            source={{ uri: item.image }}
+                            style={styles.productImage}
+                            resizeMode="cover"
+                          />
+                          <View style={styles.productInfo}>
+                            <Text style={styles.productName} numberOfLines={2}>
+                              {item.name}
+                            </Text>
+                            <Text style={styles.productPrice}>
+                              US ${item.price.toFixed(2)}
+                            </Text>
+                            <Text style={styles.moqText}>
+                              MOQ: {item.minimum_order || 1} piece(s)
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+  
         {/* Modal for item details */}
         <Modal visible={itemModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
@@ -590,9 +566,8 @@ return (
         <Modal visible={cartVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainerCart}>
-            <Text style={styles.modalTitle}>Shopping Cart</Text>
-
-              <ScrollView style={styles.Scrrr}>
+              <Text style={styles.modalTitle}>Shopping Cart</Text>
+              <ScrollView>
                 {cartItems.map((item) => (
                   <View key={item.id} style={styles.cartItem}>
                     <Image source={{ uri: item.image }} style={styles.cartItemImage} />
@@ -637,9 +612,9 @@ return (
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.checkoutButton}
-                  // onPress={{}}
+                  onPress={handleCheckout}
                 >
-                  <Text style={styles.buttonText}>Checkout Comming soon</Text>
+                  <Text style={styles.buttonText}>Checkout</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -696,54 +671,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   categoryTitle: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 10,
     marginBottom: 10,
-    marginLeft: 20,
-
-  },
-  TitleCat:{
-    paddingLeft: 10,
   },
   itemsScroll: {
     flexDirection: "row",
   },
   itemCard: {
-    // backgroundColor: "#f8f8f8",
-    // borderRadius: 10,
-    // // borderColor: "black",
-    // // borderWidth: 0.5,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 10,
+    // borderColor: "black",
+    // borderWidth: 0.5,
 
-    // padding: 4,
-    // paddingHorizontal: 5,
-    // paddingBottom: 12,
-    // margin: 10,
-    // shadowColor: "#000",
-    // shadowOpacity: 0.1,
-    // shadowRadius: 5,
-    // elevation: 3,
-    // width: 250,
-    width: 200,
-    backgroundColor: '#f9f9f9', // Different background for unselected categories
-    borderRadius: 8,
-    marginTop: 10,
-    marginBottom: 10,
-    marginRight: 20,
-    padding: 7,
-    // paddingHorizontal: 5,
-    paddingBottom: 15,
-    overflow: 'hidden',
-    elevation: 2,
+    padding: 4,
+    paddingHorizontal: 5,
+    paddingBottom: 12,
+    margin: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    height: 270,
+    elevation: 3,
+    width: 250,
   },
   itemImage: {
     width: "100%",
-    aspectRatio: 1,
+    height: 100,
     borderRadius: 10,
   },
   itemName: {
@@ -810,14 +763,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalContainer: {
-    width: "70%", // Width of the modal
+    width: "90%", // Width of the modal
     maxHeight: "100%", // Max height of the modal
     backgroundColor: "white", // White background for the modal
     borderColor: "black",
     borderWidth: 2,
     borderRadius: 10,
     padding: 7,
-    paddingHorizontal: 7,
+    paddingHorizontal: 12,
     paddingBottom: 15,
     shadowColor: "#000",
     shadowOffset: {
@@ -829,22 +782,19 @@ const styles = StyleSheet.create({
     elevation: 5, // For Android shadow
   },
   modalTitle: {
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
     position: "absolute", // Position it absolutely
-    top: 10, // Adjust to place it where you want
-    left: 10, // Adjust to center or position it
+    top: 20, // Adjust to place it where you want
+    left: 20, // Adjust to center or position it
     fontSize: 30,
     fontWeight: "bold",
-    paddingHorizontal: 5,
-    color: "white",
-    borderRadius:  10, // Make sure the text is visible over the image
+    marginBottom: 10,
+    color: "white", // Make sure the text is visible over the image
   },
   modalImage: {
     width: "100%",
-    aspectRatio: 1,
+    height: 300,
     borderRadius: 10,
-    marginBottom: 5,
-    // borderWidth: 2,
+    marginBottom: 10,
   },
   modalPrice: {
     fontSize: 18,
@@ -854,12 +804,12 @@ const styles = StyleSheet.create({
   modalDescription: {
     fontSize: 16,
     color: "#7f8c8d",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 1,
+    marginBottom: 20,
     justifyContent: "center",
   },
   quantityButton: {
@@ -884,7 +834,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    paddingTop: 20,
   },
   cartItemImage: {
     width: 50,
@@ -944,7 +893,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   checkoutButton: {
-    backgroundColor: "grey",
+    backgroundColor: "#007BFF",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -979,6 +928,66 @@ const styles = StyleSheet.create({
     color: "gray",
     fontSize: 14,
   },
+
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 15,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    height: 40,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  cartBadge: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    backgroundColor: '#ff4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  storesSection: {
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 15,
+    marginBottom: 10,
+  },
+  storeCard: {
+    width: 130,
+    marginLeft: 15,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  storeImage: {
+    width: '100%',
+    height: 130,
+  },
+  storeInfo: {
+    padding: 8,
+  },
   storeName: {
     fontSize: 14,
     fontWeight: '600',
@@ -988,84 +997,158 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  storeImage: {
-    width: '50%',
-    height: 60,
-    borderRadius: 100,
+  ratingText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 4,
   },
-  storeCard: {
-    width: 115,
-    marginLeft: 5,
-    // backgroundColor: '#fff',
-    // borderRadius: 8,
-    // elevation: 3,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    alignContent: "center",
-    alignItems:"center",
-    overflow: 'hidden',
+  categoriesGrid: {
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
-  storesSection: {
-    marginVertical: 15,
-    marginHorizontal: 5,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 15,
-    marginBottom: 10,
-  },
-  storeInfo: {
-    padding: 3,
-  },
-  alternateProductCard: {
-    width: 210,
-    backgroundColor: '#f8f8f8', // Different background for unselected categories
-    borderRadius: 8,
-    marginTop: 10,
-    marginBottom: 10,
-    marginRight: 20,
-    padding: 7,
-    height: 300,
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingHorizontal: 5,
-    paddingBottom: 15,
-    overflow: 'hidden',
+  },
+  categoryGridItem: {
+    width: '23%',
+    aspectRatio: 1,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 2,
+  },
+  categoryGridText: {
+    fontSize: 12,
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  flashDealsSection: {
+    marginBottom: 15,
+  },
+  flashDealHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    marginBottom: 10,
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timerText: {
+    color: '#ff6a00',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  flashDealCard: {
+    width: 150,
+    marginLeft: 15,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  flashDealImage: {
+    width: '100%',
+    height: 150,
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#ff4444',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  discountText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  flashDealPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ff6a00',
+    marginTop: 5,
+    marginLeft: 8,
+  },
+  originalPrice: {
+    fontSize: 12,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginLeft: 8,
+    marginBottom: 8,
+  },
+  productsGrid: {
+    paddingHorizontal: 15,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  viewAllText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  productsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  productCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 15,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   productImage: {
     width: '100%',
-    borderRadius: 10,
     aspectRatio: 1,
   },
-  categoryContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 16,
-  },
-  categoryButton: {
+  productInfo: {
     padding: 8,
-    margin: 4,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 2,
   },
-  selectedCategory: {
-    backgroundColor: "#007bff",
+  productName: {
+    fontSize: 14,
+    marginBottom: 4,
   },
-  categoryTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+  productPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ff6a00',
+    marginBottom: 4,
   },
-  Scrrr:{
-    marginTop: 40,
+  moqText: {
+    fontSize: 12,
+    color: '#666',
   },
+  mainContent: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  }
 });
 
 export default StoreInventory;

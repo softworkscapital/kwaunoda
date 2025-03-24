@@ -128,6 +128,7 @@ tripRouter.get("/getting_joined_tables_using_trip_id/:trip_id", async (req, res,
   }
 });
 
+
 tripRouter.put("/updateStatusAndDriver/:id", async (req, res, next) => {
   try {
     const trip_id = req.params.id;

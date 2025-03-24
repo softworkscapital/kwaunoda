@@ -371,7 +371,7 @@ const TopView = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("OnlineStore")}
+          onPress={() => navigation.navigate("StoreCategories")}
           style={styles.menuButton}
         >
           <FontAwesome name="shopping-cart" size={24} color="black" />

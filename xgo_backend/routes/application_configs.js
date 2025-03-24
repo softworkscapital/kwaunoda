@@ -23,6 +23,16 @@ ConfigRouter.post('/', async (req, res, next) => {
     }
 });
 
+ConfigRouter.get('/recent', async (req, res, next) => {
+    try {
+        let results = await  ConfigsDbOperations.getRecentConfigByControlItem();
+        res.json(results);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
 ConfigRouter.get('/', async (req, res, next) => {
     try {
         let results = await  ConfigsDbOperations.getConfigs();
@@ -32,7 +42,6 @@ ConfigRouter.get('/', async (req, res, next) => {
         res.sendStatus(500);
     }
 });
-
 ConfigRouter.get('/:id', async (req, res, next) => {
     try {
         let application_config_id = req.params.id;
@@ -74,5 +83,17 @@ ConfigRouter.put('/:application_config_id', async (req, res) => {
         res.sendStatus(500);
     }
 });
+
+
+
+// ConfigRouter.get('/recent-apk-version', async (req, res, next) => {
+//     try {
+//         let result = await ConfigsDbOperations.getRecentConfigByControlItem();
+//         res.json(result);
+//     } catch (e) {
+//         console.log(e);
+//         res.sendStatus(500);
+//     }
+// });
 
 module.exports = ConfigRouter;

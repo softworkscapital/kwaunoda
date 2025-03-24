@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -19,6 +19,8 @@ import { WebView } from "react-native-webview";
 import TopView from "../components/TopView";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
+
 
 const { height, width } = Dimensions.get("window");
 
@@ -81,6 +83,50 @@ const InTransitTrip = ({ navigation }) => {
     }
 
     setBottomSheetHeight("auto"); // Set to auto when expanding
+  };
+
+
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserIdAndCallLastActivity = async () => {
+        const storedIds = await AsyncStorage.getItem("theIds");
+        const parsedIds = JSON.parse(storedIds);
+        if (parsedIds && parsedIds.customerId !== "0") {
+          lastActivity(parsedIds.customerId);
+        }else{
+            lastActivity(parsedIds.driver_id); 
+        }
+      };
+
+      fetchUserIdAndCallLastActivity();
+    }, [])
+  );
+
+  const lastActivity = async (id) => {
+    console.log("user last acty intrans logged", id);
+    try {
+      const response = await fetch(
+        `${API_URL}/users/update_last_activity_date_time/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("last loggy:", result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {

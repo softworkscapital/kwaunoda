@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocationSender from "./LocationTracker";
 import Toast from "react-native-toast-message";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { height, width } = Dimensions.get("window");
 
@@ -36,6 +37,8 @@ const Home = ({ navigation }) => {
   const [navigated, setNavigated] = useState(false);
 
 
+
+  // Fetch user data and set up interval
   useEffect(() => {
     const fetchUserData = async () => {
       const storedIds = await AsyncStorage.getItem("theIds");
@@ -47,7 +50,8 @@ const Home = ({ navigation }) => {
 
       // Set up an interval to fetch user trips and counter offers
       const intervalId = setInterval(() => {
-        if (!navigated) { // Only fetch if not navigated
+        if (!navigated) {
+          // Only fetch if not navigated
           fetchUserTrips(parsedIds.customerId);
         }
       }, 500);
@@ -73,6 +77,22 @@ const Home = ({ navigation }) => {
       ])
     ).start();
   }, [navigated]);
+
+  // Call lastActivity when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserIdAndCallLastActivity = async () => {
+        const storedIds = await AsyncStorage.getItem("theIds");
+        const parsedIds = JSON.parse(storedIds);
+        if (parsedIds && parsedIds.customerId) {
+          lastActivity(parsedIds.customerId);
+        }
+      };
+
+      fetchUserIdAndCallLastActivity();
+    }, [])
+  );
+
   const toggleBottomSheet = () => {
     Animated.timing(bottomSheetHeight, {
       toValue: isExpanded ? 300 : height * 0.7,
@@ -80,6 +100,32 @@ const Home = ({ navigation }) => {
       useNativeDriver: false,
     }).start();
     setIsExpanded(!isExpanded);
+  };
+
+  const lastActivity = async (id) => {
+    console.log("user last activity logged", id);
+    try {
+      const response = await fetch(
+        `${API_URL}/users/update_last_activity_date_time/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("last acty loggy:", result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
 

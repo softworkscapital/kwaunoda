@@ -190,6 +190,7 @@ crudsObj.getNumberofTrips = (driver_id, status) => {
   });
 };
 
+
 crudsObj.getTripByStatusToCustomer = (cust_id) => {
   return new Promise((resolve, reject) => {
     pool.query(

@@ -29,7 +29,7 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
-      signed_on,
+      signed_up_on
     } = postedValues;
 
     // Create the user object
@@ -54,7 +54,7 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
-      signed_on,
+      signed_up_on
     };
 
     // Call the DB operation to insert the user
@@ -151,36 +151,6 @@ userRouter.put("/update_status/:id", async (req, res, next) => {
     res.sendStatus(500);
   }
 });
-
-userRouter.put("/update_last_logged_in/:id", async (req, res, next) => {
-  try {
-    let userid = req.params.id;
-
-    let results = await usersDbOperations.updateLastLoggedIn(
-      userid
-    );
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-userRouter.put("/update_last_activity_date_time/:id", async (req, res, next) => {
-  try {
-    let userid = req.params.id;
-
-    let results = await usersDbOperations.updateLastActivityDateTime(
-      userid
-    );
-    res.json(results);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-});
-
-
 
 // Update OTP route
 userRouter.put("/update_otp/:id", async (req, res) => {

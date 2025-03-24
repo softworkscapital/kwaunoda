@@ -17,6 +17,7 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import Toast from "react-native-toast-message";
 import {
   faLocationArrow,
   faUser,
@@ -30,7 +31,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { API_URL } from "./config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
+//
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -62,7 +63,73 @@ const CustomerNewDelivery = () => {
   const [upperPriceLimit, setUpperPriceLimit] = useState(0);
 
   const navigation = useNavigation();
-  const hardCodedBalance = 100;
+  const [driversData, setDriversData] = useState([]);
+
+  const getDrivers = async () => {
+    try {
+      const response = await fetch(`${APILINK}/driver/`);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data);
+
+      // Extract the phone numbers into an array
+      const phoneNumbers = data.map((driver) => driver.phone);
+      console.log("Phone Numbers:", phoneNumbers);
+
+      // Store the array of phone numbers in state
+      setDriversData(phoneNumbers);
+    } catch (error) {
+      console.log("Failed to fetch drivers:", error);
+    }
+  };
+
+  const sendSmsBroadcast = async () => {
+    if (driversData.length === 0) {
+      console.log("No phone numbers available to send SMS.");
+      return;
+    }
+
+    const message = `Hello XGO driver, a new delivery has been requested.\n
+    Be the first to get this tender while it lasts.\n
+    Tell a Friend to download the XGO App at www.xgolife.com to experience a life of convenience and begin to receive packages seamlessly.`;
+
+    try {
+      const response = await fetch(
+        "https://srv547457.hstgr.cloud:3003/smsendpoint",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clientid: "1001",
+            clientkey: "hdojFa502Uy6nG2",
+            message,
+            recipients: driversData, // Directly use the array
+            senderid: "REMS",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error sending SMS:", response.status, errorText);
+        // Toast.error("Failed to send SMS.");
+        return false;
+      }
+
+      const result = await response.json(); // Log the result if needed
+      console.log("SMS sent successfully:", result);
+      // Toast.success("Message sent successfully!");
+      return true;
+    } catch (error) {
+      console.error("Network Error:", error);
+      // Toast.error("Could not send SMS to Drivers. Please check your connection.");
+      return false;
+    }
+  };
 
   const redirectHome = () => {
     navigation.goBack();
@@ -115,7 +182,7 @@ const CustomerNewDelivery = () => {
 
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
-          console.log("The deliiiii:", lastDelivery);
+          // console.log("The deliiiii:", lastDelivery);
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
@@ -135,6 +202,7 @@ const CustomerNewDelivery = () => {
 
     fetchDeliveries();
     fetchData();
+    getDrivers();
   }, []);
 
   const validateFields = () => {
@@ -173,7 +241,7 @@ const CustomerNewDelivery = () => {
 
   const fetchTarrif = async (distance) => {
     const catergory = "standard";
-    console.log("our Dist", distance);
+    // console.log("our Dist", distance);
 
     try {
       const resp = await fetch(
@@ -187,7 +255,7 @@ const CustomerNewDelivery = () => {
       );
 
       const result = await resp.json();
-      console.log("Tarrif 2 iri", result);
+      // console.log("Tarrif 2 iri", result);
 
       if (result && result.lower_price_limit !== undefined) {
         setLowerPriceLimit(result.lower_price_limit);
@@ -218,7 +286,7 @@ const CustomerNewDelivery = () => {
   };
 
   const sendSmsToClient = async (data) => {
-    console.log("sms", data);
+    // console.log("sms", data);
 
     const message = `Hi ${contact}, a package is being delivered to you.\n
     It consists of ${data.deliveray_details}.\n
@@ -320,8 +388,9 @@ const CustomerNewDelivery = () => {
 
       if (response.ok) {
         const send = await sendSmsToClient(deliveryData);
+        const sendDrivers = await sendSmsBroadcast();
 
-        if (!send) return;
+        if (!send || !sendDrivers) return;
         Toast.show({
           type: "success",
           text1: "Trip Created Successfully",
@@ -352,7 +421,6 @@ const CustomerNewDelivery = () => {
         visibilityTime: 5000,
       });
     } finally {
-   
     }
   };
 

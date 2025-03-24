@@ -9,10 +9,10 @@ let crudsObj = {};
 crudsObj.postUser = (user) => {
   return new Promise((resolve, reject) => {
     let User = user;
-    // console.log("honai user:", User);
+    console.log("honai user:", User);
 
     pool.query(
-      "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_up_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         user.userId, // User ID
         user.username, // Username
@@ -34,7 +34,7 @@ crudsObj.postUser = (user) => {
         user.driverId, // Driver ID
         user.customerId, // Customer ID
         user.otp, // OTP
-        user.signed_on, // Signed on
+        user.signed_up_on, // Signed on
       ],
       (err, result) => {
         if (err) {
@@ -100,11 +100,11 @@ crudsObj.postUser2 = (
   client_profile_id,
   user_phone,
   otp,
-  signed_on
+  signed_up_on
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO users(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,client_profile_id, OTP,signed_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO users(company_id,branch_id,username,password,role,category,email,notify,activesession,addproperty,editproperty,approverequests,delivery,status,client_profile_id, OTP,signed_up_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       [
         company_id,
         branch_id,
@@ -122,7 +122,7 @@ crudsObj.postUser2 = (
         status,
         client_profile_id,
         otp,
-        signed_on,
+        signed_up_on,
       ],
       (err, result) => {
         if (err) {
@@ -351,27 +351,29 @@ crudsObj.updateUserStatus = (userid, updatedValues) => {
 };
 
 crudsObj.updateLastLoggedIn = (userid) => {
-
   const currentDate = new Date();
   currentDate.setHours(currentDate.getHours() + 2); // Add 2 hours
   const formattedDate = currentDate
     .toISOString()
     .slice(0, 19)
     .replace("T", " "); // Format the date
-  console.log(formattedDate);
-  datefor = formattedDate;  // Only extract membershipstatus
+
+  console.log("Updating last_logged_in to:", formattedDate, "for userid:", userid);
 
   return new Promise((resolve, reject) => {
     pool.query(
-      `UPDATE users SET 
-        last_logged_in = ?
-      WHERE userid = ?`,
-      [userid, datefor], // Only pass the necessary parameters
+      `UPDATE users SET last_logged_in = ? WHERE userid = ?`,
+      [formattedDate, userid], // Correctly pass the parameters
       (err, result) => {
         if (err) {
+          console.error("Error updating database:", err);
           return reject(err);
         }
-        return resolve({ status: "200", message: "Update successful" });
+        console.log(result);
+        if (result.affectedRows === 0) {
+          return resolve({ status: "404", message: "User not found" });
+        }
+        return resolve({ status: "200", message: "Update successful", result });
       }
     );
   });
@@ -386,19 +388,19 @@ crudsObj.updateLastActivityDateTime = (userid) => {
     .slice(0, 19)
     .replace("T", " "); // Format the date
   console.log(formattedDate);
-  datefor = formattedDate;  // Only extract membershipstatus
+  const datefor = formattedDate;  // Only extract membershipstatus
 
   return new Promise((resolve, reject) => {
     pool.query(
       `UPDATE users SET 
         last_activity_date_time = ?
       WHERE userid = ?`,
-      [userid, datefor], // Only pass the necessary parameters
+      [formattedDate,userid], // Only pass the necessary parameters
       (err, result) => {
         if (err) {
           return reject(err);
         }
-        return resolve({ status: "200", message: "Update successful" });
+        return resolve({ status: "200", message: "Update successful", result });
       }
     );
   });

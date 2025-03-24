@@ -57,9 +57,76 @@ const NewDelivery = () => {
   const [endLocationLong, setEndLocationLong] = useState("");
   const [lowerPriceLimit, setLowerPriceLimit] = useState(0);
   const [upperPriceLimit, setUpperPriceLimit] = useState(0);
+  const [driversData, setDriversData] = useState();
 
   const navigation = useNavigation();
   const hardCodedBalance = 100; // Example balance value
+
+  const getDrivers = async () => {
+    try {
+      const response = await fetch(`${APILINK}/driver/`);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data);
+
+      // Extract the phone numbers into an array
+      const phoneNumbers = data.map((driver) => driver.phone);
+      console.log("Phone Numbers:", phoneNumbers);
+
+      // Store the array of phone numbers in state
+      setDriversData(phoneNumbers);
+    } catch (error) {
+      console.log("Failed to fetch drivers:", error);
+    }
+  };
+
+  const sendSmsBroadcast = async () => {
+    if (driversData.length === 0) {
+      console.log("No phone numbers available to send SMS.");
+      return;
+    }
+
+    const message = `Hello XGO driver, a new delivery has been requested.\n
+    Be the first to get this tender while it lasts.\n
+    Tell a Friend to download the XGO App at www.xgolife.com to experience a life of convenience and begin to receive packages seamlessly.`;
+
+    try {
+      const response = await fetch(
+        "https://srv547457.hstgr.cloud:3003/smsendpoint",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clientid: "1001",
+            clientkey: "hdojFa502Uy6nG2",
+            message,
+            recipients: driversData, // Directly use the array
+            senderid: "REMS",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error sending SMS:", response.status, errorText);
+        // Toast.error("Failed to send SMS.");
+        return false;
+      }
+
+      const result = await response.json(); // Log the result if needed
+      console.log("SMS sent successfully:", result);
+      // Toast.success("Message sent successfully!");
+      return true;
+    } catch (error) {
+      console.error("Network Error:", error);
+      // Toast.error("Could not send SMS to Drivers. Please check your connection.");
+      return false;
+    }
+  };
 
   const redirectHome = () => {
     navigation.goBack();
@@ -86,7 +153,7 @@ const NewDelivery = () => {
       console.log("kkkkkk", result);
       if (result) {
         setBalance(result[0].balance);
-        console.log("suiiiii", result[0].balance);
+        // console.log("suiiiii", result[0].balance);
       } else {
         Alert.alert("Error", "Failed to fetch History.");
       }
@@ -121,7 +188,7 @@ const NewDelivery = () => {
 
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
-          console.log("Last delivery:", lastDelivery);
+          // console.log("Last delivery:", lastDelivery);
 
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
@@ -179,6 +246,7 @@ const NewDelivery = () => {
 
     fetchDeliveries();
     fetchData();
+    getDrivers();
     // fetchTopUpHistory(cid);
   }, []);
 
@@ -223,7 +291,7 @@ const NewDelivery = () => {
       );
 
       const result = await resp.json();
-      console.log("Tarrif iri", result);
+      // console.log("Tarrif iri", result);
 
       if (result && result.lower_price_limit !== undefined) {
         setLowerPriceLimit(result.lower_price_limit);
@@ -235,7 +303,6 @@ const NewDelivery = () => {
       Alert.alert("Error", "An error occurred while fetching Tarrifs.");
     }
   };
-
 
   const validatePrice = () => {
     const numericPrice = Number(price);
@@ -252,12 +319,10 @@ const NewDelivery = () => {
   const handlePriceChange = (newPrice) => {
     validatePrice();
     setPrice(newPrice);
-    
   };
 
-
   const handleSignUp = async () => {
-    if ( !validatePrice()) return;
+    if (!validatePrice()) return;
     if (!validateFields()) return;
 
     // Validate that origin latitude and longitude are set
@@ -307,10 +372,10 @@ const NewDelivery = () => {
         pascel_pic2: null,
         pascel_pic3: null,
         trip_priority_type: null,
-        delivery_received_confirmation_code: "0"
-    };
+        delivery_received_confirmation_code: "0",
+      };
 
-      console.log("Data iriiiii", deliveryData);
+      // console.log("Data iriiiii", deliveryData);
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
         headers: {
@@ -320,11 +385,12 @@ const NewDelivery = () => {
       });
 
       const textResponse = await response.text(); // Get raw response
-      console.log("Raw response:", textResponse);
+      // console.log("Raw response:", textResponse);
 
-      const result = JSON.parse(textResponse); // Parse if it's valid JSON
+      const result = JSON.parse(textResponse);
+      const send = await sendSmsBroadcast();
 
-      if (response.ok) {
+      if (response.ok && send) {
         Toast.show({
           type: "success",
           text1: "Trip Created Successfully",

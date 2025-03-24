@@ -8,7 +8,6 @@ import {
   ScrollView,
   Modal,
   Image,
-  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -21,18 +20,28 @@ const DriverEndTrip = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const navigation = useNavigation();
-  const [profileImage, setPic] = useState();
-  const [type, setType] = useState();
-  const [name, setName] = useState();
   const route = useRoute();
-  const [code, setCode] = useState("0");
   const trip = route.params?.trip;
   const tripId = trip.trip_id;
   const [loading, setLoading] = useState(false);
-  const [customerState, setCustomerState] = useState(null); // State for loading modal
+  const [customerState, setCustomerState] = useState(null);
+  const [modalVisible, setModalVisible] = useState(true); // Modal starts as visible
+  const [profileImage, setPic] = useState();
+  const [type, setType] = useState();
+  const [name, setName] = useState();
+  const [code, setCode] = useState("0");
 
   useEffect(() => {
     fetchCustDetails();
+
+    CheckCustState();
+    // Set interval to check customer state every 5 seconds
+    const intervalId = setInterval(() => {
+      CheckCustState();
+    }, 5000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchCustDetails = async () => {
@@ -58,7 +67,6 @@ const DriverEndTrip = () => {
           setPic(
             `${API_URL_UPLOADS}/${result[0].profilePic.replace(/\\/g, "/")}`
           );
-
           setType(result[0].account_type);
           setName(result[0].username);
         }
@@ -66,23 +74,13 @@ const DriverEndTrip = () => {
         Alert.alert("Customer details not found.");
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching customer details:", error);
     }
   };
 
   const redirectHome = () => {
     navigation.navigate("DriverNewOrderList", {});
   };
-  const redirectInt = (trip) => {
-    console.log("yy", trip);
-    console.log(tripId);
-    navigation.navigate("InTransitTrip", { OntripData: trip });
-  };
-
-  const handleRatingPress = (value) => {
-    setRating(value);
-  };
-
 
   const CheckCustState = async () => {
     try {
@@ -94,22 +92,28 @@ const DriverEndTrip = () => {
       });
 
       const result = await response.json();
+      setCustomerState(result);
       console.log("Trip status", result);
+      if (
+        result &&
+        result.length > 0 &&
+        result[0]?.customer_status === "Ended"
+      ) {
+        setModalVisible(false); // Hide modal only if status is "Ended"
+      }
       return result;
     } catch (error) {
-      console.log(error);
+      console.log("Error checking customer state:", error);
     }
   };
 
-  
-
   const endTrip = async () => {
     console.log("tripcode", trip.delivery_received_confirmation_code);
-    
-    if(trip.delivery_received_confirmation_code === code){
+
+    if (trip.delivery_received_confirmation_code === code) {
       try {
         const response = await fetch(
-          `${API_URL}/trip//end-trip/driver/${trip.trip_id}`,
+          `${API_URL}/trip/end-trip/driver/${trip.trip_id}`,
           {
             method: "POST",
             headers: {
@@ -117,16 +121,79 @@ const DriverEndTrip = () => {
             },
           }
         );
-  
+
         const result = await response.json();
-        console.log("result from end trip function in Customer", result);
+        console.log("Result from end trip function:", result);
+        return response.ok; // Return true if response is OK
       } catch (error) {
-        console.error("Error posting feedback:", error);
+        console.error("Error ending trip:", error);
       }
     }
+    return false; // Return false if confirmation code doesn't match
+  };
+
+  const commentD = async () => {
+ // Start loading
+
+    // Check if state is valid and customer_status is "Ended"
+    console.log("kasitoma", customerState);
+    try {
+      const FeedbackData = {
+        driver_comment: comment,
+        customer_stars: rating,
+      };
+
+      console.log("Comment of driver", FeedbackData);
+
+      const response = await fetch(
+        `${API_URL}/trip/driverComment/${tripId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(FeedbackData),
+        }
+      );
+
+      const result = await response.json();
+      console.log("Result from Comment of driver", result);
+
+      if (response.ok) {
+        Toast.show({
+          text1: "Success",
+          text2: result.message,
+          type: "success",
+          position: "top",
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+       
+      } else {
+        Toast.show({
+          text1: "Error",
+          text2: result.message || "Failed to submit feedback.",
+          type: "error",
+          position: "top",
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error posting feedback:", error);
+      Toast.show({
+        text1: "Error",
+        text2: "An error occurred while submitting your feedback.",
+        type: "error",
+        position: "top",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } 
   };
 
   const handleFeedback = async () => {
+    // Check if a rating has been provided
     if (rating === 0) {
       Toast.show({
         text1: "Error",
@@ -138,6 +205,8 @@ const DriverEndTrip = () => {
       });
       return;
     }
+
+    // Check if a comment has been provided
     if (comment.trim() === "") {
       Toast.show({
         text1: "Error",
@@ -150,87 +219,45 @@ const DriverEndTrip = () => {
       return;
     }
 
-    // Show loading modal
+    setLoading(true); // Start loading
 
-    const end = endTrip(); // Assuming this function ends the trip
+    const end = await endTrip(); // Ensure this is awaited
+    console.log("Trip ended:", end);
 
-    if (!end) {
-      setLoading(false); // Hide loading modal if ending trip fails
-      return;
-    } else {
-      
-    
-      
-      console.log("Check", customerState);
-      while (true) {
-        setLoading(true);
-        const state = await CheckCustState();
-        setCustomerState(state);
-      
-        if (state && state[0]?.customer_status === "Ended") {
-          try {
-           
-            const FeedbackData = {
-              driver_comment: comment,
-              customer_stars: rating,
-            };
-                  
-            console.log("Comment of driver", FeedbackData);
-      
-            const response = await fetch(
-              `${API_URL}/trip/driverComment/${tripId}`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(FeedbackData),
-              }
-            );
-      
-            const result = await response.json();
-            console.log("result from Comment of driver", result);
-      
-            if (response.ok) {
-              Toast.show({
-                text1: "Success",
-                text2: result.message,
-                type: "success",
-                position: "top",
-                visibilityTime: 3000,
-                autoHide: true,
-              });
-              redirectHome();
-            } else {
-              Toast.show({
-                text1: "Error",
-                text2: result.message || "Failed to submit feedback.",
-                type: "error",
-                position: "top",
-                visibilityTime: 3000,
-                autoHide: true,
-              });
-            }
-          } catch (error) {
-            console.error("Error posting feedback:", error);
-            Toast.show({
-              text1: "Error",
-              text2: "An error occurred while submitting your feedback.",
-              type: "error",
-              position: "top",
-              visibilityTime: 3000,
-              autoHide: true,
-            });
-          } finally {
-            setLoading(false);
-          }
-          break; // Exit the loop after executing the feedback logic
+    if (end) {
+      await commentD();
+      if (customerState && customerState.length > 0) {
+        console.log("Current customer state:", customerState);
+        if (customerState[0]?.customer_status === "Ended") {
+          setLoading(false);
+          redirectHome();
         }
-      
-        // Wait for 3 seconds before the next check
-        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        Toast.show({
+          text1: "Error",
+          text2: "No customer state found.",
+          type: "error",
+          position: "top",
+          visibilityTime: 3000,
+          autoHide: true,
+        });
       }
-    }
+    } else {
+      Toast.show({
+        text1: "Error",
+        text2: "Failed to end the trip. Please check the confirmation code.",
+        type: "error",
+        position: "top",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } // End loading
+  };
+
+  const redirectInt = (trip) => {
+    console.log("yy", trip);
+    console.log(tripId);
+    navigation.navigate("InTransitTrip", { OntripData: trip });
   };
 
   return (
@@ -327,7 +354,6 @@ const DriverEndTrip = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-          <ActivityIndicator size="large" color="#0000ff" />
             <Text style={styles.loadingText}>Waiting for </Text>
             <Text style={styles.loadingText}>Customer</Text>
             <Text style={styles.loadingText}>To End trip . . .</Text>
@@ -451,6 +477,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
+    fontWeight: "bold",
+    alignSelf: "center",
+  },
+  loadingText1: {
+    fontSize: 12,
     fontWeight: "bold",
   },
 });

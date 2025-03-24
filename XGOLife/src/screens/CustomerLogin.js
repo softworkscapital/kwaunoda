@@ -21,6 +21,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
+import MD5 from 'react-native-md5';
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -130,12 +131,45 @@ const CustomerLogin = () => {
     return true;
   };
 
+
+
+  const updateLog = async(id) => {
+    console.log("user last logged", id)
+    try {
+      const response = await fetch(
+        `${API_URL}/users/update_last_logged_in/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("last loggy:", result);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const fetchUserDetails = async (userEmail = email, userPassword = password) => {
     setLoading(true);
     try {
       console.log("Logging in with:", userEmail, userPassword);
+      const md5Hash = MD5.hex_md5(userPassword);
+
+      console.log("Hash:", md5Hash);
+
       const response = await fetch(
-        `${API_URL}/users/login/${userEmail}/${userPassword}`,
+        `${API_URL}/users/login/${userEmail}/${md5Hash}`,
         {
           method: "GET",
           headers: {
@@ -155,6 +189,7 @@ const CustomerLogin = () => {
       const customerId = result[0]?.customerid;
       setCustomerID(customerId);
 
+
       if (result.length > 0) {
         const userStatus = result[0].status;
         const userType = result[0].role;
@@ -167,6 +202,13 @@ const CustomerLogin = () => {
           customerId: result[0]?.customerid,
           last_logged_account: result[0].last_logged_account,
         };
+
+
+        if (result[0].last_logged_account === "customer") {
+          await updateLog(result[0]?.customerid);
+        } else if (result[0].last_logged_account === "driver") {
+          await updateLog(result[0]?.driver_id);
+        }
 
         // Store user data in AsyncStorage
         await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));

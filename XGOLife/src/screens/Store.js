@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { API_URL} from "./config";
 
 
 const categories = [
@@ -82,6 +84,50 @@ const OnlineStore = () => {
     const redirectHome = () => {
         navigation.goBack();
       };
+
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserIdAndCallLastActivity = async () => {
+        const storedIds = await AsyncStorage.getItem("theIds");
+        const parsedIds = JSON.parse(storedIds);
+        if (parsedIds && parsedIds.customerId === "0") {
+          lastActivity(parsedIds.customerId);
+        }else{
+            lastActivity(parsedIds.driver_id); 
+        }
+      };
+
+      fetchUserIdAndCallLastActivity();
+    }, [])
+  );
+
+  const lastActivity = async (id) => {
+    console.log("user last activity logged", id);
+    try {
+      const response = await fetch(
+        `${API_URL}/users/update_last_activity_date_time/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("last loggy:", result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
 
     return (
         <View style={styles.container}>
@@ -196,8 +242,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     modalView: {
-        marginTop: 400,
-        margin: 150,
+        marginTop: 350,
+        margin: 20,
+        width: "90%",
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 35,

@@ -65,6 +65,7 @@ import DriverProfile from "./src/screens/DriverProfile.js";
 
 import WebView1 from "./src/screens/WebView1.js";
 import Start from "./src/screens/Start.js";
+import SignUp from "./src/screens/SignUp.js";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -72,6 +73,7 @@ const App = () => {
     <ToastWrapper>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          
           <Stack.Screen name="Start" component={Start} />
           <Stack.Screen name="OTPCustomer" component={OTPCustomer} />
           <Stack.Screen name="CustomerLogin" component={CustomerLogin} />
@@ -113,6 +115,7 @@ const App = () => {
             name="ProfileInformation"
             component={ProfileInformation}
           />
+          <Stack.Screen name="SignUp" component={SignUp} />
           <Stack.Screen name="DriverEndTrip" component={DriverEndTrip} />
           <Stack.Screen name="Complaint" component={Complaint} />
           <Stack.Screen name="EditProfile" component={EditProfile} />

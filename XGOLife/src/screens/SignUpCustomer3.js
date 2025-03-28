@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faCamera, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
@@ -29,14 +29,11 @@ const SignUpCustomer3 = () => {
   const [otp, setOtp] = useState(0);
   const navigation = useNavigation();
   const APILINK = API_URL;
- 
 
-  // Fetch user details from AsyncStorage
   const fetchUserDetails = async () => {
     try {
       const custData = await AsyncStorage.getItem("customerDetailsC0");
       const custDetails = JSON.parse(custData);
-      // console.log("honai user", custDetails);
       setUser1(custDetails);
 
       const cData = await AsyncStorage.getItem("userDetailsC2");
@@ -53,7 +50,6 @@ const SignUpCustomer3 = () => {
     fetchUserDetails();
   }, []);
 
-  // Handle image selection
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -67,7 +63,6 @@ const SignUpCustomer3 = () => {
     }
   };
 
-  // Validate input fields
   const validateInput = () => {
     if (!username) {
       showToast("Please enter a username.");
@@ -80,7 +75,6 @@ const SignUpCustomer3 = () => {
     return true;
   };
 
-  // Show toast messages
   const showToast = (message) => {
     Toast.show({
       text1: "Validation Error",
@@ -92,9 +86,7 @@ const SignUpCustomer3 = () => {
     });
   };
 
-  // Fetch last user ID from the API
   const fetchLastUserId = async () => {
-    const APILINK = API_URL;
     try {
       const response = await fetch(`${APILINK}/users/last_user_id`, {
         method: "GET",
@@ -105,9 +97,7 @@ const SignUpCustomer3 = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Failed to fetch last inserted ID: ${response.status} ${response.statusText} - ${errorText}`
-        );
+        throw new Error(`Failed to fetch last inserted ID: ${response.status} ${errorText}`);
       }
       const idResult = await response.json();
       if (!idResult || !Array.isArray(idResult) || idResult.length === 0) {
@@ -121,8 +111,6 @@ const SignUpCustomer3 = () => {
     }
   };
 
-
-  // Increment user ID
   const incrementId = (currentId) => {
     const [letters, number] = currentId.split("-");
     let newNumber = parseInt(number, 10) + 1;
@@ -143,9 +131,7 @@ const SignUpCustomer3 = () => {
       if (lettersArray[i] === "Z") {
         lettersArray[i] = "A";
       } else {
-        lettersArray[i] = String.fromCharCode(
-          lettersArray[i].charCodeAt(0) + 1
-        );
+        lettersArray[i] = String.fromCharCode(lettersArray[i].charCodeAt(0) + 1);
         carry = false;
       }
     }
@@ -167,8 +153,6 @@ const SignUpCustomer3 = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
-
-  //send ......
   const sendOtpToPhone = async (phoneNumber) => {
     const message = `Your OTP is: ${otp}`;
 
@@ -187,8 +171,6 @@ const SignUpCustomer3 = () => {
         }),
       });
 
-      // console.log("muonei", response);
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error sending OTP:", response.status, errorText);
@@ -204,38 +186,58 @@ const SignUpCustomer3 = () => {
     }
   };
 
-  
-
-  // Handle sign-up process
   const handleSignUp = async () => {
-    if (!validateInput()) return; // Validate inputs before proceeding
-  
-    setLoading(true); // Start loading state
-  
+    if (!validateInput()) return;
+
+    setLoading(true);
+
     try {
-      // Verify driver details
-      const resp = await fetch(`${APILINK}/customerdetails/customer_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`, {
+      const verificationUrl = `${APILINK}/customerdetails/customer_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`;
+      console.log("Fetching from URL:", verificationUrl);
+
+      const resp = await fetch(verificationUrl, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
+
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        throw new Error(`Network request failed: ${resp.status} ${errorText}`);
+      }
+
       const result = await resp.json();
-  
-      // Check if a user with the same email, phone number, or ID number already exists
+
       if (result.length > 0) {
         Alert.alert("Error", "A user with the same email, phone number, or ID number already exists.");
-        return; // Early return if verification fails
+        return;
       } else {
         try {
-          // Fetch last user ID and increment it
           const lastUserId = await fetchLastUserId();
           const newUserId = incrementId(lastUserId);
-          // console.log("New User ID:", newUserId); // Debug log
           const md5Hash = MD5.hex_md5(userDetails.password);
 
-          // Create user object
+          const generateReferralCode = () => {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let referralCode = '';
+            for (let i = 0; i < 8; i++) {
+              const randomIndex = Math.floor(Math.random() * characters.length);
+              referralCode += characters[randomIndex];
+            }
+            return referralCode;
+          };
+
+          const generateReferencePaymentCode = () => {
+            return `PAY-${Math.floor(1000 + Math.random() * 9000)}`;
+          };
+
+          const referralCode = generateReferralCode();
+          const referencePaymentCode = generateReferencePaymentCode();
+
+          const referredBy = await AsyncStorage.getItem("referred_by");
+          console.log("Referred By ID:", referredBy); // Log referred_by ID
+
           const user = {
             userId: newUserId,
             role: "customer",
@@ -253,38 +255,35 @@ const SignUpCustomer3 = () => {
             sync_status: "Pending",
             last_logged_account: "customer",
             driverId: 0,
-            customerId: newUserId, // Set customerId to newUserId
+            customerId: newUserId,
+            referral_code: referralCode,
+            reference_payment_status: referencePaymentCode,
+            referred_by: referredBy // Include the referred_by ID
           };
-  
-          // console.log("User object to be created:", user);
-  
-          // Create the user in the database
+
+          console.log("User object to be created:", user);
+
           await createUser(user);
-  
-          // Create customer details
-          await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
-  
-          Alert.alert("Success", "User signed up Now Verify Your Number Using the OTP we sent to your Phone.");
-          navigation.navigate("OTPCustomer", { userId: newUserId }); // Navigate to OTP page
+
+          await createCustomerDetails(newUserId);
+
+          Alert.alert("Success", "User signed up. Now verify your number using the OTP we sent to your phone.");
+          navigation.navigate("OTPCustomer", { userId: newUserId });
         } catch (error) {
           console.error("Sign-up error:", error);
           Alert.alert("Error", error.message || "Failed to sign up. Please try again.");
         } finally {
-          setLoading(false); // Ensure loading state is reset
+          setLoading(false);
         }
       }
     } catch (error) {
       console.error("Error during verification:", error);
-      Alert.alert("Error", "Failed to verify user details. Please try again.");
-      setLoading(false); // Ensure loading state is reset
+      Alert.alert("Error", error.message || "Failed to verify user details. Please try again.");
+      setLoading(false);
     }
   };
 
-//   Create user API call
   const createUser = async (user) => {
-
-    // console.log(user);
-    const APILINK = API_URL;
     const response = await fetch(`${APILINK}/users/`, {
       method: "POST",
       headers: {
@@ -296,188 +295,99 @@ const SignUpCustomer3 = () => {
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Failed to create user: ${errorText}`);
-    }else{
-        sendOtpToPhone(user1.phone);
+    } else {
+      sendOtpToPhone(user1.phone);
     }
-
   };
 
-// image upload
-const handleImageUpload = async (imageUri) => {
-  const formData = new FormData();
-  const fileName = imageUri.split("/").pop();
-  const type = `image/${fileName.split(".").pop()}`;
+  const handleImageUpload = async (imageUri) => {
+    const formData = new FormData();
+    const fileName = imageUri.split("/").pop();
+    const type = `image/${fileName.split(".").pop()}`;
 
-  formData.append("image", {
-    uri: imageUri,
-    name: fileName,
-    type: type,
-  });
-
-  try {
-    const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    formData.append("image", {
+      uri: imageUri,
+      name: fileName,
+      type: type,
     });
 
-    const data = await response.json();
-    return `${data.path}`; // Return the full URL
-  } catch (error) {
-    console.error("Upload error:", error);
-    throw new Error("Failed to upload image");
-  }
-};
+    try {
+      const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
+      const data = await response.json();
+      return `${data.path}`;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw new Error("Failed to upload image");
+    }
+  };
 
-
-
-
-// ////////////////////////////
-
-
-
-
-
-//   Create customer details API call
   const createCustomerDetails = async (userId) => {
-
-
-    const APILINK = API_URL;
-    
-    // console.log("Creating customer details for userId:", userId); // Debug log
     const profilepic = await handleImageUpload(profileImage);
 
-
-
-
-const newCustomer = {
-    customerid: userId, // Ensure this is set correctly
-    ecnumber: user1.ecnumber || "",
-    account_type: user1.accountType || "",
-    account_category: user1.account_category || "",
-    signed_on: user1.signed_on || new Date().toISOString(),
-    name: user1.name || "",
-    surname: user1.surname || "",
-    idnumber: user1.idnumber || "",
-    sex: user1.sex || "",
-    dob: user1.dob || "",
-    address: user1.address || "",
-    house_number_and_street_name: user1.house_number_and_street_name || "",
-    surbub: user1.surbub || "", // Correct spelling
-    city: user1.city || "",
-    country: user1.country || "",
-    lat_coordinates: user1.lat_coordinates || "", // Correct spelling
-    long_coordinates: user1.long_coordinates || "", // Correct spelling
-    phone: user1.phone || "",
-    username: username.trim(),
-    email: userDetails.email || "", // Ensure email is defined
-    password: userDetails.password || "", // Ensure password is defined
-    employer: user1.employer || "",
-    workindustry: user1.workindustry || "",
-    workaddress: user1.workaddress || "",
-    workphone: user1.workphone || "",
-    workphone2: user1.workphone2 || "",
-    nok1name: user1.nok1name || "",
-    nok1surname: user1.nok1surname || "",
-    nok1relationship: user1.nok1relationship || "",
-    nok1phone: user1.nok1phone || "",
-    nok2name: user1.nok2name || "",
-    nok2surname: user1.nok2surname || "",
-    nok2relationship: user1.nok2relationship || "",
-    nok2phone: user1.nok2phone || "",
-    creditstanding: user1.creditstanding || "",
-    credit_bar_rule_exception: user1.credit_bar_rule_exception || "",
-    membershipstatus: user1.membershipstatus || "",
-    defaultsubs: user1.defaultsubs || "",
-    sendmail: user1.sendmail ? "true" : "false",
-    sendsms: user1.sendsms ? "true" : "false",
-    product_code: user1.product_code || "",
-    cost_price: user1.cost_price !== undefined ? user1.cost_price.toString() : "0",
-    selling_price: user1.selling_price !== undefined ? user1.selling_price.toString() : "0",
-    payment_style: user1.payment_style || "",
-    bp_number: user1.bp_number || "",
-    vat_number: user1.vat_number || "",
-    profilePic:  profilepic.trim()
-};
-
-    // Include profile image if it exists
-    // if (profileImage) {
-    //   const uriParts = profileImage.split(".");
-    //   const fileType = uriParts[uriParts.length - 1]; // Get the file extension
-    //   formData.append("profilePic", {
-    //     uri: profileImage,
-    //     type: `image/${fileType}`,
-    //     name: `profilePic.${fileType}`,
-    //   });
-    // }
-// console.log("customer akugadzirwa", newCustomer);
+    const newCustomer = {
+      customerid: userId,
+      ecnumber: user1.ecnumber || "",
+      account_type: user1.accountType || "",
+      account_category: user1.account_category || "",
+      signed_on: user1.signed_on || new Date().toISOString(),
+      name: user1.name || "",
+      surname: user1.surname || "",
+      idnumber: user1.idnumber || "",
+      sex: user1.sex || "",
+      dob: user1.dob || "",
+      address: user1.address || "",
+      house_number_and_street_name: user1.house_number_and_street_name || "",
+      suburb: user1.suburb || "",
+      city: user1.city || "",
+      country: user1.country || "",
+      lat_coordinates: user1.lat_coordinates || "",
+      long_coordinates: user1.long_coordinates || "",
+      phone: user1.phone || "",
+      username: username.trim(),
+      email: userDetails.email || "",
+      password: userDetails.password || "",
+      employer: user1.employer || "",
+      workindustry: user1.workindustry || "",
+      workaddress: user1.workaddress || "",
+      workphone: user1.workphone || "",
+      workphone2: user1.workphone2 || "",
+      nok1name: user1.nok1name || "",
+      nok1surname: user1.nok1surname || "",
+      nok1relationship: user1.nok1relationship || "",
+      nok1phone: user1.nok1phone || "",
+      nok2name: user1.nok2name || "",
+      nok2surname: user1.nok2surname || "",
+      nok2relationship: user1.nok2relationship || "",
+      nok2phone: user1.nok2phone || "",
+      creditstanding: user1.creditstanding || "",
+      credit_bar_rule_exception: user1.credit_bar_rule_exception || "",
+      membershipstatus: user1.membershipstatus || "",
+      defaultsubs: user1.defaultsubs || "",
+      sendmail: user1.sendmail ? "true" : "false",
+      sendsms: user1.sendsms ? "true" : "false",
+      product_code: user1.product_code || "",
+      cost_price: user1.cost_price !== undefined ? user1.cost_price.toString() : "0",
+      selling_price: user1.selling_price !== undefined ? user1.selling_price.toString() : "0",
+      payment_style: user1.payment_style || "",
+      bp_number: user1.bp_number || "",
+      vat_number: user1.vat_number || "",
+      profilePic: profilepic.trim(),
+    };
 
     const response = await fetch(`${APILINK}/customerdetails/`, {
       method: "POST",
-       headers: {
+      headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newCustomer)
+      body: JSON.stringify(newCustomer),
     });
-
-
-//###############################################################################################################################################
-    // const newAccount = async (driver) => {
-    //   if (!driver) {
-    //     Alert.alert("Error", "Some values are missing.");
-    //     return;
-    //   }
-  
-    //   const currentDate = new Date();
-    //   const formattedDate = `${currentDate.getFullYear()}-${String(
-    //     currentDate.getMonth() + 1
-    //   ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
-    //     2,
-    //     "0"
-    //   )} ${String(currentDate.getHours()).padStart(2, "0")}:${String(
-    //     currentDate.getMinutes()
-    //   ).padStart(2, "0")}:${String(currentDate.getSeconds()).padStart(2, "0")}`;
-  
-  
-    //   const data = {
-    //     currency: "USD",
-    //     exchange_rate: 1.0,
-    //     date: formattedDate,
-    //     debit: 0,
-    //     credit: 0,
-    //     balance: 0,
-    //     description: "New Account",
-    //     client_profile_id: driver,
-    //   };
-  
-    //   console.log("Zvikuenda izvo", data);
-  
-    //   try {
-    //     const resp = await fetch(`${APILINK}/topUp/`, {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify(data),
-    //     });
-  
-    //     const result = await resp.json();
-    //     if (resp.ok) {
-    //       Alert.alert("Success", driverResponse.message);
-    //       navigation.navigate("OTPDriver", { userId: user_id });
-    //     } else {
-    //       Alert.alert("Error", "Failed to process top-up account.");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error processing top-up:", error);
-    //     Alert.alert("Error", "An error occurred while processing top-up.");
-    //   }
-    // };
-
-//###############################################################################################################################################
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -488,11 +398,11 @@ const newCustomer = {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
-          <Image
-            source={require("../../assets/icon.png")}
-            style={{ width: 200, height: 80 }} // Set width and height to 40
-          />
-        </View>
+        <Image
+          source={require("../../assets/icon.png")}
+          style={{ width: 200, height: 80 }}
+        />
+      </View>
       <ScrollView>
         <View style={styles.formContainer}>
           <TouchableOpacity
@@ -518,15 +428,13 @@ const newCustomer = {
             />
           </View>
 
-          
-
           <TouchableOpacity style={styles.btnSignUp} onPress={handleSignUp} disabled={loading}>
-                        {loading ? (
-                            <ActivityIndicator size="small" color="black" />
-                        ) : (
-                            <Text style={styles.txtSignUp}>Sign Up</Text>
-                        )}
-                    </TouchableOpacity>
+            {loading ? (
+              <ActivityIndicator size="small" color="black" />
+            ) : (
+              <Text style={styles.txtSignUp}>Sign Up</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
       <Toast />
@@ -547,12 +455,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginLeft: 10,
   },
   formContainer: {
     flex: 1,

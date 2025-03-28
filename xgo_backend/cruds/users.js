@@ -12,29 +12,35 @@ crudsObj.postUser = (user) => {
     console.log("honai user:", User);
 
     pool.query(
-      "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_up_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users(userid, username, password, role, email, notify, activesession, addproperty, editproperty, approverequests, delivery, status, employee_id, company_id, branch_id, sync_status, last_logged_account, driver_id, customerid, otp, signed_up_on, last_logged_in, last_activity_date_time, last_fin_activity_date_time, referral_code, reference_payment_status, referred_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        user.userId, // User ID
-        user.username, // Username
-        user.password, // Password
-        user.role, // Role
-        user.email, // Email
-        user.notify, // Notification preference
-        user.activeSession, // Active session
-        user.addProperty, // Add property
-        user.editProperty, // Edit property
-        user.approveRequests, // Approve requests
-        user.delivery, // Delivery flag
-        user.status, // Status
-        user.employeeId, // Employee ID
-        user.companyId, // Company ID
-        user.branchId, // Branch ID
-        user.syncStatus, // Sync status
-        user.last_logged_account, // Last logged account type
-        user.driverId, // Driver ID
-        user.customerId, // Customer ID
-        user.otp, // OTP
-        user.signed_up_on, // Signed on
+        user.userId,
+        user.username,
+        user.password,
+        user.role,
+        user.email,
+        user.notify,
+        user.activeSession,
+        user.addProperty,
+        user.editProperty,
+        user.approveRequests,
+        user.delivery,
+        user.status,
+        user.employeeId,
+        user.companyId,
+        user.branchId,
+        user.syncStatus,
+        user.last_logged_account,
+        user.driverId,
+        user.customerId,
+        user.otp,
+        user.signed_up_on,
+        user.last_logged_in,
+        user.last_activity_date_time,
+        user.last_fin_activity_date_time, 
+        user.referral_code, 
+        user.reference_payment_status,
+        user.referred_by 
       ],
       (err, result) => {
         if (err) {
@@ -42,8 +48,7 @@ crudsObj.postUser = (user) => {
         }
         return resolve({
           status: "200",
-          message:
-            "Your account has been created successfully, Now verify your phone number via the OTP sent to your mobile",
+          message: "Your account has been created successfully. Now verify your phone number via the OTP sent to your mobile.",
         });
       }
     );
@@ -167,6 +172,27 @@ crudsObj.getUserById = (userId) => {
     );
   });
 };
+
+
+
+//Get User By Reference Code
+crudsObj.getUserByReferenceCode = (referenceCode) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "SELECT * FROM users WHERE referral_code = ?",
+      [referenceCode],
+      (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(results);
+      }
+    );
+  });
+};
+
+
+
 
 crudsObj.getUserByCred = (email, password) => {
   return new Promise((resolve, reject) => {

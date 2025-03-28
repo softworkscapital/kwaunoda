@@ -349,7 +349,7 @@ const TopView = () => {
           <FontAwesome name="bars" size={24} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setCounterOfferModalVisible(true)}>
+        {/*<TouchableOpacity onPress={() => setCounterOfferModalVisible(true)}>
           <FontAwesome
             name="bell"
             size={24}
@@ -361,7 +361,7 @@ const TopView = () => {
               <Text style={styles.countText}>x{notificationCount}</Text>
             </View>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
 
         <TouchableOpacity
           onPress={() => navigation.navigate("CustomerAdminChat")}
@@ -370,12 +370,12 @@ const TopView = () => {
           <FontAwesome name="comments" size={24} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => navigation.navigate("StoreCategories")}
           style={styles.menuButton}
         >
           <FontAwesome name="shopping-cart" size={24} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.profileContainer}>

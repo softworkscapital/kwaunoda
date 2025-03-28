@@ -5,9 +5,8 @@ const usersDbOperations = require("../cruds/users"); // Adjust the path accordin
 // Create a new user
 userRouter.post("/", async (req, res, next) => {
   try {
-    const postedValues = req.body; // Get the posted data
+    const postedValues = req.body;
 
-    // Destructure the required fields from the posted values
     const {
       userId,
       username,
@@ -29,10 +28,15 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
-      signed_up_on
+      signed_up_on,
+      last_logged_in,
+      last_activity_date_time,
+      last_fin_activity_date_time,
+      referral_code, 
+      reference_payment_status, 
+      referred_by 
     } = postedValues;
 
-    // Create the user object
     const userToInsert = {
       userId,
       username,
@@ -54,17 +58,21 @@ userRouter.post("/", async (req, res, next) => {
       driverId,
       customerId,
       otp,
-      signed_up_on
+      signed_up_on,
+      last_logged_in,
+      last_activity_date_time,
+      last_fin_activity_date_time, // Add to the object
+      referral_code, // Add to the object
+      reference_payment_status, // Add to the object
+      referred_by // Add to the object
     };
 
-    // Call the DB operation to insert the user
     const results = await usersDbOperations.postUser(userToInsert);
 
-    // Respond with the results
     res.json(results);
   } catch (error) {
     console.error(error);
-    res.sendStatus(500); // Send a 500 status code in case of an error
+    res.sendStatus(500);
   }
 });
 
@@ -107,6 +115,32 @@ userRouter.get("/:id", async (req, res, next) => {
     res.sendStatus(500); // Send a 500 status code in case of an error
   }
 });
+
+
+
+
+// Route to get user by reference code
+userRouter.get("/GetUserByReferenceCode/:referenceCode", async (req, res) => {
+  const referenceCode = req.params.referenceCode;
+
+  try {
+    const user = await usersDbOperations.getUserByReferenceCode(referenceCode);
+    if (user.length > 0) {
+      res.status(200).json(user[0]); // Assuming you're returning a single user
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching user by reference code:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
+
+
+
 
 // Get User By Credentials
 userRouter.get("/login/:email/:password", async (req, res, next) => {

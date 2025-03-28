@@ -62,6 +62,8 @@ import DriverTerms from "./src/screens/DriverTerms.js";
 import PaymentSuccessful from "./src/screens/PaymentSuccessful.js";
 import ChatMenu from "./src/screens/ChatsMenu.js";
 import DriverProfile from "./src/screens/DriverProfile.js";
+import DriverReferredBy from "./src/screens/DriverReferredBy.js";
+import CustomerReferredBy from "./src/screens/CustomerReferredBy";
 
 import WebView1 from "./src/screens/WebView1.js";
 import Start from "./src/screens/Start.js";
@@ -149,6 +151,8 @@ const App = () => {
           <Stack.Screen name="MapView" component={MapCompo} />
           <Stack.Screen name="ChatMenu" component={ChatMenu} />
           <Stack.Screen name="DriverProfile" component={DriverProfile} />
+          <Stack.Screen name="CustomerReferredBy" component={CustomerReferredBy} />
+          <Stack.Screen name="DriverReferredBy" component={DriverReferredBy} />
 
           <Stack.Screen name="OnlineStore" component={OnlineStore} />
           <Stack.Screen name="StoreCategories" component={StoreCategories} />

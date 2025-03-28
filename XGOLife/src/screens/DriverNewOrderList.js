@@ -95,9 +95,6 @@ const DriverNewOrderList = () => {
     return () => backHandler.remove(); // Cleanup on unmount
   }, [driverId]); // Fetch top-up history when driverId is set
 
-
-
-
   useFocusEffect(
     useCallback(() => {
       const fetchUserIdAndCallLastActivity = async () => {
@@ -105,8 +102,8 @@ const DriverNewOrderList = () => {
         const parsedIds = JSON.parse(storedIds);
         if (parsedIds && parsedIds.customerId !== "0") {
           lastActivity(parsedIds.customerId);
-        }else{
-            lastActivity(parsedIds.driver_id); 
+        } else {
+          lastActivity(parsedIds.driver_id);
         }
       };
 
@@ -139,16 +136,6 @@ const DriverNewOrderList = () => {
       console.log(error);
     }
   };
-
-
-
-
-
-
-
-
-
-
 
   const fetchDriverDetails = async (driverId) => {
     // console.log("fetch details ID", driverId);
@@ -378,7 +365,9 @@ const DriverNewOrderList = () => {
 
     try {
       // console.log("takutanga manje")
-      const response = await fetch(`${API_URL}/trip/driver/notify/`);
+      const response = await fetch(
+        `${API_URL}/trip/drivers/${driver}`
+      );
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
         setLocations(
@@ -402,7 +391,8 @@ const DriverNewOrderList = () => {
         );
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to fetch trips. Please try again.");
+      // Alert.alert("Error", "Failed to fetch trips. Please try again.");
+      console.log("E", driver);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -426,155 +416,143 @@ const DriverNewOrderList = () => {
         }}
       />
       {/* <View> */}
-        {selectedTrip ? (
-          <>
-            <View style={styles.transparentCard}>
-              <View style={styles.transparentCardContent}>
-                <Text style={styles.modernTitle}>Trip Details</Text>
-                <Text style={styles.modernDetailText}>
-                  {selectedTrip.detail}
-                </Text>
-                <View style={styles.modernLocations}>
-                  <View style={styles.modernLocationLine}>
-                    <View style={styles.modernLocationDot} />
-                    <View style={styles.modernLocationConnector} />
-                    <View
-                      style={[
-                        styles.modernLocationDot,
-                        styles.modernDestinationDot,
-                      ]}
-                    />
-                  </View>
-
-                  <View style={styles.modernLocationDetails}>
-                    <View style={styles.modernLocationItem}>
-                      <Text style={styles.modernLocationLabel}>Origin</Text>
-                      <Text style={styles.modernLocationValue}>
-                        {selectedTrip.origin_location || "N/A"}
-                      </Text>
-                    </View>
-                    <View style={styles.modernLocationItem}>
-                      <Text style={styles.modernLocationLabel}>
-                        Destination
-                      </Text>
-                      <Text style={styles.modernLocationValue}>
-                        {selectedTrip.dest_location || "N/A"}
-                      </Text>
-                    </View>
-                  </View>
+      {selectedTrip ? (
+        <>
+          <View style={styles.transparentCard}>
+            <View style={styles.transparentCardContent}>
+              <Text style={styles.modernTitle}>Trip Details</Text>
+              <Text style={styles.modernDetailText}>{selectedTrip.detail}</Text>
+              <View style={styles.modernLocations}>
+                <View style={styles.modernLocationLine}>
+                  <View style={styles.modernLocationDot} />
+                  <View style={styles.modernLocationConnector} />
+                  <View
+                    style={[
+                      styles.modernLocationDot,
+                      styles.modernDestinationDot,
+                    ]}
+                  />
                 </View>
 
-                <Text style={styles.modernPaymentDetails}>
-                 
-                </Text>
-                <Text style={styles.modernCostText}>
-                  {selectedTrip.currency_symbol} {selectedTrip.cost}{" "}
-                  {selectedTrip.currency_code}  {selectedTrip.payment_type}
-                </Text>
-                <View style={styles.modernButtonContainer}>
-                  <TouchableOpacity
-                    onPress={() => setShowCounterOfferModal(true)}
-                    style={styles.modernCounterOfferButton}
-                  >
-                    <Text style={styles.modernButtonText}>Counter Offer</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setSelectedTrip(null)}
-                    style={styles.modernCancelButton}
-                  >
-                    <Text style={styles.modernButtonText}>Back</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleAcceptTrip}
-                    style={styles.modernAcceptButton}
-                  >
-                    <Text style={styles.modernButtonText}>Accept</Text>
-                  </TouchableOpacity>
+                <View style={styles.modernLocationDetails}>
+                  <View style={styles.modernLocationItem}>
+                    <Text style={styles.modernLocationLabel}>Origin</Text>
+                    <Text style={styles.modernLocationValue}>
+                      {selectedTrip.origin_location || "N/A"}
+                    </Text>
+                  </View>
+                  <View style={styles.modernLocationItem}>
+                    <Text style={styles.modernLocationLabel}>Destination</Text>
+                    <Text style={styles.modernLocationValue}>
+                      {selectedTrip.dest_location || "N/A"}
+                    </Text>
+                  </View>
                 </View>
+              </View>
+
+              <Text style={styles.modernPaymentDetails}></Text>
+              <Text style={styles.modernCostText}>
+                {selectedTrip.currency_symbol} {selectedTrip.cost}{" "}
+                {selectedTrip.currency_code} {selectedTrip.payment_type}
+              </Text>
+              <View style={styles.modernButtonContainer}>
+                <TouchableOpacity
+                  onPress={() => setShowCounterOfferModal(true)}
+                  style={styles.modernCounterOfferButton}
+                >
+                  <Text style={styles.modernButtonText}>Counter Offer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSelectedTrip(null)}
+                  style={styles.modernCancelButton}
+                >
+                  <Text style={styles.modernButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleAcceptTrip}
+                  style={styles.modernAcceptButton}
+                >
+                  <Text style={styles.modernButtonText}>Accept</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </>
-        ) : (
-          <>
-            <View style={styles.card}>
-              <View style={styles.selectTripContainer}>
-                <Text style={styles.selectTripTitle}>Select Trip</Text>
-              </View>
-              <ScrollView
-                style={styles.scrollView}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={() => fetchTrips()}
-                  />
-                }
-              >
-                {locations.length > 0 ? (
-                  locations.map((location) => (
-                    <TouchableOpacity
-                      key={location.trip_id}
-                      onPress={() => handlePress(location)}
-                      style={styles.listItem}
-                    >
-                      <View style={styles.listItemContent}>
-                        <Text
-                          style={[
-                            styles.listItemDetail,
-                            { fontWeight: "bold" },
-                          ]}
-                        >
-                          Trip ID: {location.trip_id}
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.card}>
+            <View style={styles.selectTripContainer}>
+              <Text style={styles.selectTripTitle}>Select Trip</Text>
+            </View>
+            <ScrollView
+              style={styles.scrollView}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => fetchTrips()}
+                />
+              }
+            >
+              {locations.length > 0 ? (
+                locations.map((location) => (
+                  <TouchableOpacity
+                    key={location.trip_id}
+                    onPress={() => handlePress(location)}
+                    style={styles.listItem}
+                  >
+                    <View style={styles.listItemContent}>
+                      <Text
+                        style={[styles.listItemDetail, { fontWeight: "bold" }]}
+                      >
+                        Trip ID: {location.trip_id}
+                      </Text>
+                      {location.detail ? (
+                        <Text style={styles.listItemDetail}>
+                          {location.detail}
                         </Text>
-                        {location.detail ? (
-                          <Text style={styles.listItemDetail}>
-                            {location.detail}
-                          </Text>
-                        ) : null}
-                        <View style={styles.tripLocations}>
-                          <View style={styles.locationLine}>
-                            <View style={styles.locationDot} />
-                            <View style={styles.locationConnector} />
-                            <View
-                              style={[
-                                styles.locationDot,
-                                styles.destinationDot,
-                              ]}
-                            />
+                      ) : null}
+                      <View style={styles.tripLocations}>
+                        <View style={styles.locationLine}>
+                          <View style={styles.locationDot} />
+                          <View style={styles.locationConnector} />
+                          <View
+                            style={[styles.locationDot, styles.destinationDot]}
+                          />
+                        </View>
+
+                        <View style={styles.locationDetails}>
+                          <View style={styles.locationItem}>
+                            <Text style={styles.locationLabel}>Origin</Text>
+                            <Text style={styles.locationValue}>
+                              {location.origin_location || "N/A"}
+                            </Text>
                           </View>
 
-                          <View style={styles.locationDetails}>
-                            <View style={styles.locationItem}>
-                              <Text style={styles.locationLabel}>Origin</Text>
-                              <Text style={styles.locationValue}>
-                                {location.origin_location || "N/A"}
-                              </Text>
-                            </View>
-
-                            <View style={styles.locationItem}>
-                              <Text style={styles.locationLabel}>
-                                Destination
-                              </Text>
-                              <Text style={styles.locationValue}>
-                                {location.dest_location || "N/A"}
-                              </Text>
-                            </View>
+                          <View style={styles.locationItem}>
+                            <Text style={styles.locationLabel}>
+                              Destination
+                            </Text>
+                            <Text style={styles.locationValue}>
+                              {location.dest_location || "N/A"}
+                            </Text>
                           </View>
                         </View>
                       </View>
-                      <Text
-                        style={[styles.listItemWeight, { fontWeight: "bold" }]}
-                      >
-                        ${location.cost}
-                      </Text>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text style={styles.noTripsText}>No trips available</Text>
-                )}
-              </ScrollView>
-            </View>
-          </>
-        )}
+                    </View>
+                    <Text
+                      style={[styles.listItemWeight, { fontWeight: "bold" }]}
+                    >
+                      ${location.cost}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noTripsText}>No trips available</Text>
+              )}
+            </ScrollView>
+          </View>
+        </>
+      )}
       {/* </View> */}
 
       {showCounterOfferModal && (
@@ -894,13 +872,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginLeft: -0.5, 
+    marginLeft: -0.5,
     marginRight: -40, // Adjust this value as needed
     overflow: "hidden", // Ensures the inner card's corners are hidden
-},
+  },
   transparentCardContent: {
     padding: 10,
-    
   },
   modernTitle: {
     fontSize: 18,

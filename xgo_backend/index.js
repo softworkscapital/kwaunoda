@@ -34,6 +34,7 @@ const TripStatusAnalyticRouter = require("./routes/trip_status_analytics");
 const ConfigRouter = require("./routes/application_configs");
 const StatisticRouter = require("./routes/application_statistics");
 const WithdrawalRouter = require("./routes/application_withdrawals");
+const VehicleRouter = require("./routes/vehicles");
 
 const pool = require("./cruds/poolfile");
 const bodyParser = require("body-parser");
@@ -103,6 +104,7 @@ app.use("/trip_status_analytics", TripStatusAnalyticRouter);
 app.use("/application_configs", ConfigRouter);
 app.use("/application_statistics", StatisticRouter);
 app.use("/application_withdrawals", WithdrawalRouter);
+app.use("/vehicle", VehicleRouter);
 
 pesepay.resultUrl = "https://localhost:3011/payment-result";
 pesepay.returnUrl = "XgoLife://home";

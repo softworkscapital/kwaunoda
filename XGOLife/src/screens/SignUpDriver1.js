@@ -291,19 +291,17 @@ const SignUpDriver1 = () => {
 
   const handleNext = async () => {
     if (!validateInput()) return;
-
+  
     setLoading(true);
-
+  
     try {
       const driveData = await AsyncStorage.getItem("driverDetailsD0");
       const driverDetails = driveData ? JSON.parse(driveData) : {};
-
+  
       console.log("Driver details:", driverDetails);
-
-      // Ensure idnumber is defined before using trim
+  
       const idNumber = driverDetails.idnumber ? driverDetails.idnumber.trim() : "";
-
-      // Verify driver by email, phone number, and ID number
+  
       const resp = await fetch(
         `${APILINK}/driver/driver_verify/${email}/${phoneNumber}/${idNumber}`,
         {
@@ -313,9 +311,9 @@ const SignUpDriver1 = () => {
           },
         }
       );
-
+  
       const result = await resp.json();
-
+  
       if (result.length > 0) {
         Alert.alert(
           "Error",
@@ -323,32 +321,45 @@ const SignUpDriver1 = () => {
         );
         return; 
       }
-
+  
       const otpSent = await sendOtpToPhone(phoneNumber);
       if (!otpSent) {
         setLoading(false);
         return;
       }
-
+  
       const idResponse = await fetch(`${APILINK}/users/last_user_id/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
+  
       if (!idResponse.ok) {
         console.error("Error fetching last inserted ID:", idResponse.status);
         showToast("Error", "Failed to fetch last inserted ID.");
         return;
       }
-
+  
       const idResult = await idResponse.json();
       const lastUserId = idResult[0].userid;
       const user_id = incrementId(lastUserId);
-
+  
       await AsyncStorage.setItem("user_id", user_id);
+  
+      const generateReferralCode = () => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let referralCode = '';
+        for (let i = 0; i < 8; i++) {
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          referralCode += characters[randomIndex];
+        }
+        return referralCode;
+      };
 
+      const referredBy = await AsyncStorage.getItem("referred_by");
+      console.log("Referred By ID:", referredBy); 
+  
       const user = {
         userId: user_id,
         role: "driver",
@@ -370,13 +381,16 @@ const SignUpDriver1 = () => {
         last_logged_account: "driver",
         driverId: user_id,
         customerId: 0,
+        referral_code: generateReferralCode(),
+        reference_payment_status: null,
+        referred_by: referredBy 
       };
-
+  
       console.log("User object to be sent:", user);
-
+  
       await AsyncStorage.setItem("driverDetails", JSON.stringify(user));
       await AsyncStorage.setItem("driver_id", JSON.stringify(user_id));
-
+  
       const userResp = await fetch(`${APILINK}/users/`, {
         method: "POST",
         headers: {
@@ -384,14 +398,14 @@ const SignUpDriver1 = () => {
         },
         body: JSON.stringify(user),
       });
-
+  
       if (!userResp.ok) {
         const errorText = await userResp.text();
         console.error("Error posting user details:", userResp.status, errorText);
         showToast("Error", "Failed to create user.");
         return;
       }
-
+  
       const driver = {
         driver_id: user_id,
         ecnumber: "",
@@ -418,9 +432,9 @@ const SignUpDriver1 = () => {
         country: driverDetails.country || "",
         membershipstatus: "Pending OTP Verification",
       };
-
+  
       console.log("Driver object to be sent:", driver);
-
+  
       const driverResp = await fetch(`${APILINK}/driver/`, {
         method: "POST",
         headers: {
@@ -428,20 +442,20 @@ const SignUpDriver1 = () => {
         },
         body: JSON.stringify(driver),
       });
-
+  
       if (!driverResp.ok) {
         const errorText = await driverResp.text();
         console.error("Error posting driver details:", driverResp.status, errorText);
         showToast("Error", "Failed to create driver.");
         return;
       }
-
+  
       const driverResponse = await driverResp.json();
-
+  
       await newAccount(driver.driver_id, driverResponse);
-
+  
       await postVehicleDetails(user_id, driverDetails);
-
+  
       navigation.navigate("OTPDriver", { userId: user_id });
     } catch (error) {
       console.error("Error:", error);

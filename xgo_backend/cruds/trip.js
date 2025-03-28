@@ -25,6 +25,11 @@ crudsObj.postTrip = (
   accepted_cost,
   paying_when,
   payment_type,
+  preferred_gender,
+  preferred_car_type,
+  preferred_age,
+  number_of_passengers,
+  driver_license_date,
   currency_id,
   currency_code,
   usd_rate,
@@ -47,9 +52,12 @@ crudsObj.postTrip = (
              delivery_contact_details, dest_location, origin_location, 
              origin_location_lat, origin_location_long, destination_lat, 
              destination_long, distance, delivery_cost_proposed, 
-             accepted_cost, paying_when, payment_type, currency_id, currency_code, usd_rate, customer_comment, driver_comment,
+             accepted_cost, paying_when, payment_type, preferred_gender, 
+             preferred_car_type, preferred_age, number_of_passengers, 
+             driver_license_date,
+             currency_id, currency_code, usd_rate, customer_comment, driver_comment,
               driver_stars, customer_stars, customer_status, pascel_pic1, pascel_pic2, pascel_pic3, trip_priority_type, delivery_received_confirmation_code
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         driver_id,
         cust_id,
@@ -72,6 +80,11 @@ crudsObj.postTrip = (
         accepted_cost,
         paying_when,
         payment_type,
+        preferred_gender,
+        preferred_car_type,
+        preferred_age,
+        number_of_passengers,
+        driver_license_date,
         currency_id,
         currency_code,
         usd_rate,
@@ -88,13 +101,16 @@ crudsObj.postTrip = (
       ],
       (err, result) => {
         if (err) {
+          console.error("Error occurred during SQL query:", err);
           return reject(err);
         }
-        return resolve({ status: "200", message: "saving successful" });
+        return resolve({ status: "200", message: "Saving successful" });
       }
     );
   });
 };
+
+
 
 crudsObj.getTrips = () => {
   return new Promise((resolve, reject) => {

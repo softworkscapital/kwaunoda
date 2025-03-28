@@ -1,11 +1,13 @@
 const express = require("express");
 const tripRouter = express.Router();
 const tripDbOperations = require("../cruds/trip");
+const NewOrderObj = require("../cruds/NewOrderHandler");
 
 tripRouter.post("/", async (req, res, next) => {
   try {
     let postedValues = req.body;
     console.log("from frontend:", postedValues);
+    
     let driver_id = postedValues.driver_id;
     let cust_id = postedValues.cust_id;
     let request_start_datetime = postedValues.request_start_datetime;
@@ -27,6 +29,11 @@ tripRouter.post("/", async (req, res, next) => {
     let accepted_cost = postedValues.accepted_cost;
     let paying_when = postedValues.paying_when;
     let payment_type = postedValues.payment_type;
+    let preferred_gender = postedValues.preferred_gender;     
+    let preferred_car_type = postedValues.preferred_car_type;  
+    let preferred_age = postedValues.preferred_age;        
+    let number_of_passengers = postedValues.number_of_passengers; 
+    let driver_license_date = postedValues.driver_license_date; 
     let currency_id = postedValues.currency_id;
     let currency_code = postedValues.currency_code;
     let usd_rate = postedValues.usd_rate;
@@ -35,9 +42,9 @@ tripRouter.post("/", async (req, res, next) => {
     let driver_stars = postedValues.driver_stars;
     let customer_stars = postedValues.customer_stars;
     let customer_status = postedValues.customer_status;
-    let pascel_pic1 = postedValues.parcel_pic1;
-    let pascel_pic2 = postedValues.parcel_pic2;
-    let pascel_pic3 = postedValues.parcel_pic3;
+    let pascel_pic1 = postedValues.pascel_pic1;
+    let pascel_pic2 = postedValues.pascel_pic2;
+    let pascel_pic3 = postedValues.pascel_pic3;
     let trip_priority_type = postedValues.trip_priority_type;
     let delivery_received_confirmation_code = postedValues.delivery_received_confirmation_code;
 
@@ -63,6 +70,11 @@ tripRouter.post("/", async (req, res, next) => {
       accepted_cost,
       paying_when,
       payment_type,
+      preferred_gender,      
+      preferred_car_type,    
+      preferred_age,       
+      number_of_passengers,   
+      driver_license_date,   
       currency_id,
       currency_code,
       usd_rate,
@@ -94,7 +106,16 @@ tripRouter.get("/", async (req, res, next) => {
     res.sendStatus(500);
   }
 });
-
+tripRouter.get("/drivers/:driverId", async (req, res) => {
+  try {
+    const driverId = req.params.driverId;
+    let results = await NewOrderObj.getEligibleTrips(driverId);
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 tripRouter.get("/driver_id/status", async (req, res, next) => {
   const { driver_id, status } = req.query;
 

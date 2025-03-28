@@ -33,11 +33,11 @@ const SignUp = () => {
   const navigation = useNavigation();
 
   const redirectSignUpCustomer = () => {
-    navigation.navigate("TermsConditions");
+    navigation.navigate("CustomerReferredBy");
   };
 
   const redirectSignUpDriver = () => {
-    navigation.navigate("DriverTerms");
+    navigation.navigate("DriverReferredBy");
   };
 
   const handleSignIn = () => {

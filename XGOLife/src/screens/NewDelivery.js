@@ -5,7 +5,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   SafeAreaView,
   ScrollView,
   ToastAndroid,
@@ -20,8 +19,6 @@ import {
   faLocationArrow,
   faUser,
   faPhone,
-  faIdCard,
-  faMapMarkerAlt,
   faBagShopping,
   faScaleBalanced,
   faArrowCircleLeft,
@@ -57,10 +54,15 @@ const NewDelivery = () => {
   const [endLocationLong, setEndLocationLong] = useState("");
   const [lowerPriceLimit, setLowerPriceLimit] = useState(0);
   const [upperPriceLimit, setUpperPriceLimit] = useState(0);
-  const [driversData, setDriversData] = useState();
+  const [driversData, setDriversData] = useState([]);
+
+  // New fields for preferences
+  const [preferredGender, setPreferredGender] = useState("");
+  const [preferredCarType, setPreferredCarType] = useState("");
+  const [preferredAgeRange, setPreferredAgeRange] = useState("");
+  const [numberOfPassengers, setNumberOfPassengers] = useState("");
 
   const navigation = useNavigation();
-  const hardCodedBalance = 100; // Example balance value
 
   const getDrivers = async () => {
     try {
@@ -69,13 +71,7 @@ const NewDelivery = () => {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
-
-      // Extract the phone numbers into an array
       const phoneNumbers = data.map((driver) => driver.phone);
-      console.log("Phone Numbers:", phoneNumbers);
-
-      // Store the array of phone numbers in state
       setDriversData(phoneNumbers);
     } catch (error) {
       console.log("Failed to fetch drivers:", error);
@@ -104,7 +100,7 @@ const NewDelivery = () => {
             clientid: "1001",
             clientkey: "hdojFa502Uy6nG2",
             message,
-            recipients: driversData, // Directly use the array
+            recipients: driversData,
             senderid: "REMS",
           }),
         }
@@ -113,17 +109,14 @@ const NewDelivery = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error sending SMS:", response.status, errorText);
-        // Toast.error("Failed to send SMS.");
         return false;
       }
 
-      const result = await response.json(); // Log the result if needed
+      const result = await response.json();
       console.log("SMS sent successfully:", result);
-      // Toast.success("Message sent successfully!");
       return true;
     } catch (error) {
       console.error("Network Error:", error);
-      // Toast.error("Could not send SMS to Drivers. Please check your connection.");
       return false;
     }
   };
@@ -135,12 +128,8 @@ const NewDelivery = () => {
   const fetchData = async () => {
     const storedIds = await AsyncStorage.getItem("theIds");
     const parsedIds = JSON.parse(storedIds);
-    console.log("hiiiii", parsedIds.customerId);
-    console.log("0000", parsedIds.customerId);
-    console.log("0000", parsedIds.customerId);
     setCid(parsedIds.customerId);
     let me = parsedIds.customerId;
-    console.log("0000", me);
     try {
       const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
         method: "GET",
@@ -150,15 +139,12 @@ const NewDelivery = () => {
       });
 
       const result = await resp.json();
-      console.log("kkkkkk", result);
       if (result) {
         setBalance(result[0].balance);
-        // console.log("suiiiii", result[0].balance);
       } else {
         Alert.alert("Error", "Failed to fetch History.");
       }
     } catch (error) {
-      // console.error("Error fetching History:", error);
       Alert.alert("Error", "An error occurred while fetching History.");
     }
   };
@@ -184,33 +170,16 @@ const NewDelivery = () => {
         const lastTripData = await AsyncStorage.getItem("deliveries");
         const deliveries = lastTripData ? JSON.parse(lastTripData) : [];
 
-        console.log("Last trip data:", deliveries);
-
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
-          // console.log("Last delivery:", lastDelivery);
-
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
           setDist(lastDelivery.distance || "");
-
-          // Check if startCoords and destCoords exist
-          if (lastDelivery.origin) {
-            setStartLocationLat(parseFloat(lastDelivery.origin.latitude || ""));
-            setStartLocationLong(
-              parseFloat(lastDelivery.origin.longitude || "")
-            );
-          } else {
-            console.warn("startCoords is undefined for last delivery.");
-          }
-
-          if (lastDelivery.dest) {
-            setEndLocationLat(parseFloat(lastDelivery.dest.latitude || ""));
-            setEndLocationLong(parseFloat(lastDelivery.dest.longitude || ""));
-          } else {
-            console.warn("destCoords is undefined for last delivery.");
-          }
+          setStartLocationLat(parseFloat(lastDelivery.origin.latitude || ""));
+          setStartLocationLong(parseFloat(lastDelivery.origin.longitude || ""));
+          setEndLocationLat(parseFloat(lastDelivery.dest.latitude || ""));
+          setEndLocationLong(parseFloat(lastDelivery.dest.longitude || ""));
           fetchTarrif(lastDelivery.distance);
         } else {
           console.warn("No deliveries found");
@@ -219,35 +188,10 @@ const NewDelivery = () => {
         console.error("Error fetching deliveries:", error);
       }
     };
-    // const fetchTopUpHistory = async (id) => {
-    //   let me = id;
-    //   console.log("0000", id);
-    //   try {
-    //     const resp = await fetch(`${APILINK}/topUp/topup/${me}`, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     });
-
-    //     const result = await resp.json();
-    //     console.log("kkkkkk", result);
-    //     if (result) {
-    //       setBalance(result[0].balance);
-    //       console.log("suiiiii", result[0].balance);
-    //     } else {
-    //       Alert.alert("Error", "Failed to fetch History.");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching History:", error);
-    //     Alert.alert("Error", "An error occurred while fetching History.");
-    //   }
-    // };
 
     fetchDeliveries();
     fetchData();
     getDrivers();
-    // fetchTopUpHistory(cid);
   }, []);
 
   const validateFields = () => {
@@ -261,20 +205,6 @@ const NewDelivery = () => {
     }
     return true;
   };
-
-  // const checkBalance = (price) => {
-  //   const priceValue = parseFloat(price);
-  //   console.log(balance);
-  //   if (priceValue > balance) {
-  //     Toast.show({
-  //       type: "error",
-  //       text1: "Insufficient Balance",
-  //       text2: `Your balance is insufficient. Available balance: $${balance}. Required: $${priceValue}.`,
-  //     });
-  //     return false; // Not enough balance
-  //   }
-  //   return true; // Sufficient balance
-  // };
 
   const fetchTarrif = async (distance) => {
     const catergory = "standard";
@@ -291,8 +221,6 @@ const NewDelivery = () => {
       );
 
       const result = await resp.json();
-      // console.log("Tarrif iri", result);
-
       if (result && result.lower_price_limit !== undefined) {
         setLowerPriceLimit(result.lower_price_limit);
         setUpperPriceLimit(result.upper_price_limit);
@@ -325,20 +253,7 @@ const NewDelivery = () => {
     if (!validatePrice()) return;
     if (!validateFields()) return;
 
-    // Validate that origin latitude and longitude are set
-    if (!startLocationLat || !startLocationLong) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Origin location coordinates are required.",
-      });
-      return;
-    }
-
     try {
-      const userDetails = await AsyncStorage.getItem("userDetails");
-      const user = userDetails ? JSON.parse(userDetails) : {};
-
       const deliveryData = {
         driver_id: "",
         cust_id: cid,
@@ -346,8 +261,8 @@ const NewDelivery = () => {
         order_start_datetime: new Date().toISOString(),
         order_end_datetime: "",
         status: "New Order",
-        delivery_details: "", // Corrected typo
-        delivery_notes: to,
+        delivery_details: parcelDescription,
+        delivery_notes: deliverynotes,
         weight: weight || "",
         delivery_contact_details: contact,
         dest_location: to,
@@ -361,21 +276,14 @@ const NewDelivery = () => {
         accepted_cost: price,
         paying_when: payingWhen,
         payment_type: paymentMethod,
-        currency_id: cid,
-        // currency_code: code, // Uncommented if necessary
-        usd_rate: null, // Ensure you include it if it's required
-        customer_comment: "",
-        driver_comment: "",
-        driver_stars: "0",
-        customer_stars: "0",
-        pascel_pic1: null, // Ensure you add these if required
-        pascel_pic2: null,
-        pascel_pic3: null,
-        trip_priority_type: null,
-        delivery_received_confirmation_code: "0",
+        currency_id: code,
+        // Include optional fields
+        preferred_gender: preferredGender,
+        preferred_car_type: preferredCarType,
+        preferred_age_range: preferredAgeRange,
+        number_of_passengers: numberOfPassengers,
       };
 
-      // console.log("Data iriiiii", deliveryData);
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
         headers: {
@@ -384,19 +292,18 @@ const NewDelivery = () => {
         body: JSON.stringify(deliveryData),
       });
 
-      const textResponse = await response.text(); // Get raw response
-      // console.log("Raw response:", textResponse);
+      const result = await response.json();
 
-      const result = JSON.parse(textResponse);
-      const send = await sendSmsBroadcast();
-
-      if (response.ok && send) {
-        Toast.show({
-          type: "success",
-          text1: "Trip Created Successfully",
-          text2: result.message,
-        });
-        navigation.navigate("Home");
+      if (response.ok) {
+        const send = await sendSmsBroadcast();
+        if (send) {
+          Toast.show({
+            type: "success",
+            text1: "Trip Created Successfully",
+            text2: result.message,
+          });
+          navigation.navigate("Home");
+        }
       } else {
         Toast.show({
           type: "error",
@@ -466,42 +373,6 @@ const NewDelivery = () => {
             />
           </View>
 
-          <View
-            style={[
-              styles.inputContainer,
-              { backgroundColor: "#ECECEC", borderColor: "transparent" },
-            ]}
-          >
-            <FontAwesomeIcon
-              icon={faArrowCircleRight}
-              size={12}
-              style={styles.icon}
-            />
-            <TextInput
-              style={[styles.input, { fontWeight: "600" }]}
-              value={duration}
-              editable={false}
-            />
-          </View>
-
-          <View
-            style={[
-              styles.inputContainer,
-              { backgroundColor: "#ECECEC", borderColor: "transparent" },
-            ]}
-          >
-            <FontAwesomeIcon
-              icon={faArrowCircleRight}
-              size={12}
-              style={styles.icon}
-            />
-            <TextInput
-              style={[styles.input, { fontWeight: "600" }]}
-              value={distance}
-              editable={false}
-            />
-          </View>
-
           <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
@@ -512,22 +383,33 @@ const NewDelivery = () => {
             />
           </View>
 
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={payingWhen}
-              style={[styles.picker, { fontSize: 10, color: "#666" }]}
-              onValueChange={(itemValue) => setPayingWhen(itemValue)}
-            >
-              <Picker.Item label="Paying When" value="" />
-              <Picker.Item
-                label="Paying Before Trip"
-                value="Paying Before Trip"
-              />
-              <Picker.Item
-                label="Paying After Trip"
-                value="Paying After Trip"
-              />
-            </Picker>
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon
+              icon={faBagShopping}
+              size={12}
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Parcel Description"
+              value={parcelDescription}
+              onChangeText={setParcelDescription}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon
+              icon={faScaleBalanced}
+              size={12}
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Weight (kg)"
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+            />
           </View>
 
           <View style={styles.pickerContainer}>
@@ -545,6 +427,18 @@ const NewDelivery = () => {
             </Picker>
           </View>
 
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={payingWhen}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPayingWhen(itemValue)}
+            >
+              <Picker.Item label="Paying When" value="" />
+              <Picker.Item label="Paying Before Trip" value="Paying Before Trip" />
+              <Picker.Item label="Paying After Trip" value="Paying After Trip" />
+            </Picker>
+          </View>
+
           <View style={{ flexDirection: "row" }}>
             <View style={[styles.inputContainer, { width: "55%" }]}>
               <TextInput
@@ -555,10 +449,9 @@ const NewDelivery = () => {
                 keyboardType="numeric"
               />
 
-              {/* Plus Icon */}
               <TouchableOpacity
                 onPress={() => setPrice((prev) => String(Number(prev) + 1))}
-                disabled={Number(price) >= upperPriceLimit} // Disable if price is greater than or equal to upperPriceLimit
+                disabled={Number(price) >= upperPriceLimit}
               >
                 <Ionicons
                   name="add-circle"
@@ -567,10 +460,9 @@ const NewDelivery = () => {
                 />
               </TouchableOpacity>
 
-              {/* Minus Icon */}
               <TouchableOpacity
                 onPress={() => setPrice((prev) => String(Number(prev) - 1))}
-                disabled={Number(price) <= lowerPriceLimit} // Disable if price is less than or equal to lowerPriceLimit
+                disabled={Number(price) <= lowerPriceLimit}
               >
                 <Ionicons
                   name="remove-circle"
@@ -597,7 +489,64 @@ const NewDelivery = () => {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.btnSignUp} onPress={handleSignUp}>
+          {/* New Trip Preferences Section */}
+          <Text style={{ fontWeight: "bold", marginVertical: 10 }}>Trip Preferences (Optional)</Text>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredGender}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredGender(itemValue)}
+            >
+              <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Male" value="Male" />
+              <Picker.Item label="Female" value="Female" />
+              <Picker.Item label="Other" value="Other" />
+            </Picker>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredCarType}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredCarType(itemValue)}
+            >
+              <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Sedan" value="Sedan" />
+              <Picker.Item label="SUV" value="SUV" />
+              <Picker.Item label="Truck" value="Truck" />
+              <Picker.Item label="Van" value="Van" />
+            </Picker>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredAgeRange}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
+            >
+              <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="18-25" value="18-25" />
+              <Picker.Item label="26-35" value="26-35" />
+              <Picker.Item label="36-45" value="36-45" />
+              <Picker.Item label="46+" value="46+" />
+            </Picker>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon icon={faUser} size={12} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Number of Passengers"
+              value={numberOfPassengers}
+              onChangeText={setNumberOfPassengers}
+              keyboardType="numeric"
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.btnSignUp}
+            onPress={handleSignUp}
+          >
             <Text style={styles.txtSignUp}>OK</Text>
           </TouchableOpacity>
         </View>
@@ -631,40 +580,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  viewTop: {
-    height: 60,
-    backgroundColor: "#FFC000",
-    flexDirection: "row",
-    width: "100%",
-    marginTop: 20,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  nameContainer: {
-    flexDirection: "column",
-    flex: 1,
-  },
-  txtName: {
-    fontSize: 11,
-    color: "#595959",
-    fontWeight: "bold",
-  },
-  menuIcon: {
-    padding: 10,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginLeft: 10,
-  },
   formContainer: {
     flex: 1,
     padding: 20,
@@ -687,7 +602,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: "#cc",
+    color: "#000",
   },
   btnSignUp: {
     backgroundColor: "#FFC000",
@@ -707,7 +622,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 10,
     marginBottom: 15,
-    fontSize: 10,
   },
 });
 

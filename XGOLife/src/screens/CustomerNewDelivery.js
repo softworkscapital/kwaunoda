@@ -31,7 +31,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { API_URL } from "./config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-//
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -61,6 +60,11 @@ const CustomerNewDelivery = () => {
   const [endLocationLong, setEndLocationLong] = useState("");
   const [lowerPriceLimit, setLowerPriceLimit] = useState(0);
   const [upperPriceLimit, setUpperPriceLimit] = useState(0);
+
+  // New fields for preferences
+  const [preferredGender, setPreferredGender] = useState("");
+  const [preferredCarType, setPreferredCarType] = useState("");
+  const [preferredAgeRange, setPreferredAgeRange] = useState("");
 
   const navigation = useNavigation();
   const [driversData, setDriversData] = useState([]);
@@ -116,17 +120,14 @@ const CustomerNewDelivery = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error sending SMS:", response.status, errorText);
-        // Toast.error("Failed to send SMS.");
         return false;
       }
 
       const result = await response.json(); // Log the result if needed
       console.log("SMS sent successfully:", result);
-      // Toast.success("Message sent successfully!");
       return true;
     } catch (error) {
       console.error("Network Error:", error);
-      // Toast.error("Could not send SMS to Drivers. Please check your connection.");
       return false;
     }
   };
@@ -182,7 +183,6 @@ const CustomerNewDelivery = () => {
 
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
-          // console.log("The deliiiii:", lastDelivery);
           setFrom(lastDelivery.startingLocation || "");
           setTo(lastDelivery.destinationLocation || "");
           setDur(lastDelivery.duration || "");
@@ -241,7 +241,6 @@ const CustomerNewDelivery = () => {
 
   const fetchTarrif = async (distance) => {
     const catergory = "standard";
-    // console.log("our Dist", distance);
 
     try {
       const resp = await fetch(
@@ -255,7 +254,6 @@ const CustomerNewDelivery = () => {
       );
 
       const result = await resp.json();
-      // console.log("Tarrif 2 iri", result);
 
       if (result && result.lower_price_limit !== undefined) {
         setLowerPriceLimit(result.lower_price_limit);
@@ -286,8 +284,6 @@ const CustomerNewDelivery = () => {
   };
 
   const sendSmsToClient = async (data) => {
-    // console.log("sms", data);
-
     const message = `Hi ${contact}, a package is being delivered to you.\n
     It consists of ${data.deliveray_details}.\n
     Please give the delivery person the following code after confirming your package: ${data.delivery_received_confirmation_code}.\n
@@ -332,7 +328,6 @@ const CustomerNewDelivery = () => {
     if (!checkBalance(price)) return;
 
     try {
-      // Usage
       const randomNumber = generateRandomFiveDigitNumber();
       console.log(randomNumber);
 
@@ -372,6 +367,10 @@ const CustomerNewDelivery = () => {
         driver_stars: "0",
         customer_status: "Ended",
         delivery_received_confirmation_code: randomNumber,
+
+        preferred_gender: preferredGender || "Any",
+        preferred_car_type: preferredCarType || "Any",
+        preferred_age_range: preferredAgeRange || "Any",
       };
 
       console.log("derivary yedu iyi:", deliveryData);
@@ -421,6 +420,7 @@ const CustomerNewDelivery = () => {
         visibilityTime: 5000,
       });
     } finally {
+      setLoading(false);
     }
   };
 
@@ -579,62 +579,55 @@ const CustomerNewDelivery = () => {
               <Picker.Item label="Paying With Cash" value="Cash" />
               <Picker.Item label="Paying With Bank" value="Bank" />
               <Picker.Item label="Paying With Zipit" value="Zipit" />
-              <Picker.Item label="Paying With Ecocash" value="Ecocash" />
+              <Picker.Item label="Paying With Ecocash" value="Ecocash"/>
               <Picker.Item label="Paying With Innbuks" value="Innbuks" />
             </Picker>
           </View>
 
-          <View style={{ flexDirection: "row" }}>
-            <View style={[styles.inputContainer, { width: "55%" }]}>
-              <TextInput
-                style={styles.input}
-                placeholder="Proposed Price"
-                value={price}
-                onChangeText={handlePriceChange}
-                keyboardType="numeric"
-              />
+          {/* New Trip Preferences Section */}
+          <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Trip Preferences (Optional)</Text>
 
-              {/* Plus Icon */}
-              <TouchableOpacity
-                onPress={() => setPrice((prev) => String(Number(prev) + 1))}
-                disabled={Number(price) >= upperPriceLimit} // Disable if price is greater than or equal to upperPriceLimit
-              >
-                <Ionicons
-                  name="add-circle"
-                  size={30}
-                  color={Number(price) >= upperPriceLimit ? "grey" : "green"}
-                />
-              </TouchableOpacity>
-
-              {/* Minus Icon */}
-              <TouchableOpacity
-                onPress={() => setPrice((prev) => String(Number(prev) - 1))}
-                disabled={Number(price) <= lowerPriceLimit} // Disable if price is less than or equal to lowerPriceLimit
-              >
-                <Ionicons
-                  name="remove-circle"
-                  size={30}
-                  color={Number(price) <= lowerPriceLimit ? "grey" : "red"}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredGender}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredGender(itemValue)}
             >
-              <Picker
-                selectedValue={code}
-                style={[styles.picker, { fontSize: 10, color: "#666" }]}
-                onValueChange={(itemValue) => setCode(itemValue)}
-              >
-                <Picker.Item label="CURRENCY" value="USD" />
-                <Picker.Item label="USD" value="USD" />
-                <Picker.Item label="ZIG" value="ZIG" />
-                <Picker.Item label="RAND" value="ZAR" />
-                <Picker.Item label="PULA" value="BWP" />
-              </Picker>
-            </View>
+              <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Male" value="Male" />
+              <Picker.Item label="Female" value="Female" />
+              <Picker.Item label="Other" value="Other" />
+            </Picker>
           </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredCarType}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredCarType(itemValue)}
+            >
+              <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Sedan" value="Sedan" />
+              <Picker.Item label="SUV" value="SUV" />
+              <Picker.Item label="Truck" value="Truck" />
+              <Picker.Item label="Van" value="Van" />
+            </Picker>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={preferredAgeRange}
+              style={[styles.picker, { fontSize: 10, color: "#666" }]}
+              onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
+            >
+              <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="18-25" value="18-25" />
+              <Picker.Item label="26-35" value="26-35" />
+              <Picker.Item label="36-45" value="36-45" />
+              <Picker.Item label="46+" value="46+" />
+            </Picker>
+          </View>
+
 
           <TouchableOpacity
             style={[
@@ -688,40 +681,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  viewTop: {
-    height: 60,
-    backgroundColor: "#FFC000",
-    flexDirection: "row",
-    width: "100%",
-    marginTop: 20,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  nameContainer: {
-    flexDirection: "column",
-    flex: 1,
-  },
-  txtName: {
-    fontSize: 11,
-    color: "#595959",
-    fontWeight: "bold",
-  },
-  menuIcon: {
-    padding: 10,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginLeft: 10,
-  },
   formContainer: {
     flex: 1,
     padding: 20,
@@ -744,7 +703,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: "#cc",
+    color: "#000",
   },
   btnSignUp: {
     backgroundColor: "#FFC000",

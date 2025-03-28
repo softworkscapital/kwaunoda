@@ -37,6 +37,7 @@ const Home = ({ navigation }) => {
   const [navigated, setNavigated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [slowConnection, setSlowConnection] = useState(false);
+    const [balance, setBalance] = useState();
   const [showSlowConnection, setShowSlowConnection] = useState(false);
 
   // Fetch user data and set up interval
@@ -48,6 +49,7 @@ const Home = ({ navigation }) => {
 
       // Initial fetch of user trips
       fetchUserTrips(parsedIds.customerId);
+      await fetchCounterOffers(parsedIds.customerId);
 
       // Set up an interval to fetch user trips and counter offers
       const intervalId = setInterval(() => {
@@ -231,20 +233,32 @@ const Home = ({ navigation }) => {
     }
   };
 
+
+
+
+
+
+  //#####################################################################
   const fetchCounterOffers = async (userId) => {
+    console.log("fetchOffers", userId);
     try {
       const response = await fetch(
         `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
       );
 
+      console.log("risiponsi", response);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
       const responseText = await response.text();
+      console.log("messsage", responseText);
 
       try {
+
         const offers = JSON.parse(responseText);
+        console.log("MAOFFERZ", offers);
+
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
             offers.map(async (offer) => {
@@ -291,10 +305,6 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const getRandomDuration = () => {
-    return Math.floor(Math.random() * 5000) + 3000;
-  };
-
   const startOfferTimer = (offerId) => {
     const animation = new Animated.Value(0);
     progressAnimations.current[offerId] = animation;
@@ -331,19 +341,59 @@ const Home = ({ navigation }) => {
         );
       }
 
+      const currentdate = new Date().toISOString();
       const statusResponse = await fetch(
         `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             driver_id: offer.driver_id,
+            order_start_datetime: currentdate,
+            accepted_cost: offer.counter_offer_value, ///look at it
             status: "InTransit",
           }),
         }
       );
+
+      //took and merged
+      // const updateTripStatus = async () => {
+      //   const currentdate = new Date().toISOString();
+      //   try {
+      //     const response = await fetch(
+      //       `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
+      //       {
+      //         method: "PUT",
+      //         headers: { "Content-Type": "application/json" },
+      //         body: JSON.stringify({
+      //           driver_id: offer.driver_id,
+      //           order_start_datetime: currentdate,
+      //           accepted_cost: offer.counter_offer_value,///look at it
+      //           status: "InTransit",
+      //         }),
+      //       }
+      //     );
+      //     const result = await response.json();
+      //     if (!response.ok) {
+      //       throw new Error(result.message || "Failed to accept trip.");
+      //     }
+      //     Toast.show({
+      //       type: "success",
+      //       text1: "Trip accepted successfully",
+      //       // text2: "Settlement Occurred",
+      //       position: "middle",
+      //       visibilityTime: 5000,
+      //     });
+      //     setSelectedTrip(null);
+      //     fetchTrips();
+      //     navigation.navigate("InTransitTrip", { OntripData: selectedTrip });
+      //   } catch (error) {
+      //     Alert.alert(
+      //       "Error",
+      //       error.message || "An error occurred while accepting the trip."
+      //     );
+      //   }
+      // };
 
       if (!statusResponse.ok) {
         throw new Error(
@@ -393,6 +443,117 @@ const Home = ({ navigation }) => {
       console.error("Error marking offer as seen:", error);
     }
   };
+
+  //new here
+  const fetchTopUpHistory = async (driverID) => {
+    // console.log("Honai driver id yeduuuuuu:", driverID);
+
+    try {
+      const resp = await fetch(`${API_URL}/topUp/userBalance/${driverID}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // console.log("maziBalance eduuuu:", resp);
+      const result = await resp.json();
+      // console.log("Top Up History:", result);
+
+      // Check if the response was successful and contains the balance
+      if (result && result.success && result.data && result.data.length > 0) {
+        const userWalletBalance = result.data[0].user_wallet_balance;
+        // console.log("User Wallet Balance:", userWalletBalance);
+
+        // Assuming you have a function or state to set the balance
+        setBalance(userWalletBalance); // Call setBalance with the fetched balance
+      } else {
+        Alert.alert("Error", "Failed to fetch Top Up History.");
+      }
+    } catch (error) {
+      console.log("Error fetching History:", error);
+      Alert.alert("Error", "An error occurred while fetching History.");
+    }
+  };
+
+  ///new here
+  const settleCommission = async (offer) => {
+    // Calculate fee based on accepted cost
+    const fee = 0.15 * offer.accepted_cost;
+    // console.log("ziBalance iri", balance);
+
+    // Check if balance is sufficient
+    if (balance < fee || balance <= 0) {
+      Alert.alert(
+        "Error",
+        `Your floating balance is too low. You need to top up to at least ${fee}`
+      );
+      return;
+    }
+
+    // Update balance after fee deduction
+    const newBalance = balance - fee;
+
+    // Prepare data for the API request
+    const data = {
+      commission: fee,
+      description: `Trip ID: ${offer.trip_id} Commission\n${offer.detail}\nFrom: ${offer.origin_location}\nTo: ${offer.dest_location}`,
+    };
+
+    console.log("Zvikuenda izvo", data);
+
+    try {
+      // Make the API call to process the trip commission
+      const resp = await fetch(
+        `${APILINK}/topUp/trip_commission_settlement/${1}/${offer.driver_id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      // Check if the response is OK
+      if (!resp.ok) {
+        const errorText = await resp.text(); // Get the text response for debugging
+        Alert.alert("Error", "Failed to process top-up");
+        return;
+      }
+
+      // Parse the JSON response
+      const result = await resp.json();
+      if (result) {
+        // Update balance state
+        console.log("done"); // Call a function to update trip status
+      } else {
+        Alert.alert("Error", "Failed to process top-up.");
+      }
+    } catch (error) {
+      console.error("Error processing top-up:", error);
+      Alert.alert("Error", "An error occurred while processing top-up.");
+    }
+  };
+
+
+//#####################################################################
+
+
+
+
+
+
+
+
+
+  const getRandomDuration = () => {
+    return Math.floor(Math.random() * 5000) + 3000;
+  };
+
+
+
+
 
   const renderStars = (rating) => {
     const stars = [];

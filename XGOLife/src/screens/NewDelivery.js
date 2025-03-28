@@ -383,7 +383,7 @@ const NewDelivery = () => {
             />
           </View>
 
-          <View style={styles.inputContainer}>
+          {/* <View style={styles.inputContainer}>
             <FontAwesomeIcon
               icon={faBagShopping}
               size={12}
@@ -395,8 +395,8 @@ const NewDelivery = () => {
               value={parcelDescription}
               onChangeText={setParcelDescription}
             />
-          </View>
-
+          </View> */}
+{/* 
           <View style={styles.inputContainer}>
             <FontAwesomeIcon
               icon={faScaleBalanced}
@@ -410,7 +410,7 @@ const NewDelivery = () => {
               onChangeText={setWeight}
               keyboardType="numeric"
             />
-          </View>
+          </View> */}
 
           <View style={styles.pickerContainer}>
             <Picker
@@ -499,6 +499,7 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPreferredGender(itemValue)}
             >
               <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Male" value="Male" />
               <Picker.Item label="Female" value="Female" />
               <Picker.Item label="Other" value="Other" />
@@ -512,6 +513,7 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPreferredCarType(itemValue)}
             >
               <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Sedan" value="Sedan" />
               <Picker.Item label="SUV" value="SUV" />
               <Picker.Item label="Truck" value="Truck" />
@@ -526,6 +528,7 @@ const NewDelivery = () => {
               onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
             >
               <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="18-25" value="18-25" />
               <Picker.Item label="26-35" value="26-35" />
               <Picker.Item label="36-45" value="36-45" />

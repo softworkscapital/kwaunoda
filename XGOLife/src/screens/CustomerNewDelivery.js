@@ -594,6 +594,7 @@ const CustomerNewDelivery = () => {
               onValueChange={(itemValue) => setPreferredGender(itemValue)}
             >
               <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Male" value="Male" />
               <Picker.Item label="Female" value="Female" />
               <Picker.Item label="Other" value="Other" />
@@ -607,6 +608,7 @@ const CustomerNewDelivery = () => {
               onValueChange={(itemValue) => setPreferredCarType(itemValue)}
             >
               <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Sedan" value="Sedan" />
               <Picker.Item label="SUV" value="SUV" />
               <Picker.Item label="Truck" value="Truck" />
@@ -621,6 +623,7 @@ const CustomerNewDelivery = () => {
               onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
             >
               <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="Any" value="Any" />
               <Picker.Item label="18-25" value="18-25" />
               <Picker.Item label="26-35" value="26-35" />
               <Picker.Item label="36-45" value="36-45" />

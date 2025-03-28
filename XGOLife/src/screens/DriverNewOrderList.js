@@ -209,13 +209,13 @@ const DriverNewOrderList = () => {
     // console.log("ziBalance iri", balance);
 
     // Check if balance is sufficient
-    if (balance < fee || balance <= 0) {
-      Alert.alert(
-        "Error",
-        `Your floating balance is too low. You need to top up to at least ${fee}`
-      );
-      return;
-    }
+    // if (balance < fee || balance <= 0) {
+    //   Alert.alert(
+    //     "Error",
+    //     `Your floating balance is too low. You need to top up to at least ${fee}`
+    //   );
+    //   return;
+    // }
 
     // Update balance after fee deduction
     const newBalance = balance - fee;

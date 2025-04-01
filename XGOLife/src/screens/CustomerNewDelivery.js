@@ -609,10 +609,16 @@ const CustomerNewDelivery = () => {
             >
               <Picker.Item label="Preferred Car Type" value="" />
               <Picker.Item label="Any" value="Any" />
+              <Picker.Item label="DeliveryBike" value="DeliveryBike" />
               <Picker.Item label="Sedan" value="Sedan" />
+              <Picker.Item label="Coupe" value="Coupe" />
+              <Picker.Item label="HatchBack" value="HatchBack" />    
               <Picker.Item label="SUV" value="SUV" />
-              <Picker.Item label="Truck" value="Truck" />
               <Picker.Item label="Van" value="Van" />
+              <Picker.Item labeP="PickUp 1.0 to 1.2 tonnes" value="PickUp 1.0 to 1.2 tonnes" />
+              <Picker.Item labeP="Truck Max load 1.0 to 2.5 tonne" value="Truck Max load 1.0 to 2.5 tonne" />
+              <Picker.Item labeP="Truck Max load 2.5 to 5.0 tonne" value="Truck Max load 2.5 to 5.0 tonne" />
+
             </Picker>
           </View>
 

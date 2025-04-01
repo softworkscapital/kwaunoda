@@ -23,7 +23,7 @@ const Invite = () => {
             console.log("Hardcoded User ID:", hardcodedUserId);
 
             const promoCode = generatePromoCode(hardcodedUserId);
-            const message = `I am super excited to share an amazing new app with you! Use my promo code ${promoCode} to join EasyGo and experience a better ride.`;
+            const message = `I am super excited to share an amazing new app with you! Use my promo code ${promoCode} to join XGO and experience a better ride.`;
 
             const response = await fetch("https://srv547457.hstgr.cloud:3003/smsendpoint", {
                 method: "POST",
@@ -72,7 +72,7 @@ const Invite = () => {
                 />
                 <TextInput
                     style={styles.messageInput}
-                    value={`I am super excited to share with you an amazing new app that is making waves. Join me on DropX and experience a better ride.`}
+                    value={`I am super excited to share with you an amazing new app that is making waves. Join me on XGO and experience a better ride.`}
                     editable={false}
                     placeholderTextColor="#ccc"
                     multiline={true}

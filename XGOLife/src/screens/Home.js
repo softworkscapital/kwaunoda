@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";import {
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import {
   StyleSheet,
   View,
   SafeAreaView,
@@ -9,6 +10,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";import {
   Image,
   ScrollView,
   StatusBar,
+  Modal,
   ActivityIndicator,
 } from "react-native";
 import { WebView } from "react-native-webview";
@@ -37,8 +39,13 @@ const Home = ({ navigation }) => {
   const [navigated, setNavigated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [slowConnection, setSlowConnection] = useState(false);
-    const [balance, setBalance] = useState();
+  const [balance, setBalance] = useState();
   const [showSlowConnection, setShowSlowConnection] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const toggleModal = () => {
+    setModalVisible(!modalVisible);
+  };
 
   // Fetch user data and set up interval
   useEffect(() => {
@@ -81,9 +88,6 @@ const Home = ({ navigation }) => {
     ).start();
   }, [navigated]);
 
-
-
-
   const toggleBottomSheet = () => {
     Animated.timing(bottomSheetHeight, {
       toValue: isExpanded ? 150 : height * 0.7,
@@ -110,17 +114,6 @@ const Home = ({ navigation }) => {
     setSlowConnection(false);
   };
 
-
-
-
-
-
-
-
-
-
-
-
   // Call lastActivity when the screen is focused
   useFocusEffect(
     useCallback(() => {
@@ -135,7 +128,6 @@ const Home = ({ navigation }) => {
       fetchUserIdAndCallLastActivity();
     }, [])
   );
-
 
   const lastActivity = async (id) => {
     console.log("user last activity logged", id);
@@ -162,16 +154,6 @@ const Home = ({ navigation }) => {
       console.log(error);
     }
   };
-
-
-
-
-
-
-
-
-
-
 
   // Dependency on navigated
   const fetchUserTrips = async (userId) => {
@@ -233,11 +215,6 @@ const Home = ({ navigation }) => {
     }
   };
 
-
-
-
-
-
   //#####################################################################
   const fetchCounterOffers = async (userId) => {
     console.log("fetchOffers", userId);
@@ -255,7 +232,6 @@ const Home = ({ navigation }) => {
       console.log("messsage", responseText);
 
       try {
-
         const offers = JSON.parse(responseText);
         console.log("MAOFFERZ", offers);
 
@@ -536,24 +512,11 @@ const Home = ({ navigation }) => {
     }
   };
 
-
-//#####################################################################
-
-
-
-
-
-
-
-
+  //#####################################################################
 
   const getRandomDuration = () => {
     return Math.floor(Math.random() * 5000) + 3000;
   };
-
-
-
-
 
   const renderStars = (rating) => {
     const stars = [];
@@ -899,44 +862,50 @@ const Home = ({ navigation }) => {
           )}
         </ScrollView>
 
-        {/* Action Buttons */}
-        <View style={styles.actionContainer}>
-          <LinearGradient
-            colors={["#FFC000", "#FFD700"]}
-            style={styles.gradientButton}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate("MapViewComponent")}
-            >
-              <FontAwesome name="car" size={20} color="#000" />
-              <Text style={styles.actionButtonText}>Request Trip</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+        {/* Plus Icon to open Modal */}
+        <TouchableOpacity style={styles.plusButton} onPress={toggleModal}>
+          <FontAwesome name="plus" size={30} color="#FFF" />
+        </TouchableOpacity>
 
-          <LocationSender
-            userId={userId}
-            userType="customer"
-            interval={60000}
-          />
-
-          <LinearGradient
-            colors={["#FFC000", "#FFD700"]}
-            style={styles.gradientButton}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate("DeliveryMap")}
-            >
-              <FontAwesome name="box" size={20} color="#000" />
-              <Text style={styles.actionButtonText}>Request Delivery</Text>
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
+        {/* Modal for Action Buttons */}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={modalVisible}
+          onRequestClose={toggleModal}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Action</Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  toggleModal();
+                  navigation.navigate("MapViewComponent"); // Navigate to Request Trip
+                }}
+              >
+                <FontAwesome name="car" size={20} color="#000" />
+                <Text style={styles.modalButtonText}>Request Trip</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  toggleModal();
+                  navigation.navigate("DeliveryMap"); // Navigate to Request Delivery
+                }}
+              >
+                <FontAwesome name="box" size={20} color="#000" />
+                <Text style={styles.modalButtonText}>Request Delivery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={toggleModal}
+              >
+                <Text style={styles.closeModalText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </Animated.View>
     </View>
   );
@@ -1325,6 +1294,54 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 6,
     paddingBottom: 20,
+  },
+  plusButton: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    backgroundColor: "#FFC000",
+    borderRadius: 50,
+    padding: 15,
+    elevation: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#FFF",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  modalButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    width: "100%",
+    backgroundColor: "#ffc000",
+    borderRadius: 15,
+    margin: 10,
+  },
+  modalButtonText: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  closeModalButton: {
+    marginTop: 20,
+    padding: 10,
+  },
+  closeModalText: {
+    color: "#FF0000",
+    fontWeight: "bold",
   },
 });
 

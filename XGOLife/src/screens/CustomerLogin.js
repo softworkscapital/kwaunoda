@@ -22,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
 import MD5 from 'react-native-md5';
+import VersionCheck from './VersionChecker';
 
 
 const CustomerLogin = () => {
@@ -202,14 +203,13 @@ const CustomerLogin = () => {
           driver_id: result[0].driver_id,
           customerId: result[0]?.customerid,
           last_logged_account: result[0].last_logged_account,
+          referral_code:result[0].referral_code,
         };
 
 
         if (result[0].last_logged_account === "customer") {
-          console.log("Last Logged in by Customer:")
           await updateLog(result[0]?.customerid);
         } else if (result[0].last_logged_account === "driver") {
-          console.log("Last Logged in by driver:")
           await updateLog(result[0]?.driver_id);
         }
 
@@ -301,7 +301,7 @@ const CustomerLogin = () => {
               Login
             </Text>
           </View>
-
+          <VersionCheck />
           <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faEnvelope} size={12} style={styles.icon} />
             <TextInput

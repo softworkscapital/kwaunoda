@@ -44,7 +44,7 @@ const CustomerReferredBy = () => {
         if (result && result.userid) { // Check if result and result.userid exist
           setUserInfo(result);
           console.log(`Referred By User ID: ${result.userid}`); // Log referred by user ID
-          await AsyncStorage.setItem("referred_by", result.userid); // Store user ID in Async Storage
+          await AsyncStorage.setItem("customer_referred_by", result.userid); // Store user ID in Async Storage
           navigation.navigate("TermsConditions"); // Redirect to TermsConditions
         } else {
           Alert.alert("Error", "User not found for the provided reference code.");

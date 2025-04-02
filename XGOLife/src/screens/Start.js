@@ -103,7 +103,7 @@ const Start = () => {
       <Animated.View
         style={{
           transform: [
-            { scale: scaleAnimation }, // Scale animation
+            { scale: scaleAnimation }, 
           ],
           opacity: opacityAnimation,
         }}

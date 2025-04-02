@@ -35,6 +35,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
 const CustomerNewDelivery = () => {
+
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
@@ -94,10 +95,10 @@ const CustomerNewDelivery = () => {
       console.log("No phone numbers available to send SMS.");
       return;
     }
-
+    //referral_codey7
     const message = `Hello XGO driver, a new delivery has been requested.\n
-    Be the first to get this tender while it lasts.\n
-    Tell a Friend to download the XGO App at www.xgolife.com to experience a life of convenience and begin to receive packages seamlessly.`;
+    Be the first to accept to accept this trip.\n
+    Tell a Friend to download the XGO App at www.xgolife.com experience a life of convenience and begin to send packages seamlessly.`;
 
     try {
       const response = await fetch(
@@ -180,6 +181,10 @@ const CustomerNewDelivery = () => {
       try {
         const lastTripData = await AsyncStorage.getItem("deliveries");
         const deliveries = lastTripData ? JSON.parse(lastTripData) : [];
+
+
+        const referral_code_raw = await AsyncStorage.getItem("theids");
+        const referral_code = referral_code_raw ? JSON.parse(referral_code_raw) : [];
 
         if (deliveries.length > 0) {
           const lastDelivery = deliveries[deliveries.length - 1];
@@ -321,11 +326,20 @@ const CustomerNewDelivery = () => {
 
   const handleSignUp = async () => {
     setLoading(true);
-    if (!validatePrice()) return;
-    if (!validateFields()) return;
+    if (!validatePrice()){
+      setLoading(false);
+      return;
+    } 
+    if (!validateFields()){
+        setLoading(false);
+        return;
+      } 
 
     // Check balance before proceeding
-    if (!checkBalance(price)) return;
+    if (!checkBalance(price)){
+      setLoading(false);
+      return;
+    } 
 
     try {
       const randomNumber = generateRandomFiveDigitNumber();
@@ -373,7 +387,7 @@ const CustomerNewDelivery = () => {
         preferred_age_range: preferredAgeRange || "Any",
       };
 
-      console.log("derivary yedu iyi:", deliveryData);
+      // console.log("derivary yedu iyi:", deliveryData);
 
       const response = await fetch(`${APILINK}/trip/`, {
         method: "POST",
@@ -409,6 +423,11 @@ const CustomerNewDelivery = () => {
           position: "center",
           visibilityTime: 5000,
         });
+
+        setTimeout(() => {
+          setLoading(false);
+          // navigation.navigate("Home"); // Redirect after the operation
+        }, 2000);
       }
     } catch (error) {
       console.error("Error posting delivery data:", error);
@@ -419,6 +438,7 @@ const CustomerNewDelivery = () => {
         position: "center",
         visibilityTime: 5000,
       });
+      
     } finally {
       setLoading(false);
     }
@@ -516,9 +536,10 @@ const CustomerNewDelivery = () => {
             <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Delivery Contact (263123456789)"
+              placeholder="Delivery Contact e.g (263123456789)"
               value={contact}
               onChangeText={setContact}
+              keyboardType="numeric"
             />
           </View>
 
@@ -550,6 +571,56 @@ const CustomerNewDelivery = () => {
               keyboardType="numeric"
             />
           </View>
+
+            <View style={{ flexDirection: "row" }}>
+                      <View style={[styles.inputContainer, { width: "55%" }]}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Proposed Price"
+                          value={price}
+                          onChangeText={handlePriceChange}
+                          keyboardType="numeric"
+                        />
+          
+                        <TouchableOpacity
+                          onPress={() => setPrice((prev) => String(Number(prev) + 1))}
+                          disabled={Number(price) >= upperPriceLimit}
+                        >
+                          <Ionicons
+                            name="add-circle"
+                            size={30}
+                            color={Number(price) >= upperPriceLimit ? "grey" : "green"}
+                          />
+                        </TouchableOpacity>
+          
+                        <TouchableOpacity
+                          onPress={() => setPrice((prev) => String(Number(prev) - 1))}
+                          disabled={Number(price) <= lowerPriceLimit}
+                        >
+                          <Ionicons
+                            name="remove-circle"
+                            size={30}
+                            color={Number(price) <= lowerPriceLimit ? "grey" : "red"}
+                          />
+                        </TouchableOpacity>
+                      </View>
+          
+                      <View
+                        style={[styles.pickerContainer, { width: "45%", marginLeft: 2 }]}
+                      >
+                        <Picker
+                          selectedValue={code}
+                          style={[{ fontSize: 8, color: "#666" }]}
+                          onValueChange={(itemValue) => setCode(itemValue)}
+                        >
+                          <Picker.Item label="Currency" value="" />
+                          <Picker.Item label="USD" value="USD" />
+                          <Picker.Item label="ZIG" value="ZIG" />
+                          <Picker.Item label="RAND" value="ZAR" />
+                          <Picker.Item label="PULA" value="BWP" />
+                        </Picker>
+                      </View>
+                    </View>
 
           <View style={styles.pickerContainer}>
             <Picker
@@ -593,7 +664,7 @@ const CustomerNewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredGender(itemValue)}
             >
-              <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Preferred Gender" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Male" value="Male" />
               <Picker.Item label="Female" value="Female" />
@@ -607,7 +678,7 @@ const CustomerNewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredCarType(itemValue)}
             >
-              <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Preferred Car Type" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="DeliveryBike" value="DeliveryBike" />
               <Picker.Item label="Sedan" value="Sedan" />
@@ -615,9 +686,9 @@ const CustomerNewDelivery = () => {
               <Picker.Item label="HatchBack" value="HatchBack" />    
               <Picker.Item label="SUV" value="SUV" />
               <Picker.Item label="Van" value="Van" />
-              <Picker.Item labeP="PickUp 1.0 to 1.2 tonnes" value="PickUp 1.0 to 1.2 tonnes" />
-              <Picker.Item labeP="Truck Max load 1.0 to 2.5 tonne" value="Truck Max load 1.0 to 2.5 tonne" />
-              <Picker.Item labeP="Truck Max load 2.5 to 5.0 tonne" value="Truck Max load 2.5 to 5.0 tonne" />
+              <Picker.Item label="PickUp 1.0 to 1.2 tonnes" value="PickUp 1.0 to 1.2 tonnes" />
+              <Picker.Item label="Truck Max load 1.0 to 2.5 tonne" value="Truck Max load 1.0 to 2.5 tonne" />
+              <Picker.Item label="Truck Max load 2.5 to 5.0 tonne" value="Truck Max load 2.5 to 5.0 tonne" />
 
             </Picker>
           </View>
@@ -628,7 +699,7 @@ const CustomerNewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
             >
-              <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="Preferred Age Range" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="18-25" value="18-25" />
               <Picker.Item label="26-35" value="26-35" />

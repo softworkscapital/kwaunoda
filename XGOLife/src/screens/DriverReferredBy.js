@@ -51,6 +51,10 @@ const DriverReferredBy = () => {
     }
   };
 
+  const handleSkip = () => {
+    navigation.navigate("DriverTerms"); // Redirect to DriverTerms without reference code
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -65,6 +69,9 @@ const DriverReferredBy = () => {
       />
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Continue</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+        <Text style={styles.skipButtonText}>Skip</Text>
       </TouchableOpacity>
     </View>
   );
@@ -100,6 +107,15 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#000", // Black text
+    fontSize: 16,
+  },
+  skipButton: {
+    marginTop: 15,
+    padding: 10,
+    alignItems: "center",
+  },
+  skipButtonText: {
+    color: "#007BFF", // Blue text for skip
     fontSize: 16,
   },
   userInfo: {

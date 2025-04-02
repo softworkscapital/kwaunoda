@@ -26,7 +26,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL_UPLOADS } from "./config"; // Import the API_URL
-import { Picker } from '@react-native-picker/picker';
+import { Picker } from "@react-native-picker/picker";
 
 const SignUpDriver = () => {
   const [name, setName] = useState("");
@@ -91,7 +91,12 @@ const SignUpDriver = () => {
       return false;
     }
 
-    if (vehicleYear && (isNaN(vehicleYear) || vehicleYear < 1900 || vehicleYear > new Date().getFullYear())) {
+    if (
+      vehicleYear &&
+      (isNaN(vehicleYear) ||
+        vehicleYear < 1900 ||
+        vehicleYear > new Date().getFullYear())
+    ) {
       Toast.show({
         text1: "Validation Error",
         text2: "Please enter a valid vehicle year.",
@@ -151,7 +156,10 @@ const SignUpDriver = () => {
 
       console.log("Driver Details:", driverDetails);
 
-      await AsyncStorage.setItem("driverDetailsD0", JSON.stringify(driverDetails));
+      await AsyncStorage.setItem(
+        "driverDetailsD0",
+        JSON.stringify(driverDetails)
+      );
       console.log("Driver details stored in Async Storage:", driverDetails);
 
       navigation.navigate("SignUpDriver1");
@@ -240,9 +248,100 @@ const SignUpDriver = () => {
               onChangeText={setPlate}
             />
           </View>
+          <View style={styles.picWrapper}>
+            {profilePic && (
+              <Image source={{ uri: profilePic }} style={styles.profileImage} />
+            )}
+            <TouchableOpacity
+              style={styles.picButton}
+              onPress={() => pickImage(setProfilePic)}
+            >
+              <Text style={styles.picButtonText}>
+                {profilePic
+                  ? "Change Profile Picture"
+                  : "Upload Profile Picture"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.picWrapper}>
+            {idPic && (
+              <Image source={{ uri: idPic }} style={styles.profileImage} />
+            )}
+            <TouchableOpacity
+              style={styles.picButton}
+              onPress={() => pickImage(setIdPic)}
+            >
+              <Text style={styles.picButtonText}>
+                {idPic ? "Change ID Picture" : "Upload ID Picture"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.picWrapper}>
+            {driversLicensePic && (
+              <Image
+                source={{ uri: driversLicensePic }}
+                style={styles.profileImage}
+              />
+            )}
+            <TouchableOpacity
+              style={styles.picButton}
+              onPress={() => pickImage(setDriversLicensePic)}
+            >
+              <Text style={styles.picButtonText}>
+                {driversLicensePic
+                  ? "Change Driver's License"
+                  : "Upload Driver's License"}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Vehicle Information</Text>
+          </View>
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon icon={faList} size={12} style={styles.icon} />
+            <Picker
+              selectedValue={vehicleCategory}
+              style={styles.input}
+              onValueChange={(itemValue) => setVehicleCategory(itemValue)}
+            >
+              <Picker.Item label="Select Vehicle Category" value="" />
+              <Picker.Item label="Economy" value="economy" />
+              <Picker.Item label="Standard" value="standard" />
+              <Picker.Item label="Luxury" value="luxury" />
+              <Picker.Item label="Commercial" value="commercial" />
+            </Picker>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <FontAwesomeIcon icon={faCar} size={12} style={styles.icon} />
+            <Picker
+              selectedValue={vehicleType}
+              style={styles.input}
+              onValueChange={(itemValue) => setVehicleType(itemValue)}
+            >
+              <Picker.Item label="Select Vehicle Type" value="" />
+              <Picker.Item label="Delivery Bike" value="DeliveryBike" />
+              <Picker.Item label="Sedan" value="Sedan" />
+              <Picker.Item label="Coupe" value="Coupe" />
+              <Picker.Item label="HatchBack" value="HatchBack" />
+              <Picker.Item label="SUV" value="SUV" />
+              <Picker.Item label="Van" value="Van" />
+              <Picker.Item
+                label="PickUp 1.0 to 1.2 tonnes"
+                value="PickUp1.0to1.2tonnes"
+              />
+              <Picker.Item
+                label="Truck Max load 1.0 to 2.5 tonne"
+                value="TruckMaxLoad1.0to2.5tonne"
+              />
+              <Picker.Item
+                label="Truck Max load 2.5 to 5.0 tonne"
+                value="TruckMaxLoad2.5to5.0tonne"
+              />
+            </Picker>
           </View>
 
           <View style={styles.inputContainer}>
@@ -266,32 +365,12 @@ const SignUpDriver = () => {
           </View>
 
           <View style={styles.inputContainer}>
-            <FontAwesomeIcon icon={faCar} size={12} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Vehicle Type"
-              value={vehicleType}
-              onChangeText={setVehicleType}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faPalette} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Vehicle Color"
               value={vehicleColor}
               onChangeText={setVehicleColor}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <FontAwesomeIcon icon={faList} size={12} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Vehicle Category"
-              value={vehicleCategory}
-              onChangeText={setVehicleCategory}
             />
           </View>
 
@@ -317,36 +396,7 @@ const SignUpDriver = () => {
             />
           </View>
 
-         
-
           {/* Upload Buttons for Images */}
-          <View style={styles.picWrapper}>
-            {profilePic && (
-              <Image source={{ uri: profilePic }} style={styles.profileImage} />
-            )}
-            <TouchableOpacity
-              style={styles.picButton}
-              onPress={() => pickImage(setProfilePic)}
-            >
-              <Text style={styles.picButtonText}>
-                {profilePic ? "Change Profile Picture" : "Upload Profile Picture"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.picWrapper}>
-            {idPic && (
-              <Image source={{ uri: idPic }} style={styles.profileImage} />
-            )}
-            <TouchableOpacity
-              style={styles.picButton}
-              onPress={() => pickImage(setIdPic)}
-            >
-              <Text style={styles.picButtonText}>
-                {idPic ? "Change ID Picture" : "Upload ID Picture"}
-              </Text>
-            </TouchableOpacity>
-          </View>
 
           <View style={styles.picWrapper}>
             {platePic && (
@@ -364,28 +414,19 @@ const SignUpDriver = () => {
 
           <View style={styles.picWrapper}>
             {vehicleLicensePic && (
-              <Image source={{ uri: vehicleLicensePic }} style={styles.profileImage} />
+              <Image
+                source={{ uri: vehicleLicensePic }}
+                style={styles.profileImage}
+              />
             )}
             <TouchableOpacity
               style={styles.picButton}
               onPress={() => pickImage(setVehicleLicensePic)}
             >
               <Text style={styles.picButtonText}>
-                {vehicleLicensePic ? "Change Vehicle License" : "Upload Vehicle License"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.picWrapper}>
-            {driversLicensePic && (
-              <Image source={{ uri: driversLicensePic }} style={styles.profileImage} />
-            )}
-            <TouchableOpacity
-              style={styles.picButton}
-              onPress={() => pickImage(setDriversLicensePic)}
-            >
-              <Text style={styles.picButtonText}>
-                {driversLicensePic ? "Change Driver's License" : "Upload Driver's License"}
+                {vehicleLicensePic
+                  ? "Change Vehicle License"
+                  : "Upload Vehicle License"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -393,42 +434,57 @@ const SignUpDriver = () => {
           {/* Vehicle Image Uploads */}
           <View style={styles.picWrapper}>
             {vehicleImage1 && (
-              <Image source={{ uri: vehicleImage1 }} style={styles.profileImage} />
+              <Image
+                source={{ uri: vehicleImage1 }}
+                style={styles.profileImage}
+              />
             )}
             <TouchableOpacity
               style={styles.picButton}
               onPress={() => pickImage(setVehicleImage1)}
             >
               <Text style={styles.picButtonText}>
-                {vehicleImage1 ? "Change Vehicle Image 1" : "Upload Vehicle Image 1"}
+                {vehicleImage1
+                  ? "Change Vehicle Image 1"
+                  : "Upload Vehicle Image 1"}
               </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.picWrapper}>
             {vehicleImage2 && (
-              <Image source={{ uri: vehicleImage2 }} style={styles.profileImage} />
+              <Image
+                source={{ uri: vehicleImage2 }}
+                style={styles.profileImage}
+              />
             )}
             <TouchableOpacity
               style={styles.picButton}
               onPress={() => pickImage(setVehicleImage2)}
             >
               <Text style={styles.picButtonText}>
-                {vehicleImage2 ? "Change Vehicle Image 2" : "Upload Vehicle Image 2"}
+                {vehicleImage2
+                  ? "Change Vehicle Image 2"
+                  : "Upload Vehicle Image 2"}
               </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.picWrapper}>
             {vehicleImage3 && (
-              <Image source={{ uri: vehicleImage3 }} style={styles.profileImage} />
+              <Image
+                source={{ uri: vehicleImage3 }}
+                style={styles.profileImage}
+              />
             )}
             <TouchableOpacity
               style={styles.picButton}
               onPress={() => pickImage(setVehicleImage3)}
             >
               <Text style={styles.picButtonText}>
-                {vehicleImage3 ? "Change Vehicle Image 3" : "Upload Vehicle Image 3"}
+                {vehicleImage3
+                  ? "Change Vehicle Image 3"
+                  : "Upload Vehicle Image 3"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -476,7 +532,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
-    padding: 5,
+    padding: 3,
+    paddingLeft: 15,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
@@ -489,6 +546,13 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+  },
+  picker: {
+    flex: 1,
+    height: 40,
+  },
+  icon: {
+    marginRight: 10,
   },
   btnSignUp: {
     backgroundColor: "#FFC000",
@@ -534,13 +598,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#FFC000',
+    borderBottomColor: "#FFC000",
     paddingBottom: 5,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
 });
 

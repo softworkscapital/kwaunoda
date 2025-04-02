@@ -1,66 +1,77 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
-import BottomFooter from './BottomFooter';
 
 const AboutUs = () => {
   const navigation = useNavigation();
+  const buildDate = new Date().toISOString().split('T')[0]; 
+  const websiteUrl = "https://xgolife.com/download-2/";
 
-  const redirectHome = () => {
-    navigation.goBack();
+  const handleLinkPress = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <View style={[styles.topBar, { backgroundColor: '#FFC000', paddingTop: 30 }]}>
-        <TouchableOpacity style={styles.backArrow} onPress={redirectHome}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backArrow} onPress={() => navigation.goBack()}>
           <MaterialIcons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-
-        <View style={styles.topBarContent}>
-          <Text style={[styles.title, { color: '#000' }]}>About Us</Text>
-        </View>
+        <Text style={styles.title}>About</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Our Mission</Text>
-          <Text style={styles.sectionText}>
-            Our mission is to provide fast, reliable, and secure delivery services to our customers. We are committed to delivering your orders on time and ensuring your satisfaction with every interaction.
-          </Text>
-        </View>
+      <View style={styles.mainContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../src/thumbnails/xgologofootertext.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Our Values</Text>
-          <View style={styles.valueContainer}>
-            <Text style={styles.valueTitle}>Integrity</Text>
-            <Text style={styles.valueDescription}>
-              We operate with the highest ethical standards, always putting the well-being of our customers and delivery personnel first.
-            </Text>
+          <View style={styles.versionContainer}>
+            <Text style={styles.versionText}>Version 1.2.4</Text>
+            <Text style={styles.buildDate}>Build Date: {buildDate}</Text>
           </View>
-          <View style={styles.valueContainer}>
-            <Text style={styles.valueTitle}>Innovation</Text>
-            <Text style={styles.valueDescription}>
-              We constantly explore new technologies and strategies to improve our delivery process and provide a seamless experience.
-            </Text>
-          </View>
-          <View style={styles.valueContainer}>
-            <Text style={styles.valueTitle}>Customer Obsession</Text>
-            <Text style={styles.valueDescription}>
-              We are dedicated to understanding and addressing the unique needs of our customers, ensuring their satisfaction is our top priority.
-            </Text>
-          </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Our Team</Text>
-          <Text style={styles.sectionText}>
-            Our team of dedicated professionals is the backbone of our delivery service. We are passionate about what we do and strive to provide the best experience for our customers.
-          </Text>
+          <TouchableOpacity 
+            style={styles.linkButton}
+            onPress={() => handleLinkPress(websiteUrl)}
+          >
+            <Text style={styles.linkText}>Visit Our Website</Text>
+            <MaterialIcons name="open-in-new" size={20} color="#002966" />
+          </TouchableOpacity>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <View style={styles.legalContainer}>
+            <TouchableOpacity 
+              onPress={() => handleLinkPress(`${websiteUrl}terms-of-use`)}
+            >
+              <Text style={styles.legalText}>Terms of Use</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.separator}>|</Text>
+            
+            <TouchableOpacity 
+              onPress={() => handleLinkPress(`${websiteUrl}privacy-policy`)}
+            >
+              <Text style={styles.legalText}>Privacy Policy</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.copyright}>©2025 XGo Life. All Rights Reserved.</Text>
         </View>
-      </ScrollView>
-      <BottomFooter/>
+      </View>
     </View>
   );
 };
@@ -68,72 +79,100 @@ const AboutUs = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: '#FFC000',
+    paddingTop: 45,
+    paddingBottom: 15,
     paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   backArrow: {
     padding: 8,
   },
-  topBarContent: {
-    flex: 1,
-    alignItems: 'center',
-  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 16,
+    color: '#000',
   },
-  scrollContainer: {
+  mainContent: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 30,
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
   },
-  section: {
-    marginBottom: 30,
+  logoContainer: {
+    width: 120,
+    height: 120,
+    marginBottom: 24,
   },
-  sectionTitle: {
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
+  versionContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+    marginTop: 40
+  },
+  versionText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
   },
-  sectionText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  valueContainer: {
-    marginVertical: 10,
-  },
-  valueTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  valueDescription: {
+  buildDate: {
     fontSize: 14,
     color: '#666',
   },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  linkButton: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#FFC000',
+    backgroundColor: '#ffc000',
+    padding: 16,
+    borderRadius: 12,
+    width: '100%',
+    justifyContent: 'center',
+    marginBottom: 32,
   },
-  bottomBarItem: {
+  linkText: {
+    fontSize: 16,
+    color: '#002966',
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  footer: {
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    backgroundColor: '#FFFFFF',
+  },
+  legalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
   },
-  bottomBarText: {
+  legalText: {
     fontSize: 14,
-    marginTop: 4,
+    color: '#666',
+    paddingHorizontal: 8,
+  },
+  separator: {
+    fontSize: 14,
+    color: '#666',
+    paddingHorizontal: 8,
+  },
+  copyright: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 20
   },
 });
 

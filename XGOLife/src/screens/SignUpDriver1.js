@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { API_URL } from "./config";
+import MD5 from 'react-native-md5';
 
 const SignUpDriver1 = () => {
   const [email, setEmail] = useState("");
@@ -289,6 +290,25 @@ const SignUpDriver1 = () => {
     }
   };
 
+  const generateRandomLetters = () => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let randomLetters = '';
+    
+    for (let i = 0; i < 2; i++) {
+      const randomIndex = Math.floor(Math.random() * letters.length);
+      randomLetters += letters[randomIndex];
+    }
+    
+    return randomLetters;
+  };
+
+  const generateReferralCode = (userId) => {
+    const randomNumber = Math.floor(100 + Math.random() * 900); // Random number between 100 and 999
+    const letters = generateRandomLetters();
+    
+    return `${userId}${randomNumber}${letters}`; // Concatenate userId with random number and letters
+  };
+
   const handleNext = async () => {
     if (!validateInput()) return;
   
@@ -347,25 +367,19 @@ const SignUpDriver1 = () => {
   
       await AsyncStorage.setItem("user_id", user_id);
   
-      const generateReferralCode = () => {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let referralCode = '';
-        for (let i = 0; i < 8; i++) {
-          const randomIndex = Math.floor(Math.random() * characters.length);
-          referralCode += characters[randomIndex];
-        }
-        return referralCode;
-      };
-
       const referredBy = await AsyncStorage.getItem("referred_by");
       console.log("Referred By ID:", referredBy); 
   
+      const referralCode = generateReferralCode(user_id); // Generate the referral code
+      console.log("Generated Referral Code:", referralCode); // Log the generated referral code
+  
+      const md5Hash = MD5.hex_md5(password);
       const user = {
         userId: user_id,
         role: "driver",
         username: username.trim(),
         email: email.trim(),
-        password: password,
+        password: md5Hash,
         otp: otp,
         notify: false,
         activesession: false,
@@ -381,9 +395,10 @@ const SignUpDriver1 = () => {
         last_logged_account: "driver",
         driverId: user_id,
         customerId: 0,
-        referral_code: generateReferralCode(),
+        referral_code: `${referralCode.slice(0, -2)}${generateRandomLetters()}`, // Use the generated referral code
         reference_payment_status: null,
-        referred_by: referredBy 
+        signed_up_on: new Date().toISOString(),
+        referred_by: referredBy, // Append two random letters to referred_by
       };
   
       console.log("User object to be sent:", user);
@@ -406,6 +421,7 @@ const SignUpDriver1 = () => {
         return;
       }
   
+
       const driver = {
         driver_id: user_id,
         ecnumber: "",
@@ -418,7 +434,7 @@ const SignUpDriver1 = () => {
         phone: phoneNumber.trim(),
         plate: driverDetails.plate.trim(),
         email: email.trim(),
-        password: password,
+        password: md5Hash,
         profilePic: driverDetails.profilePic ? driverDetails.profilePic.trim() : "",
         id_image: driverDetails.idPic ? driverDetails.idPic.trim() : "",
         number_plate_image: driverDetails.platePic ? driverDetails.platePic.trim() : "",
@@ -578,7 +594,7 @@ const SignUpDriver1 = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor:"white",
   },
   topBar: {
     height: "25%",
@@ -588,12 +604,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginLeft: 10,
   },
   formContainer: {
     flex: 1,

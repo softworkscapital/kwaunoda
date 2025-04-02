@@ -85,8 +85,8 @@ const NewDelivery = () => {
     }
 
     const message = `Hello XGO driver, a new delivery has been requested.\n
-    Be the first to get this tender while it lasts.\n
-    Tell a Friend to download the XGO App at www.xgolife.com to experience a life of convenience and begin to receive packages seamlessly.`;
+    Be the first to accept to accept this trip.\n
+    Tell a Friend to download the XGO App at www.xgolife.com experience a life of convenience and begin to send packages seamlessly.`;
 
     try {
       const response = await fetch(
@@ -331,7 +331,7 @@ const NewDelivery = () => {
         </TouchableOpacity>
 
         <View style={styles.topBarContent}>
-          <Text style={[styles.title, { color: "#000" }]}>New Trip</Text>
+          <Text style={[styles.title, { color: "#000" }]}>New Ride</Text>
         </View>
       </View>
 
@@ -373,13 +373,50 @@ const NewDelivery = () => {
             />
           </View>
 
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: "#ECECEC", borderColor: "transparent" },
+            ]}
+          >
+            <FontAwesomeIcon
+              icon={faArrowCircleRight}
+              size={12}
+              style={styles.icon}
+            />
+            <TextInput
+              style={[styles.input, { fontWeight: "600" }]}
+              value={duration}
+              editable={false}
+            />
+          </View>
+
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: "#ECECEC", borderColor: "transparent" },
+            ]}
+          >
+            <FontAwesomeIcon
+              icon={faArrowCircleRight}
+              size={12}
+              style={styles.icon}
+            />
+            <TextInput
+              style={[styles.input, { fontWeight: "600" }]}
+              value={distance}
+              editable={false}
+            />
+          </View>
+
           <View style={styles.inputContainer}>
             <FontAwesomeIcon icon={faPhone} size={12} style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Delivery Contact (263777000000)"
+              placeholder="Contact Person (263777000000)"
               value={contact}
               onChangeText={setContact}
+              keyboardType="numeric"
             />
           </View>
 
@@ -498,7 +535,7 @@ const NewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredGender(itemValue)}
             >
-              <Picker.Item label="Preferred Gender" value="" />
+              <Picker.Item label="Preferred Gender" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Male" value="Male" />
               <Picker.Item label="Female" value="Female" />
@@ -512,7 +549,7 @@ const NewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredCarType(itemValue)}
             >
-              <Picker.Item label="Preferred Car Type" value="" />
+              <Picker.Item label="Preferred Car Type" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Sedan" value="Sedan" />
               <Picker.Item label="SUV" value="SUV" />
@@ -527,7 +564,7 @@ const NewDelivery = () => {
               style={[styles.picker, { fontSize: 10, color: "#666" }]}
               onValueChange={(itemValue) => setPreferredAgeRange(itemValue)}
             >
-              <Picker.Item label="Preferred Age Range" value="" />
+              <Picker.Item label="Preferred Age Range" value="Any" />
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="18-25" value="18-25" />
               <Picker.Item label="26-35" value="26-35" />

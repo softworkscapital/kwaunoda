@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
@@ -30,11 +30,13 @@ const SignUpCustomer3 = () => {
   const navigation = useNavigation();
   const APILINK = API_URL;
 
+  // Fetch user details from AsyncStorage
   const fetchUserDetails = async () => {
     try {
       const custData = await AsyncStorage.getItem("customerDetailsC0");
       const custDetails = JSON.parse(custData);
       setUser1(custDetails);
+      // console.log("from page 3", custDetails);
 
       const cData = await AsyncStorage.getItem("userDetailsC2");
       if (cData) {
@@ -50,6 +52,7 @@ const SignUpCustomer3 = () => {
     fetchUserDetails();
   }, []);
 
+  // Handle image selection
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -63,6 +66,7 @@ const SignUpCustomer3 = () => {
     }
   };
 
+  // Validate input fields
   const validateInput = () => {
     if (!username) {
       showToast("Please enter a username.");
@@ -75,6 +79,7 @@ const SignUpCustomer3 = () => {
     return true;
   };
 
+  // Show toast messages
   const showToast = (message) => {
     Toast.show({
       text1: "Validation Error",
@@ -86,6 +91,7 @@ const SignUpCustomer3 = () => {
     });
   };
 
+  // Fetch last user ID from the API
   const fetchLastUserId = async () => {
     try {
       const response = await fetch(`${APILINK}/users/last_user_id`, {
@@ -97,7 +103,7 @@ const SignUpCustomer3 = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to fetch last inserted ID: ${response.status} ${errorText}`);
+        throw new Error(`Failed to fetch last inserted ID: ${errorText}`);
       }
       const idResult = await response.json();
       if (!idResult || !Array.isArray(idResult) || idResult.length === 0) {
@@ -111,6 +117,7 @@ const SignUpCustomer3 = () => {
     }
   };
 
+  // Increment user ID
   const incrementId = (currentId) => {
     const [letters, number] = currentId.split("-");
     let newNumber = parseInt(number, 10) + 1;
@@ -131,7 +138,9 @@ const SignUpCustomer3 = () => {
       if (lettersArray[i] === "Z") {
         lettersArray[i] = "A";
       } else {
-        lettersArray[i] = String.fromCharCode(lettersArray[i].charCodeAt(0) + 1);
+        lettersArray[i] = String.fromCharCode(
+          lettersArray[i].charCodeAt(0) + 1
+        );
         carry = false;
       }
     }
@@ -153,6 +162,7 @@ const SignUpCustomer3 = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
+  // Send OTP to phone
   const sendOtpToPhone = async (phoneNumber) => {
     const message = `Your OTP is: ${otp}`;
 
@@ -186,64 +196,49 @@ const SignUpCustomer3 = () => {
     }
   };
 
+  // Handle sign-up process
   const handleSignUp = async () => {
-    if (!validateInput()) return;
-
-    setLoading(true);
-
+    if (!validateInput()) return; // Validate inputs before proceeding
+  
+    setLoading(true); // Start loading state
+  
     try {
-      const verificationUrl = `${APILINK}/customerdetails/customer_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`;
-      console.log("Fetching from URL:", verificationUrl);
-
-      const resp = await fetch(verificationUrl, {
+      // Verify driver details
+      const resp = await fetch(`${APILINK}/customerdetails/customer_verify/${userDetails.email}/${user1.phone}/${user1.idnumber}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
-      if (!resp.ok) {
-        const errorText = await resp.text();
-        throw new Error(`Network request failed: ${resp.status} ${errorText}`);
-      }
-
+  
       const result = await resp.json();
-
+  
+      // Check if a user with the same email, phone number, or ID number already exists
       if (result.length > 0) {
         Alert.alert("Error", "A user with the same email, phone number, or ID number already exists.");
-        return;
+        return; // Early return if verification fails
       } else {
         try {
+          // Fetch last user ID and increment it
           const lastUserId = await fetchLastUserId();
           const newUserId = incrementId(lastUserId);
+          console.log("New User ID:", newUserId); // Log the new user ID
+
+          const referredBy = await AsyncStorage.getItem("customer_referred_by");
+          console.log("Referred By ID:", referredBy); 
+
+          // Generate reference code
+          const referenceCode = `${newUserId.slice(0, -1)}${parseInt(newUserId.slice(-1)) + 1}${generateRandomLetters(2)}`;
+          console.log("Generated Reference Code:", referenceCode); // Log the reference code
+
           const md5Hash = MD5.hex_md5(userDetails.password);
-
-          const generateReferralCode = () => {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let referralCode = '';
-            for (let i = 0; i < 8; i++) {
-              const randomIndex = Math.floor(Math.random() * characters.length);
-              referralCode += characters[randomIndex];
-            }
-            return referralCode;
-          };
-
-          const generateReferencePaymentCode = () => {
-            return `PAY-${Math.floor(1000 + Math.random() * 9000)}`;
-          };
-
-          const referralCode = generateReferralCode();
-          const referencePaymentCode = generateReferencePaymentCode();
-
-          const referredBy = await AsyncStorage.getItem("referred_by");
-          console.log("Referred By ID:", referredBy); // Log referred_by ID
-
+          // Create user object
           const user = {
             userId: newUserId,
             role: "customer",
             username: username.trim(),
             email: userDetails.email.trim(),
-            password: md5Hash,
+            password: md5Hash, 
             otp: otp,
             notify: false,
             activesession: false,
@@ -254,35 +249,49 @@ const SignUpCustomer3 = () => {
             status: "Pending OTP Verification",
             sync_status: "Pending",
             last_logged_account: "customer",
+            signed_up_on: new Date().toISOString(),
             driverId: 0,
-            customerId: newUserId,
-            referral_code: referralCode,
-            reference_payment_status: referencePaymentCode,
-            referred_by: referredBy // Include the referred_by ID
+            customerId: newUserId, // Set customerId to newUserId
+            referral_code: referenceCode, // Use the generated referral code
+            reference_payment_status: null,
+            signed_up_on: new Date().toISOString(),
+            referred_by: referredBy, // Include reference code
           };
-
-          console.log("User object to be created:", user);
-
+  
+          // Create the user in the database
           await createUser(user);
-
-          await createCustomerDetails(newUserId);
-
-          Alert.alert("Success", "User signed up. Now verify your number using the OTP we sent to your phone.");
-          navigation.navigate("OTPCustomer", { userId: newUserId });
+  
+          // Create customer details
+          await createCustomerDetails(newUserId); // Ensure newUserId is passed correctly
+  
+          Alert.alert("Success", "User signed up Now Verify Your Number Using the OTP we sent to your Phone.");
+          navigation.navigate("OTPCustomer", { userId: newUserId }); // Navigate to OTP page
         } catch (error) {
           console.error("Sign-up error:", error);
           Alert.alert("Error", error.message || "Failed to sign up. Please try again.");
         } finally {
-          setLoading(false);
+          setLoading(false); // Ensure loading state is reset
         }
       }
     } catch (error) {
       console.error("Error during verification:", error);
-      Alert.alert("Error", error.message || "Failed to verify user details. Please try again.");
-      setLoading(false);
+      Alert.alert("Error", "Failed to verify user details. Please try again.");
+      setLoading(false); // Ensure loading state is reset
     }
   };
 
+  // Generate two random letters
+  const generateRandomLetters = (length) => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * letters.length);
+      result += letters[randomIndex];
+    }
+    return result;
+  };
+
+  // Create user API call
   const createUser = async (user) => {
     const response = await fetch(`${APILINK}/users/`, {
       method: "POST",
@@ -300,7 +309,9 @@ const SignUpCustomer3 = () => {
     }
   };
 
+  // Image upload
   const handleImageUpload = async (imageUri) => {
+    // console.log("Image", imageUri);
     const formData = new FormData();
     const fileName = imageUri.split("/").pop();
     const type = `image/${fileName.split(".").pop()}`;
@@ -321,22 +332,24 @@ const SignUpCustomer3 = () => {
       });
 
       const data = await response.json();
-      return `${data.path}`;
+      return `${data.path}`; // Return the full URL
     } catch (error) {
       console.error("Upload error:", error);
       throw new Error("Failed to upload image");
     }
   };
 
+  // Create customer details API call
   const createCustomerDetails = async (userId) => {
     const profilepic = await handleImageUpload(profileImage);
 
+    const md5Hash = MD5.hex_md5(userDetails.password);
     const newCustomer = {
       customerid: userId,
       ecnumber: user1.ecnumber || "",
       account_type: user1.accountType || "",
       account_category: user1.account_category || "",
-      signed_on: user1.signed_on || new Date().toISOString(),
+      signed_on: new Date().toISOString(),
       name: user1.name || "",
       surname: user1.surname || "",
       idnumber: user1.idnumber || "",
@@ -352,7 +365,7 @@ const SignUpCustomer3 = () => {
       phone: user1.phone || "",
       username: username.trim(),
       email: userDetails.email || "",
-      password: userDetails.password || "",
+      password: md5Hash || "",
       employer: user1.employer || "",
       workindustry: user1.workindustry || "",
       workaddress: user1.workaddress || "",
@@ -381,6 +394,8 @@ const SignUpCustomer3 = () => {
       profilePic: profilepic.trim(),
     };
 
+    console.log("Going from page 3", newCustomer);
+
     const response = await fetch(`${APILINK}/customerdetails/`, {
       method: "POST",
       headers: {
@@ -400,7 +415,7 @@ const SignUpCustomer3 = () => {
       <View style={styles.topBar}>
         <Image
           source={require("../../assets/icon.png")}
-          style={{ width: 200, height: 80 }}
+          style={{ width: 200, height: 80 }} // Set width and height to 40
         />
       </View>
       <ScrollView>
@@ -455,6 +470,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
+  },
+  appName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "black",
+    marginLeft: 10,
   },
   formContainer: {
     flex: 1,

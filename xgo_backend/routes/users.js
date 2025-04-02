@@ -2,6 +2,7 @@ const express = require("express");
 const userRouter = express.Router();
 const usersDbOperations = require("../cruds/users"); // Adjust the path accordingly
 
+
 // Create a new user
 userRouter.post("/", async (req, res, next) => {
   try {
@@ -178,6 +179,35 @@ userRouter.put("/update_status/:id", async (req, res, next) => {
     let results = await usersDbOperations.updateUserStatus(
       userid,
       updatedValues
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+
+userRouter.put("/update_last_logged_in/:id", async (req, res, next) => {
+  try {
+    let userid = req.params.id;
+
+    let results = await usersDbOperations.updateLastLoggedIn(
+      userid
+    );
+    res.json(results);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+userRouter.put("/update_last_activity_date_time/:id", async (req, res, next) => {
+  try {
+    let userid = req.params.id;
+
+    let results = await usersDbOperations.updateLastActivityDateTime(
+      userid
     );
     res.json(results);
   } catch (e) {

@@ -963,7 +963,7 @@ crudsObj.postHalfHourlyStatistic = (application_statistic_id) => {
 crudsObj.getHalfHourlyStatistics = () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "SELECT * FROM application_statistics_half_hourly ORDER BY application_statistic_id DESC LIMIT 1",
+      "SELECT * FROM application_statistics_half_hourly ORDER BY application_statistic_id",
       (err, results) => {
         if (err) {
           return reject(err);

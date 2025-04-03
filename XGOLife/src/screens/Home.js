@@ -56,12 +56,11 @@ const Home = ({ navigation }) => {
 
       // Initial fetch of user trips
       fetchUserTrips(parsedIds.customerId);
-      await fetchCounterOffers(parsedIds.customerId);
+      // await fetchCounterOffers(parsedIds.customerId);
 
       // Set up an interval to fetch user trips and counter offers
       const intervalId = setInterval(() => {
         if (!navigated) {
-          // Only fetch if not navigated
           fetchUserTrips(parsedIds.customerId);
         }
       }, 500);
@@ -151,7 +150,7 @@ const Home = ({ navigation }) => {
       const result = await response.json();
       console.log("last acty loggy:", result);
     } catch (error) {
-      console.log(error);
+      console.log("last Activity", error);
     }
   };
 
@@ -216,209 +215,209 @@ const Home = ({ navigation }) => {
   };
 
   //#####################################################################
-  const fetchCounterOffers = async (userId) => {
-    console.log("fetchOffers", userId);
-    try {
-      const response = await fetch(
-        `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
-      );
+  // const fetchCounterOffers = async (userId) => {
+  //   console.log("fetchOffers", userId);
+  //   try {
+  //     const response = await fetch(
+  //       `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
+  //     );
 
-      console.log("risiponsi", response);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
+  //     console.log("risiponsi", response);
+  //     if (!response.ok) {
+  //       throw new Error("Network response was not ok");
+  //     }
 
-      const responseText = await response.text();
-      console.log("messsage", responseText);
+  //     const responseText = await response.text();
+  //     console.log("messsage", responseText);
 
-      try {
-        const offers = JSON.parse(responseText);
-        console.log("MAOFFERZ", offers);
+  //     try {
+  //       const offers = JSON.parse(responseText);
+  //       console.log("MAOFFERZ", offers);
 
-        if (offers.length > 0) {
-          const updatedOffers = await Promise.all(
-            offers.map(async (offer) => {
-              const driverResponse = await fetch(
-                `${API_URL}/driver/${offer.driver_id}`
-              );
-              const driverResult = await driverResponse.json();
-              const driverData = Array.isArray(driverResult)
-                ? driverResult[0]
-                : driverResult;
+  //       if (offers.length > 0) {
+  //         const updatedOffers = await Promise.all(
+  //           offers.map(async (offer) => {
+  //             const driverResponse = await fetch(
+  //               `${API_URL}/driver/${offer.driver_id}`
+  //             );
+  //             const driverResult = await driverResponse.json();
+  //             const driverData = Array.isArray(driverResult)
+  //               ? driverResult[0]
+  //               : driverResult;
 
-              return {
-                ...offer,
-                profileImage: `${API_URL}${driverData.profilePic}`,
-                name: driverData.username,
-                stars: driverData.rating,
-                duration: getRandomDuration(),
-              };
-            })
-          );
+  //             return {
+  //               ...offer,
+  //               profileImage: `${API_URL}${driverData.profilePic}`,
+  //               name: driverData.username,
+  //               stars: driverData.rating,
+  //               duration: getRandomDuration(),
+  //             };
+  //           })
+  //         );
 
-          const newOffers = updatedOffers.filter(
-            (offer) => !shownOfferIds.has(offer.counter_offer_id)
-          );
+  //         const newOffers = updatedOffers.filter(
+  //           (offer) => !shownOfferIds.has(offer.counter_offer_id)
+  //         );
 
-          if (newOffers.length > 0) {
-            setCounterOffers((prev) => [...prev, ...newOffers]);
+  //         if (newOffers.length > 0) {
+  //           setCounterOffers((prev) => [...prev, ...newOffers]);
 
-            newOffers.forEach((offer) =>
-              shownOfferIds.add(offer.counter_offer_id)
-            );
-            setShowCounterOffers(true);
+  //           newOffers.forEach((offer) =>
+  //             shownOfferIds.add(offer.counter_offer_id)
+  //           );
+  //           setShowCounterOffers(true);
 
-            newOffers.forEach((offer) =>
-              startOfferTimer(offer.counter_offer_id)
-            );
-          }
-        }
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-      }
-    } catch (error) {
-      console.error("Error fetching counter offers:", error);
-    }
-  };
+  //           newOffers.forEach((offer) =>
+  //             startOfferTimer(offer.counter_offer_id)
+  //           );
+  //         }
+  //       }
+  //     } catch (parseError) {
+  //       console.error("Error parsing JSON:", parseError);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching counter offers:", error);
+  //   }
+  // };
 
-  const startOfferTimer = (offerId) => {
-    const animation = new Animated.Value(0);
-    progressAnimations.current[offerId] = animation;
+  // const startOfferTimer = (offerId) => {
+  //   const animation = new Animated.Value(0);
+  //   progressAnimations.current[offerId] = animation;
 
-    Animated.timing(animation, {
-      toValue: 100,
-      duration: 30000,
-      useNativeDriver: false,
-    }).start(() => {
-      markOfferAsSeen(offerId);
-      setCounterOffers((prevOffers) =>
-        prevOffers.filter((offer) => offer.counter_offer_id !== offerId)
-      );
-      delete progressAnimations.current[offerId];
-    });
-  };
+  //   Animated.timing(animation, {
+  //     toValue: 100,
+  //     duration: 30000,
+  //     useNativeDriver: false,
+  //   }).start(() => {
+  //     markOfferAsSeen(offerId);
+  //     setCounterOffers((prevOffers) =>
+  //       prevOffers.filter((offer) => offer.counter_offer_id !== offerId)
+  //     );
+  //     delete progressAnimations.current[offerId];
+  //   });
+  // };
 
-  const acceptCounterOffer = async (offerId, offer) => {
-    try {
-      const acceptResponse = await fetch(
-        `${API_URL}/counter_offer/${offerId}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "accepted" }),
-        }
-      );
+  // const acceptCounterOffer = async (offerId, offer) => {
+  //   try {
+  //     const acceptResponse = await fetch(
+  //       `${API_URL}/counter_offer/${offerId}/status`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ status: "accepted" }),
+  //       }
+  //     );
 
-      if (!acceptResponse.ok) {
-        throw new Error(
-          `Error accepting counter offer: ${acceptResponse.statusText}`
-        );
-      }
+  //     if (!acceptResponse.ok) {
+  //       throw new Error(
+  //         `Error accepting counter offer: ${acceptResponse.statusText}`
+  //       );
+  //     }
 
-      const currentdate = new Date().toISOString();
-      const statusResponse = await fetch(
-        `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            driver_id: offer.driver_id,
-            order_start_datetime: currentdate,
-            accepted_cost: offer.counter_offer_value, ///look at it
-            status: "InTransit",
-          }),
-        }
-      );
+  //     const currentdate = new Date().toISOString();
+  //     const statusResponse = await fetch(
+  //       `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
+  //       {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           driver_id: offer.driver_id,
+  //           order_start_datetime: currentdate,
+  //           accepted_cost: offer.counter_offer_value, ///look at it
+  //           status: "InTransit",
+  //         }),
+  //       }
+  //     );
 
-      //took and merged
-      // const updateTripStatus = async () => {
-      //   const currentdate = new Date().toISOString();
-      //   try {
-      //     const response = await fetch(
-      //       `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
-      //       {
-      //         method: "PUT",
-      //         headers: { "Content-Type": "application/json" },
-      //         body: JSON.stringify({
-      //           driver_id: offer.driver_id,
-      //           order_start_datetime: currentdate,
-      //           accepted_cost: offer.counter_offer_value,///look at it
-      //           status: "InTransit",
-      //         }),
-      //       }
-      //     );
-      //     const result = await response.json();
-      //     if (!response.ok) {
-      //       throw new Error(result.message || "Failed to accept trip.");
-      //     }
-      //     Toast.show({
-      //       type: "success",
-      //       text1: "Trip accepted successfully",
-      //       // text2: "Settlement Occurred",
-      //       position: "middle",
-      //       visibilityTime: 5000,
-      //     });
-      //     setSelectedTrip(null);
-      //     fetchTrips();
-      //     navigation.navigate("InTransitTrip", { OntripData: selectedTrip });
-      //   } catch (error) {
-      //     Alert.alert(
-      //       "Error",
-      //       error.message || "An error occurred while accepting the trip."
-      //     );
-      //   }
-      // };
+  //     //took and merged
+  //     // const updateTripStatus = async () => {
+  //     //   const currentdate = new Date().toISOString();
+  //     //   try {
+  //     //     const response = await fetch(
+  //     //       `${API_URL}/trip/updateStatusAndDriver/${offer.trip_id}`,
+  //     //       {
+  //     //         method: "PUT",
+  //     //         headers: { "Content-Type": "application/json" },
+  //     //         body: JSON.stringify({
+  //     //           driver_id: offer.driver_id,
+  //     //           order_start_datetime: currentdate,
+  //     //           accepted_cost: offer.counter_offer_value,///look at it
+  //     //           status: "InTransit",
+  //     //         }),
+  //     //       }
+  //     //     );
+  //     //     const result = await response.json();
+  //     //     if (!response.ok) {
+  //     //       throw new Error(result.message || "Failed to accept trip.");
+  //     //     }
+  //     //     Toast.show({
+  //     //       type: "success",
+  //     //       text1: "Trip accepted successfully",
+  //     //       // text2: "Settlement Occurred",
+  //     //       position: "middle",
+  //     //       visibilityTime: 5000,
+  //     //     });
+  //     //     setSelectedTrip(null);
+  //     //     fetchTrips();
+  //     //     navigation.navigate("InTransitTrip", { OntripData: selectedTrip });
+  //     //   } catch (error) {
+  //     //     Alert.alert(
+  //     //       "Error",
+  //     //       error.message || "An error occurred while accepting the trip."
+  //     //     );
+  //     //   }
+  //     // };
 
-      if (!statusResponse.ok) {
-        throw new Error(
-          `Error updating trip status: ${statusResponse.statusText}`
-        );
-      }
+  //     if (!statusResponse.ok) {
+  //       throw new Error(
+  //         `Error updating trip status: ${statusResponse.statusText}`
+  //       );
+  //     }
 
-      setCounterOffers((prevOffers) =>
-        prevOffers.filter(
-          (existingOffer) => existingOffer.counter_offer_id !== offerId
-        )
-      );
+  //     setCounterOffers((prevOffers) =>
+  //       prevOffers.filter(
+  //         (existingOffer) => existingOffer.counter_offer_id !== offerId
+  //       )
+  //     );
 
-      const updatedData = await statusResponse.json();
-    } catch (error) {
-      console.error("Error accepting counter offer:", error);
-    }
-  };
+  //     const updatedData = await statusResponse.json();
+  //   } catch (error) {
+  //     console.error("Error accepting counter offer:", error);
+  //   }
+  // };
 
-  const rejectCounterOffer = async (offerId) => {
-    setCounterOffers((prevOffers) =>
-      prevOffers.filter((offer) => offer.counter_offer_id !== offerId)
-    );
-    await markOfferAsSeen(offerId);
-    delete progressAnimations.current[offerId];
-  };
+  // const rejectCounterOffer = async (offerId) => {
+  //   setCounterOffers((prevOffers) =>
+  //     prevOffers.filter((offer) => offer.counter_offer_id !== offerId)
+  //   );
+  //   await markOfferAsSeen(offerId);
+  //   delete progressAnimations.current[offerId];
+  // };
 
-  const markOfferAsSeen = async (offerId) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/counter_offer/${offerId}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "seen" }),
-        }
-      );
+  // const markOfferAsSeen = async (offerId) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${API_URL}/counter_offer/${offerId}/status`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ status: "seen" }),
+  //       }
+  //     );
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`Error: ${response.statusText}`);
+  //     }
 
-      const data = await response.json();
-    } catch (error) {
-      console.error("Error marking offer as seen:", error);
-    }
-  };
+  //     const data = await response.json();
+  //   } catch (error) {
+  //     console.error("Error marking offer as seen:", error);
+  //   }
+  // };
 
   //new here
   const fetchTopUpHistory = async (driverID) => {

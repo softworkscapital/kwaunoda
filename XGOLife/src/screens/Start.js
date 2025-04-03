@@ -114,7 +114,6 @@ const Start = () => {
             source={require("../thumbnails/xgologofootertext.png")}
           />
         </View>
-        <VersionCheck />
       </Animated.View>
     </View>
   );

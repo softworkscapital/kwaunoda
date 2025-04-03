@@ -269,9 +269,17 @@ startHalfHourlyInterval();
 
 
 
+const options = {
+  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+};
 
-
-
-app.listen(PORT, () => {
-  console.log("app is listening to port" + " " + PORT);
+https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+  console.log('app is listening to port' + process.env.APPPORT);
 });
+
+
+
+// app.listen(PORT, () => {
+//   console.log("app is listening to port" + " " + PORT);
+// });

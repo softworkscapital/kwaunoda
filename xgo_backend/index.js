@@ -191,7 +191,7 @@ app.post("/driver/login", async (req, res) => {
 // Function to post application statistics
 const postApplicationStatistics = async () => {
   try {
-    const response = await axios.post(`http://localhost:${PORT}/application_statistics`, {
+    const response = await axios.post(`https://localhost:${PORT}/application_statistics`, {
       // Include any necessary data to send with the POST request
     });
     console.log("Statistics posted:", response.data);

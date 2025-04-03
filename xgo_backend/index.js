@@ -268,7 +268,6 @@ startHalfHourlyInterval();
 
 
 
-
 const options = {
   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')

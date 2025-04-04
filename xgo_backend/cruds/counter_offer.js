@@ -147,6 +147,26 @@ crudsObj.updateCounterOfferStatus = (counter_offer_id, status) => {
     });
 };
 
+crudsObj.updateCounterOfferStatusOfTrips = (driver_id, status, oldstatus) => {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            `UPDATE counter_offer SET  
+                status = ?
+            WHERE driver_id = ? AND status = ?`,
+            [status, driver_id, oldstatus],
+            (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (result.affectedRows === 0) {
+                    return resolve({ status: '404', message: 'No counter offers found for this driver' });
+                }
+                return resolve({ status: '200', message: `${result.affectedRows} updates successful` });
+            }
+        );
+    });
+};
+
 crudsObj.deleteCounterOffer = (counter_offer_id) => {
     return new Promise((resolve, reject) => {
         pool.query('DELETE FROM counter_offer WHERE counter_offer_id = ?', [counter_offer_id], (err, results) => {

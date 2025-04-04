@@ -44,31 +44,29 @@ const DriverNewOrderList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const storedIds = await AsyncStorage.getItem("theIds");
-      if (storedIds) {
-        const parsedIds = JSON.parse(storedIds);
-        setDriver(parsedIds.driver_id); // Set driver_id
-        // console.log("honaiwo iffect iri", parsedIds.driver_id)
-        // Fetch driver details and top-up history immediately
-        await fetchDriverDetails(parsedIds.driver_id);
-        await fetchTopUpHistory(parsedIds.driver_id); // Fetch top-up history immediately after setting driver
-      } else {
-        Alert.alert("Driver ID not found", "Please log in again.");
-        setLoading(false);
-      }
+        const storedIds = await AsyncStorage.getItem("theIds");
+        if (storedIds) {
+            const parsedIds = JSON.parse(storedIds);
+            setDriver(parsedIds.driver_id); 
+            await fetchDriverDetails(parsedIds.driver_id);
+            await fetchTopUpHistory(parsedIds.driver_id);
+        } else {
+            Alert.alert("Driver ID not found", "Please log in again.");
+            setLoading(false);
+        }
     };
 
     fetchData();
 
     const intervalId = setInterval(() => {
-      fetchData();
-      if (driver) {
-        fetchTrips();
-      }
-    }, 3000);
+        fetchData(); 
+        if (driver) {
+            fetchTrips();
+        }
+    }, 500); 
 
-    return () => clearInterval(intervalId);
-  }, []); // Run only on mount
+    return () => clearInterval(intervalId); 
+}, [driver]); 
 
   useEffect(() => {
     const backAction = () => {
@@ -209,100 +207,63 @@ const DriverNewOrderList = () => {
     // console.log("ziBalance iri", balance);
 
     // Check if balance is sufficient
-    // if (balance < fee || balance <= 0) {
-    //   Alert.alert(
-    //     "Error",
-    //     `Your floating balance is too low. You need to top up to at least ${fee}`
-    //   );
-    //   return;
-    // }
-
-    // Update balance after fee deduction
-    const newBalance = balance - fee;
-
-    // Prepare data for the API request
-    const data = {
-      commission: fee,
-      description: `Trip ID: ${selectedTrip.trip_id} Commission\n${selectedTrip.detail}\nFrom: ${selectedTrip.origin_location}\nTo: ${selectedTrip.dest_location}`,
-    };
-
-    // console.log("Zvikuenda izvo", data);
+    if (balance < fee || balance <= 0) {
+      Alert.alert(
+        "Error",
+        `Your floating balance is too low. You need to top up to at least ${fee}`
+      );
+      return;
+    }
 
     try {
-      // Make the API call to process the trip commission
-      const resp = await fetch(
-        `${APILINK}/topUp/trip_commission_settlement/${1}/${driver}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      // Check if the response is OK
-      if (!resp.ok) {
-        const errorText = await resp.text(); // Get the text response for debugging
-        Alert.alert("Error", "Failed to process top-up");
-        return;
-      }
-
-      // Parse the JSON response
-      const result = await resp.json();
-      if (result) {
-        setBalance(newBalance); // Update balance state
-        await updateTripStatus(); // Call a function to update trip status
-      } else {
-        Alert.alert("Error", "Failed to process top-up.");
-      }
+      await handleCounterOffer();
     } catch (error) {
       console.error("Error processing top-up:", error);
       Alert.alert("Error", "An error occurred while processing top-up.");
     }
   };
 
-  const updateTripStatus = async () => {
-    const currentdate = new Date().toISOString();
-    try {
-      const response = await fetch(
-        `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customerid: selectedTrip.customer,
-            driver_id: driver,
-            trip_id: selectedTrip.trip_id,
-            date_time: currentdate,
-            offer_value: selectedTrip.accepted_cost,
-            counter_offer_value: counterOffer,
-            currency: selectedCurrency,
-            status: "InTransit",
-          }),
-        }
-      );
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to accept trip.");
-      }
-      Toast.show({
-        type: "success",
-        text1: "Trip accepted successfully",
-        text2: "Settlement Occurred",
-        position: "middle",
-        visibilityTime: 5000,
-      });
-      setSelectedTrip(null);
-      fetchTrips();
-      navigation.navigate("InTransitTrip", { OntripData: selectedTrip });
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        error.message || "An error occurred while accepting the trip."
-      );
-    }
-  };
+  // const updateTripStatus = async () => {
+  //   const currentdate = new Date().toISOString();
+  //   try {
+  //     const response = await fetch(
+  //       `${API_URL}/trip/updateStatusAndDriver/${selectedTrip.trip_id}`,
+  //       {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           customerid: selectedTrip.customer,
+  //           driver_id: driver,
+  //           trip_id: selectedTrip.trip_id,
+  //           date_time: currentdate,
+  //           offer_value: selectedTrip.accepted_cost,
+  //           counter_offer_value: counterOffer,
+  //           currency: selectedCurrency,
+  //           status: "InTransit",
+  //         }),
+  //       }
+  //     );
+  //     const result = await response.json();
+  //     if (!response.ok) {
+  //       throw new Error(result.message || "Failed to accept trip.");
+  //     }
+  //     Toast.show({
+  //       type: "success",
+  //       text1: "Trip accepted successfully",
+  //       text2: "Settlement Occurred",
+  //       position: "middle",
+  //       visibilityTime: 5000,
+  //     });
+  //     setSelectedTrip(null);
+  //     fetchTrips();
+  //     navigation.navigate("InTransitTrip", { OntripData: selectedTrip });
+  //   } catch (error) {
+  //     Alert.alert(
+  //       "Error",
+  //       error.message || "An error occurred while accepting the trip."
+  //     );
+  //   }
+  // };
 
   const handlePress = (location) => {
     const origin = {
@@ -336,7 +297,7 @@ const DriverNewOrderList = () => {
           trip_id: selectedTrip.trip_id,
           date_time: currentdate,
           offer_value: selectedTrip.cost,
-          counter_offer_value: counterOffer,
+          counter_offer_value: counterOffer !== null ? counterOffer : selectedTrip.accepted_cost,
           currency: selectedCurrency,
           status: "Unseen",
         }),
@@ -472,7 +433,7 @@ const DriverNewOrderList = () => {
                   onPress={handleAcceptTrip}
                   style={styles.modernAcceptButton}
                 >
-                  <Text style={styles.modernButtonText}>Accept</Text>
+                  <Text style={styles.modernButtonText}></Text>
                 </TouchableOpacity>
               </View>
             </View>

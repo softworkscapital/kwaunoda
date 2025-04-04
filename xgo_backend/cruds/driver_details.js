@@ -52,7 +52,11 @@ crudsObj.postDriver = (
   id_image,
   number_plate_image,
   vehicle_license_image,
-  driver_license_image
+  driver_license_image,
+  vehicle_img1,
+  vehicle_img2,
+  vehicle_img3,
+  number_of_passengers,
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -63,8 +67,8 @@ crudsObj.postDriver = (
                 nok1name, nok1surname, nok1relationship, nok1phone, nok2name, nok2surname, nok2relationship, nok2phone,
                 rating, credit_bar_rule_exception, membershipstatus, defaultsubs, sendmail, sendsms, product_code,
                 cost_price, selling_price, payment_style, profilePic, id_image, number_plate_image,
-                vehicle_license_image, driver_license_image
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                vehicle_license_image, driver_license_image, vehicle_img1, vehicle_img2, vehicle_img3
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         driver_id,
         ecnumber,
@@ -115,6 +119,10 @@ crudsObj.postDriver = (
         number_plate_image,
         vehicle_license_image,
         driver_license_image,
+        vehicle_img1,
+        vehicle_img2,
+        vehicle_img3,
+      
       ],
       (err, result) => {
         if (err) {

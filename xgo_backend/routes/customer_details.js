@@ -167,6 +167,7 @@ CustomerRouter.post("/", async (req, res, next) => {
       bp_number,
       vat_number,
       profilePic,
+      id_image,
     } = postedValues;
 
     // console.log("from front:", postedValues);
@@ -217,7 +218,8 @@ CustomerRouter.post("/", async (req, res, next) => {
       payment_style,
       bp_number,
       vat_number,
-      profilePic
+      profilePic,
+      id_image,
     );
 
     res.json(results);

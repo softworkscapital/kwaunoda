@@ -392,6 +392,7 @@ const SignUpCustomer3 = () => {
       bp_number: user1.bp_number || "",
       vat_number: user1.vat_number || "",
       profilePic: profilepic.trim(),
+      id_image: user1.idPicPath,
     };
 
     console.log("Going from page 3", newCustomer);

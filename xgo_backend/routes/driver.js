@@ -56,6 +56,10 @@ DriverRouter.post("/", async (req, res, next) => {
       number_plate_image,
       vehicle_license_image,
       driver_license_image,
+      vehicle_img1,
+      vehicle_img2,
+      vehicle_img3,
+      number_of_passengers,
     } = postedValues;
 
     let results = await DriverDbOperations.postDriver(
@@ -107,7 +111,11 @@ DriverRouter.post("/", async (req, res, next) => {
       id_image,
       number_plate_image,
       vehicle_license_image,
-      driver_license_image
+      driver_license_image,
+      vehicle_img1,
+      vehicle_img2,
+      vehicle_img3,
+      number_of_passengers,
     );
     res.json(results);
   } catch (e) {

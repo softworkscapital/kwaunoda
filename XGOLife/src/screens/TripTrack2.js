@@ -661,7 +661,7 @@ const TripTrack2 = ({ navigation }) => {
                       <Ionicons name="call" size={30} color="#fff" />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.smallButton}
+                      style={styles.smallButton2}
                       onPress={() =>
                         GotoChart(
                           tripDetails.trip_id,
@@ -675,10 +675,10 @@ const TripTrack2 = ({ navigation }) => {
 
                     <TouchableOpacity
                       style={[
-                        styles.smallButton,
+                        styles.smallButton1,
                         {
                           backgroundColor:
-                            trip.weight !== 0 ? "grey" : "#FFC000",
+                            trip.weight !== 0 ? "grey" : "#rgba(238, 20, 20, 0.88)",
                         }, // Set grey if weight is 0
                       ]}
                       onPress={() => endtrip(trip)}
@@ -705,7 +705,21 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   smallButton: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "rgb(0, 153, 13)",
+    borderRadius: 5,
+    padding: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  smallButton2: {
+    backgroundColor: "rgb(4, 0, 255)",
+    borderRadius: 5,
+    padding: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  smallButton1: {
+    backgroundColor: "rgba(233, 30, 30, 0.73)",
     borderRadius: 5,
     padding: 5,
     alignItems: "center",

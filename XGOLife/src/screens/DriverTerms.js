@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
-  Image
-} from 'react-native';
-import { WebView } from 'react-native-webview';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/FontAwesome';
+  Image,
+} from "react-native";
+import { WebView } from "react-native-webview";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const DriverTerms = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
@@ -58,60 +57,71 @@ const DriverTerms = ({ navigation }) => {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#0000ff"
+        style={styles.loadingIndicator}
+      />
+    );
   }
 
   return (
-    <ScrollView style={styles.container}>
-     <View style={styles.topBar}>
-         <Image
-           source={require("../../assets/icon.png")}
-           style={{ width: 200, height: 80 }} // Set width and height to 40
-         />
-       </View>
-
-      <Text style={styles.title}>Terms and Conditions</Text>
-
-      <WebView 
-        source={{ uri: 'https://remsbobtail.softworkscapital.com/rems/rems/about.php' }}  
-        style={styles.webview} 
-      />
-
-      <View style={styles.agreementContainer}>
-        <TouchableOpacity
-          style={[styles.checkbox, isAgreed && styles.checkedCheckbox]}
-          onPress={() => setIsAgreed(!isAgreed)}
-        >
-          {isAgreed && <Icon name="check" size={20} color="#fff" />}
-        </TouchableOpacity>
-        <Text style={styles.agreementText}>
-          By clicking, you have agreed to the terms and conditions.
-        </Text>
+    <View style={styles.container}>
+      <View style={styles.topBar}>
+        <Image
+          source={require("../../assets/icon.png")}
+          style={{ width: 200, height: 80 }}
+        />
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleAccept}>
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.declineButton]} onPress={handleDecline}>
-          <Text style={styles.declineButtonText}>Decline</Text>
-        </TouchableOpacity>
+      <WebView
+        source={{
+          uri: "https://xgolife.com/terms-of-use/",
+        }}
+        style={styles.webview}
+      />
+
+      <View style={styles.bottombar}>
+        <View style={styles.agreementContainer}>
+          <TouchableOpacity
+            style={[styles.checkbox, isAgreed && styles.checkedCheckbox]}
+            onPress={() => setIsAgreed(!isAgreed)}
+          >
+            {isAgreed && <Icon name="check" size={20} color="#fff" />}
+          </TouchableOpacity>
+          <Text style={styles.agreementText}>
+            By clicking, you have agreed to the terms and conditions.
+          </Text>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleAccept}>
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.declineButton]}
+            onPress={handleDecline}
+          >
+            <Text style={styles.declineButtonText}>Decline</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Toast />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   loadingIndicator: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   topBar: {
     height: 150,
@@ -120,73 +130,79 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 45,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
-  },
-  logo: {
-    width: 200,
-    height: 80,
-  },
-  title: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
-    marginTop: 50,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   webview: {
-    height: 570,
-    marginBottom: 20,
+    flex: 1,
+    marginTop: 180, // Added margin top for WebView
+    marginBottom: 180, // Leave space for the bottom bar
   },
   agreementContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+    padding: 5,
+    backgroundColor: "#f9f9f9",
     borderRadius: 5,
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#000',
+    borderColor: "#000",
     borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 10,
-    marginLeft: 40,
+    marginLeft: 20,
   },
   checkedCheckbox: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
   },
   agreementText: {
     fontSize: 16,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
   },
   button: {
-    width: 150, // Fixed width for buttons
-    height: 50, // Fixed height for buttons
-    paddingVertical: 12,
+    width: 120, // Reduced width for buttons
+    height: 40, // Reduced height for buttons
+    paddingVertical: 10,
     borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFC000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFC000",
   },
   continueButtonText: {
-    color: 'black',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: "black",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   declineButton: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
   },
   declineButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  bottombar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    paddingVertical: 5, // Reduced padding for the bottom bar
+    paddingHorizontal: 20,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 

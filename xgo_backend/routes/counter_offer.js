@@ -116,6 +116,29 @@ CounterOfferRouter.put('/:counter_offer_id/status', async (req, res) => {
     }
 });
 
+CounterOfferRouter.put('/:driver_id/:oldStatus/status', async (req, res) => {
+    const oldstatus = req.params.oldStatus;
+    const driver_id = req.params.driver_id; // Ensure this matches the route
+    const { status } = req.body; // Extract only the status from the request body
+
+    // Validate that status is provided
+    if (!status) {
+        return res.status(400).json({ error: 'Status is required' });
+    }
+
+    try {
+        const result = await CounterOffersDbOperations.updateCounterOfferStatusOfTrips(driver_id, status, oldstatus);
+        return res.status(result.status).json(result);
+    } catch (error) {
+        console.error("Error updating counter offer status:", error);
+        return res.status(500).json({
+            status: "500",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+});
+
 
   CounterOfferRouter.delete('/:id', async (req, res, next) => {
     try {

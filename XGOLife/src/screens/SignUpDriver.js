@@ -42,7 +42,9 @@ const SignUpDriver = () => {
   const [vehicleYear, setVehicleYear] = useState("");
   const [vehicleCount, setVehicleCount] = useState("");
   const [vehicleType, setVehicleType] = useState("");
+
   const [profilePic, setProfilePic] = useState(null);
+
   const [idPic, setIdPic] = useState(null);
   const [platePic, setPlatePic] = useState(null);
   const [vehicleLicensePic, setVehicleLicensePic] = useState(null);
@@ -124,12 +126,57 @@ const SignUpDriver = () => {
     }
   };
 
+
+  const handleImageUpload = async (imageUri) => {
+    // console.log("Image", imageUri);
+    const formData = new FormData();
+    const fileName = imageUri.split("/").pop();
+    const type = `image/${fileName.split(".").pop()}`;
+
+    formData.append("image", {
+      uri: imageUri,
+      name: fileName,
+      type: type,
+    });
+
+    try {
+      const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = await response.json();
+      console.log(data);
+      return `${data.path}`; // Return the full URL
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw new Error("Failed to upload image");
+    }
+  };
+
+
+
   const handleSignUp = async () => {
     if (!validateInput()) return;
 
+
+
     setLoading(true);
+  
 
     try {
+      const profilePicPath = await handleImageUpload(profilePic);
+      const idPicPath = await handleImageUpload(idPic);
+      const platePicPath = await handleImageUpload(platePic);
+      const vehicleLicensePicPath = await handleImageUpload(vehicleLicensePic);
+      const driversLicensePicPath = await handleImageUpload(driversLicensePic);
+      const vehicleImage1Path = await handleImageUpload(vehicleImage1);
+      const vehicleImage2Path = await handleImageUpload(vehicleImage2);
+      const vehicleImage3Path = await handleImageUpload(vehicleImage3);
+      
       const driverDetails = {
         name,
         surname,
@@ -144,14 +191,14 @@ const SignUpDriver = () => {
         vehicleYear,
         vehicleCount,
         vehicleType,
-        profilePic,
-        idPic,
-        platePic,
-        vehicleLicensePic,
-        driversLicensePic,
-        vehicleImage1,
-        vehicleImage2,
-        vehicleImage3,
+        profilePicPath,
+        idPicPath,
+        platePicPath,
+        vehicleLicensePicPath,
+        driversLicensePicPath,
+        vehicleImage1Path,
+        vehicleImage2Path,
+        vehicleImage3Path,
       };
 
       console.log("Driver Details:", driverDetails);
@@ -381,7 +428,7 @@ const SignUpDriver = () => {
               placeholder="Vehicle Year"
               value={vehicleYear}
               onChangeText={setVehicleYear}
-              keyboardType="numeric"
+              keyboardType="phone-pad"
             />
           </View>
 
@@ -392,7 +439,7 @@ const SignUpDriver = () => {
               placeholder="Vehicle Count"
               value={vehicleCount}
               onChangeText={setVehicleCount}
-              keyboardType="numeric"
+              keyboardType="phone-pad"
             />
           </View>
 

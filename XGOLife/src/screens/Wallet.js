@@ -14,7 +14,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL, API_URL_UPLOADS } from "./config";
-import { Picker } from "@react-native-picker/picker"; // Import Picker
+import { Picker } from "@react-native-picker/picker"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
 
@@ -58,9 +58,9 @@ const Wallet = () => {
   useEffect(() => {
     const fetchDriver = async () => {
       try {
-        // const response = await AsyncStorage.getItem("userDetails");
-        // const driverData = JSON.parse(response);
-        const driverData = Data;
+        const response = await AsyncStorage.getItem("userDetails");
+        const driverData = JSON.parse(response);
+       
 
         if (driverData) {
           setter(driverData);
@@ -292,7 +292,7 @@ const Wallet = () => {
       <View style={styles.deliveryItemHeader}>
         <Text style={styles.orderNumber}>Ref: {item.top_up_id}</Text>
         <Text style={styles.bal}>
-          ${Number(item.user_wallet_balance).toFixed(2)} {item.currency}
+          {/* ${Number(item.user_wallet_balance).toFixed(2)} {item.currency} */}$0.00
         </Text>
       </View>
       <Text style={styles.status}>{item.date}</Text>
@@ -302,12 +302,12 @@ const Wallet = () => {
         {item.user_wallet_debit ? (
           <Text style={{ color: "green", fontWeight: "bold" }}>
             {" "}
-            {item.user_wallet_debit} {item.currency}
+            {/* {item.user_wallet_debit} {item.currency} */}0.00
           </Text>
         ) : item.user_wallet_credit ? (
           <Text style={{ color: "red", fontWeight: "bold" }}>
             {" "}
-            - {item.user_wallet_credit} {item.currency}
+            {/* - {item.user_wallet_credit} {item.currency} */}0.00
           </Text>
         ) : (
           " N/A"
@@ -374,7 +374,7 @@ const Wallet = () => {
             {/* <MaterialIcons name="wallet" size={70} color="#000" /> */}
             <Text style={[styles.text, { fontSize: 16 }]}>
               {" "}
-              ${Number(oldbalance).toFixed(2)}
+              {/* ${Number(oldbalance).toFixed(2)} */}$0.00
             </Text>
           </View>
           <Text
@@ -383,10 +383,9 @@ const Wallet = () => {
               {
                 fontSize: 12,
                 alignSelf: "center",
-                paddingLeft: 10,
                 color: "green",
               },
-              { marginLeft: 10 },
+              { marginLeft: 5 },
             ]}
           >
             Balance

@@ -325,19 +325,19 @@ const CustomerLogin = () => {
       <ScrollView>
         <View style={styles.roundGuard}>
           <View style={styles.formContainer}>
-            <View>
+           
               <Text
                 style={{
                   alignSelf: 'center',
                   fontSize: 14,
-                  marginBottom: 10,
+                  marginBottom: -31,
                   fontWeight: 'bold'
                   // marginTop: 10,
                 }}
               >
                 Login
               </Text>
-            </View>
+           
             <VersionCheck />
             <View style={styles.inputContainer}>
               <FontAwesomeIcon
@@ -443,6 +443,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffc000',
     paddingTop: 50
+    
   },
   topBar: {
     height: '25%',
@@ -463,7 +464,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    padding: 5,
+    height: "18%",
+    padding: 1,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
@@ -474,12 +476,11 @@ const styles = StyleSheet.create({
   roundGuard: {
     // flexDirection: "row",
     // alignItems: "center",
-    width: '92%',
-    paddingBottom: 5,
+    width: '80%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
-    marginLeft: 15,
+    marginLeft: 38,
 
     backgroundColor: 'rgba(255, 255, 255, 0.98)'
   },
@@ -488,7 +489,8 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   input: {
-    flex: 1
+    flex: 1,
+    fontSize: 13,
   },
   rememberContainer: {
     flexDirection: 'row',

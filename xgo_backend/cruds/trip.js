@@ -257,6 +257,20 @@ crudsObj.getTripDetailsOfTablesById = (trip_id) => {
   });
 };
 
+
+crudsObj.getIntransitForDriverId = (driver_id, status) => {
+  return new Promise((resolve, reject) => {
+    const query = "SELECT * FROM trip WHERE driver_id = ? AND status = ?";
+    pool.query(query, [driver_id, status], (err, results) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(results);
+    });
+  });
+};
+
+
 crudsObj.updateTrip = (trip_id, updatedValues) => {
   const {
     driver_id,

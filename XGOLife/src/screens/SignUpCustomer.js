@@ -21,8 +21,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
-import { API_URL } from "./config";
+import { API_URL_UPLOADS } from "./config";
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from "expo-image-picker";
 
 const SignUpCustomer = () => {
   const [name, setName] = useState("");
@@ -30,6 +31,7 @@ const SignUpCustomer = () => {
   const [phone, setPhone] = useState("");
   const [idnumber, setIdnumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [idPic, setIdPic] = useState();
   const accountType = "customer";
   const membershipstatus = "Pending OTP Verification"
 
@@ -76,8 +78,9 @@ const SignUpCustomer = () => {
     if (!validateInput()) return;
 
     setLoading(true);
+    const idPicPath = await handleImageUpload(idPic); 
 
-    const customerDetails = { name, surname, phone, idnumber, accountType, membershipstatus };
+    const customerDetails = { name, surname, phone, idnumber, accountType, membershipstatus, idPicPath};
 
     try {
       await AsyncStorage.setItem(
@@ -91,6 +94,48 @@ const SignUpCustomer = () => {
       Alert.alert("Error", "Failed to sign up. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+    const handleImageUpload = async (imageUri) => {
+      // console.log("Image", imageUri);
+      const formData = new FormData();
+      const fileName = imageUri.split("/").pop();
+      const type = `image/${fileName.split(".").pop()}`;
+  
+      formData.append("image", {
+        uri: imageUri,
+        name: fileName,
+        type: type,
+      });
+  
+      try {
+        const response = await fetch(`${API_URL_UPLOADS}/uploads`, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        const data = await response.json();
+        return `${data.path}`; // Return the full URL
+      } catch (error) {
+        console.error("Upload error:", error);
+        throw new Error("Failed to upload image");
+      }
+    };
+
+  const pickImage = async (setImage) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
     }
   };
 
@@ -110,6 +155,25 @@ const SignUpCustomer = () => {
             >
               Sign Up As Customer
             </Text>
+          </View>
+
+          <View style={styles.picWrapper}>
+            {idPic && (
+              <Image
+                source={{ uri: idPic }}
+                style={styles.profileImage}
+              />
+            )}
+            <TouchableOpacity
+              style={styles.picButton}
+              onPress={() => pickImage(setIdPic)}
+            >
+              <Text style={styles.picButtonText}>
+                {idPic
+                  ? "Change National ID Image"
+                  : "Upload Your National ID Image"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
@@ -226,6 +290,31 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 13,
     fontWeight: "bold",
+  },
+  picButton: {
+    backgroundColor: "#FFC00040",
+    borderRadius: 50,
+    padding: 14,
+    width: "100%",
+    alignItems: "center",
+    marginTop: 5,
+  },
+  picButtonText: {
+    color: "black",
+    fontSize: 13,
+    fontWeight: "bold",
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 5,
+    borderRadius: 10,
+    alignSelf: "center",
+  },
+  picWrapper: {
+    alignItems: "center",
+    marginBottom: 20,
+    width: "100%",
   },
 });
 

@@ -168,7 +168,8 @@ crudsObj.postCustomer = (
   payment_style,
   bp_number,
   vat_number,
-  profilePic
+  profilePic,
+  id_image,
 ) => {
   return new Promise((resolve, reject) => {
     pool.query(
@@ -219,8 +220,9 @@ crudsObj.postCustomer = (
                 payment_style,
                 bp_number,
                 vat_number,
-                   profilePic
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`,
+                   profilePic,
+                   id_image
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`,
       [
         customerid,
         ecnumber, // Added ecnumber to the values
@@ -269,6 +271,7 @@ crudsObj.postCustomer = (
         bp_number,
         vat_number,
         profilePic,
+        id_image,
       ],
       (err, result) => {
         if (err) {

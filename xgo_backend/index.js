@@ -191,7 +191,7 @@ app.post("/driver/login", async (req, res) => {
 // Function to post application statistics
 const postApplicationStatistics = async () => {
   try {
-    const response = await axios.post(`https://localhost:${PORT}/application_statistics`, {
+    const response = await axios.post(`http://localhost:${PORT}/application_statistics`, {
       // Include any necessary data to send with the POST request
     });
     console.log("Statistics posted:", response.data);
@@ -232,7 +232,7 @@ startMidnightInterval();
 // Function to post half-hourly statistics
 const postHalfHourlyStatistics = async () => {
   try {
-    const response = await axios.post(`http://localhost:${PORT}/stats_half_hourly`, {
+    const response = await axios.post(`https://srv547457.hstgr.cloud:3011/stats_half_hourly`, {
       // Include any necessary data to send with the POST request
     });
     console.log("Statistics posted:", response.data);
@@ -269,17 +269,17 @@ startHalfHourlyInterval();
 
 
 
-const options = {
-  cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
-};
+// const options = {
+//   cert: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/fullchain.pem'),
+//   key: fs.readFileSync('/etc/letsencrypt/live/srv547457.hstgr.cloud/privkey.pem')
+// };
 
-https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
-  console.log('app is listening to port' + process.env.APPPORT);
-});
-
-
-
-// app.listen(PORT, () => {
-//   console.log("app is listening to port" + " " + PORT);
+// https.createServer(options, app).listen(process.env.APPPORT || '3011', () => {
+//   console.log('app is listening to port' + process.env.APPPORT);
 // });
+
+
+
+app.listen(PORT, () => {
+  console.log("app is listening to port" + " " + PORT);
+});

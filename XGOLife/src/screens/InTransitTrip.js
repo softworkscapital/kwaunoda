@@ -598,7 +598,7 @@ const InTransitTrip = ({ navigation }) => {
                       <Ionicons name="call" size={30} color="#fff" />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.smallButton}
+                      style={styles.smallButton1}
                       onPress={() =>
                         GotoChart(
                           tripDetails.trip_id,
@@ -610,7 +610,7 @@ const InTransitTrip = ({ navigation }) => {
                       <Ionicons name="chatbubbles" size={30} color="#fff" />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.smallButton}
+                      style={styles.smallButton2}
                       onPress={() => endtrip(tripDetails)}
                     >
                       
@@ -657,7 +657,21 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   smallButton: {
-    backgroundColor: "#FFC000",
+    backgroundColor: "blue",
+    borderRadius: 5,
+    padding: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  smallButton1: {
+    backgroundColor: "green",
+    borderRadius: 5,
+    padding: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  smallButton2: {
+    backgroundColor: "rgba(233, 30, 30, 0.73)",
     borderRadius: 5,
     padding: 5,
     alignItems: "center",

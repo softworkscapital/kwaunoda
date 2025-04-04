@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
   Image
@@ -62,7 +61,7 @@ const TermsConditions = ({ navigation }) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.topBar}>
         <Image
           source={require("../../assets/icon.png")}
@@ -70,10 +69,8 @@ const TermsConditions = ({ navigation }) => {
         />
       </View>
 
-      <Text style={styles.title}>Terms and Conditions</Text>
-
       <WebView 
-        source={{ uri: 'https://remsbobtail.softworkscapital.com/rems/rems/about.php' }}  
+        source={{ uri: 'https://xgolife.com/terms-of-use/' }}  
         style={styles.webview} 
       />
 
@@ -99,7 +96,7 @@ const TermsConditions = ({ navigation }) => {
       </View>
 
       <Toast />
-    </ScrollView>
+    </View>
   );
 };
 
@@ -126,15 +123,10 @@ const styles = StyleSheet.create({
     width: 200,
     height: 80,
   },
-  title: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
-    marginTop: 50,
-  },
   webview: {
-    height: 570,
-    marginBottom: 20,
+    flex: 1, 
+    marginTop: 10, 
+    marginBottom: 10, 
   },
   agreementContainer: {
     flexDirection: 'row',
@@ -167,8 +159,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    width: 150, // Fixed width for buttons
-    height: 50, // Fixed height for buttons
+    width: 150,
+    height: 50,
     paddingVertical: 12,
     borderRadius: 50,
     justifyContent: 'center',

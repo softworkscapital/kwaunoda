@@ -124,11 +124,11 @@ const Welcome = ({ navigation, route }) => {
             },
           ]}
         >
-          <Text style={styles.boxText}>DropX</Text>
+          <Text style={styles.boxText}>XGO</Text>
         </Animated.View>
       </View>
       <Text style={styles.message}>
-        Your account is still being verified by the DropX agents.
+        Your account is still being verified by the XGO team.
       </Text>
       <Text style={[styles.message, { marginTop: 10 }]}>
         Please be patient...

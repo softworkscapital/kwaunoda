@@ -113,7 +113,7 @@ const CustomerEndTrip = () => {
           text2: result.message,
           type: "success",
           position: "top",
-          visibilityTime: 9000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       } else {
@@ -140,9 +140,10 @@ const CustomerEndTrip = () => {
     } finally {
       // Set loading to false after a 5-second delay
       setTimeout(() => {
-        setLoading(false);
-        redirectHome(); // Redirect after the delay
-      }, 5000);
+        redirectHome(); 
+        setLoading(false);// Redirect after the delay
+      }, 500);
+
     }
   };
 

@@ -41,6 +41,8 @@ const DriverNewOrderList = () => {
     "https://xgolifedash.softworkscapital.com/route?lat1=0&lng1=0&lat2=0&lng2=0"
   );
   const [balance, setBalance] = useState();
+  const [isLoading, setIsLoading] = useState(false); 
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +52,7 @@ const DriverNewOrderList = () => {
             setDriver(parsedIds.driver_id); 
             await fetchDriverDetails(parsedIds.driver_id);
             await fetchTopUpHistory(parsedIds.driver_id);
+            
         } else {
             Alert.alert("Driver ID not found", "Please log in again.");
             setLoading(false);
@@ -63,10 +66,12 @@ const DriverNewOrderList = () => {
         if (driver) {
             fetchTrips();
         }
-    }, 500); 
+    }, 1000); 
 
     return () => clearInterval(intervalId); 
 }, [driver]); 
+
+
 
   useEffect(() => {
     const backAction = () => {
@@ -107,6 +112,71 @@ const DriverNewOrderList = () => {
 
       fetchUserIdAndCallLastActivity();
     }, [])
+  );
+
+  const [isActive, setIsActive] = useState(false);
+
+  const checkInTrans = async (id) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/trip/byStatus/driver_id/status?driver_id=${id}&status=InTransit`
+      );
+
+      if (response.status === 404) {
+        Toast.show({
+          text1: 'No trips accepted yet.',
+          text2: 'You can check your new orders instead.',
+          type: 'info',
+          position: 'center',
+          visibilityTime: 2000,
+          autoHide: true,
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error('Error Response:', errorResponse);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const tripData = await response.json();
+
+      if (tripData.length > 0) {
+        navigation.navigate('InTransitTrip', { OntripData: tripData[0] });
+      } else {
+        Toast.show({
+          text1: 'No trips in transit.',
+          type: 'info',
+          position: 'center',
+          visibilityTime: 2000,
+          autoHide: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error checking trips:', error);
+      Toast.show({
+        text1: 'Error checking trip status. Please try again.',
+        type: 'error',
+        position: 'center',
+        visibilityTime: 2000,
+        autoHide: true,
+      });
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsActive(true);
+      const intervalId = setInterval(() => {
+        checkInTrans(driver);
+      }, 3000);
+
+      return () => {
+        clearInterval(intervalId);
+        setIsActive(false);
+      };
+    }, [driver])
   );
 
   const lastActivity = async (id) => {
@@ -284,7 +354,9 @@ const DriverNewOrderList = () => {
   const handleCounterOffer = async () => {
     const currentdate = new Date().toISOString();
     console.log("tavamukaunda");
-
+  
+    setIsLoading(true); // Set loading to true when starting the request
+  
     try {
       const response = await fetch(`${API_URL}/counter_offer/`, {
         method: "POST",
@@ -302,14 +374,15 @@ const DriverNewOrderList = () => {
           status: "Unseen",
         }),
       });
-
+  
       const result = await response.json();
-
       console.log("counda offer", result);
+      setCounterOffer(null);
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to send counter offer.");
       }
+  
       Alert.alert(
         "Success",
         result.message || "Counter offer sent successfully."
@@ -318,6 +391,8 @@ const DriverNewOrderList = () => {
       fetchTrips();
     } catch (error) {
       Alert.alert("Error", error.message || "An error occurred.");
+    } finally {
+      setIsLoading(false); // Set loading to false after the request completes
     }
   };
 
@@ -360,13 +435,19 @@ const DriverNewOrderList = () => {
     }
   };
 
+
+
+
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   return (
     <View style={styles.container}>
+      
       <TopView />
+      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
       <WebView
         ref={webviewRef}
         source={{ uri: webViewUrl }}
@@ -376,6 +457,7 @@ const DriverNewOrderList = () => {
           alert("Unable to load the page.");
         }}
       />
+     
       {/* <View> */}
       {selectedTrip ? (
         <>
@@ -433,7 +515,7 @@ const DriverNewOrderList = () => {
                   onPress={handleAcceptTrip}
                   style={styles.modernAcceptButton}
                 >
-                  <Text style={styles.modernButtonText}></Text>
+                  <Text style={styles.modernButtonText}>Accept Offer</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -450,7 +532,11 @@ const DriverNewOrderList = () => {
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
-                  onRefresh={() => fetchTrips()}
+                  onRefresh={async () => {
+                    setRefreshing(true);
+                    await Promise.all([fetchTrips(), checkInTrans()]);
+                    setRefreshing(false);
+                  }}
                 />
               }
             >

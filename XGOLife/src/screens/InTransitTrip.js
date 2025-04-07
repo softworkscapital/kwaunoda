@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   smallButton2: {
-    backgroundColor: "rgba(233, 30, 30, 0.73)",
+    backgroundColor: "#rgba(238, 20, 20, 0.88)",
     borderRadius: 5,
     padding: 5,
     alignItems: "center",

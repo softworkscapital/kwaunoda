@@ -9,7 +9,8 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  Image
+  Image,
+  Linking
 } from 'react-native'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import {
@@ -228,8 +229,8 @@ const CustomerLogin = () => {
         const userStatus = result[0].status
         const userType = result[0].role
 
-        console.log('User Status:', userStatus)
-        console.log('User Type:', userType)
+        // console.log('User Status:', userStatus)
+        // console.log('User Type:', userType)
 
         const ids = {
           driver_id: result[0].driver_id,
@@ -314,6 +315,10 @@ const CustomerLogin = () => {
     navigation.navigate('SignUp')
   }
 
+  const handleLinkPress = () => {
+    Linking.openURL('https://xgolife.com/terms-of-use/')
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
@@ -325,19 +330,18 @@ const CustomerLogin = () => {
       <ScrollView>
         <View style={styles.roundGuard}>
           <View style={styles.formContainer}>
-           
-              <Text
-                style={{
-                  alignSelf: 'center',
-                  fontSize: 14,
-                  marginBottom: -31,
-                  fontWeight: 'bold'
-                  // marginTop: 10,
-                }}
-              >
-                Login
-              </Text>
-           
+            <Text
+              style={{
+                alignSelf: 'center',
+                fontSize: 14,
+                marginBottom: -31,
+                fontWeight: 'bold'
+                // marginTop: 10,
+              }}
+            >
+              Login
+            </Text>
+
             <VersionCheck />
             <View style={styles.inputContainer}>
               <FontAwesomeIcon
@@ -421,6 +425,7 @@ const CustomerLogin = () => {
           Create Account
         </Text>
       </TouchableOpacity>
+
       <View
         style={{
           bottom: 0,
@@ -430,9 +435,12 @@ const CustomerLogin = () => {
           marginTop: 10
         }}
       >
-        <Text style={{ alignSelf: 'center', fontSize: 10, color: 'white' }}>
-          By Signing in you agree to our terms and conditions.
-        </Text>
+        <TouchableOpacity onPress={handleLinkPress}>
+          <Text style={{ alignSelf: 'center', fontSize: 10, color: 'white' }}>
+            By Signing in you agree to our terms and conditions
+          </Text>
+        </TouchableOpacity>
+        .
       </View>
     </SafeAreaView>
   )
@@ -443,7 +451,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffc000',
     paddingTop: 50
-    
   },
   topBar: {
     height: '25%',
@@ -464,7 +471,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    height: "18%",
+    height: '18%',
     padding: 1,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -490,7 +497,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 13
   },
   rememberContainer: {
     flexDirection: 'row',

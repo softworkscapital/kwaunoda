@@ -8,7 +8,8 @@ import {
   Modal,
   FlatList,
   Alert,
-  Dimensions
+  Dimensions,
+  Vibration,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { FontAwesome } from '@expo/vector-icons'
@@ -92,26 +93,26 @@ const TopView = () => {
       }
     }
 
-    const fetchCounterOffers = async userId => {
+    const fetchCounterOffers = async (userId) => {
       try {
         const response = await fetch(
           `${API_URL}/counter_offer/customerid/status/${userId}/Unseen`
-        )
-        const offers = await response.json()
-        console.log('counter offers from TopView', offers)
-
+        );
+        const offers = await response.json();
+        console.log('counter offers from TopView', offers);
+    
         if (offers.length > 0) {
           const updatedOffers = await Promise.all(
             offers.map(async offer => {
               const driverResponse = await fetch(
                 `${API_URL}/driver/${offer.driver_id}`
-              )
-              const driverResult = await driverResponse.json()
-              console.log('driverdatafor Offer', driverResult)
+              );
+              const driverResult = await driverResponse.json();
+              console.log('driverdatafor Offer', driverResult);
               const driverData = Array.isArray(driverResult)
                 ? driverResult[0]
-                : driverResult
-
+                : driverResult;
+    
               return {
                 ...offer,
                 profileImage: `${API_URL_UPLOADS}/${driverData.profilePic.replace(
@@ -122,24 +123,41 @@ const TopView = () => {
                 stars: driverData.rating,
                 make: driverData.make,
                 model: driverData.model
-              }
+              };
             })
-          )
-
-          setCounterOffers(prevOffers => [
-            ...prevOffers,
+          );
+    
+          // Combine previous and new offers, filtering duplicates
+          const combinedOffers = [
+            ...counterOffers,
             ...updatedOffers.filter(
-              offer =>
-                !prevOffers.some(
-                  o => o.counter_offer_id === offer.counter_offer_id
-                )
+              offer => !counterOffers.some(o => o.counter_offer_id === offer.counter_offer_id)
             )
-          ])
+          ];
+    
+          // Only update the notification count if new offers were added
+          if (combinedOffers.length > counterOffers.length) {
+            const newOffersCount = combinedOffers.length - counterOffers.length;
+
+            
+            if(notificationCount > 0){
+              setNotificationCount(notificationCount + newOffersCount);
+                    // Vibrate when the notification count increments
+                    Vibration.vibrate();
+            }else{
+              setNotificationCount(newOffersCount);
+                    Vibration.vibrate();
+            }
+            
+        
+          }
+    
+          setCounterOffers(combinedOffers);
         }
       } catch (error) {
-        console.error('Error fetching counter offers:', error)
+        console.error('Error fetching counter offers:', error);
       }
-    }
+    };
 
     fetchData()
     fetchCounterOffers(id)
@@ -227,7 +245,7 @@ const TopView = () => {
     }
   }
 
-  const markOffersAsSeen = async (driver_id) => {
+  const markOffersAsSeen = async driver_id => {
     try {
       const response = await fetch(
         `${API_URL}/counter_offer/${driver_id}/Unseen/status`,
@@ -253,21 +271,21 @@ const TopView = () => {
   const renderCounterOffer = offer => {
     return (
       <View key={offer.counter_offer_id} style={styles.offerCard}>
-         <View style={styles.tripMetaContainer}>
-            <View style={styles.tripIdContainer}>
-              <FontAwesome name='hashtag' size={20} color='#666' />
-              <Text style={styles.tripIdText}>{offer.trip_id}</Text>
-            </View>
-            
-          <View style={styles.timeContainer}>
-            <FontAwesome name='dollar' size={20} color='#666' />
-            <Text style={styles.timeText}>{offer.counter_offer_value} {offer.currency}</Text>
-          </View>
+        <View style={styles.tripMetaContainer}>
+          <View style={styles.tripIdContainer}>
+            <FontAwesome name='hashtag' size={20} color='#666' />
+            <Text style={styles.tripIdText}>{offer.trip_id}</Text>
           </View>
 
-          
+          <View style={styles.timeContainer}>
+            <FontAwesome name='dollar' size={20} color='#666' />
+            <Text style={styles.timeText}>
+              {offer.counter_offer_value} {offer.currency}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.profileContainer}>
-          
           {offer.profileImage && offer.profileImage.trim() ? (
             <Image
               source={{ uri: offer.profileImage }}
@@ -299,7 +317,6 @@ const TopView = () => {
               <Text style={styles.offerText}>{offer.model}</Text>
             </Text>
           </View>
-         
         </View>
 
         {/* <Text style={styles.offerText}>
@@ -337,12 +354,12 @@ const TopView = () => {
   }
 
   const acceptCounterOffer = async (offerId, offer) => {
-    console.log("ACCEPTING NOW", offer);
-    const settler = await settleCommission(offer);
+    console.log('ACCEPTING NOW', offer)
+    const settler = await settleCommission(offer)
 
-    if(!settler){
-          Alert.alert("Error", "Failed to Accept Trip Try a new Offer");
-    }else{
+    if (!settler) {
+      Alert.alert('Error', 'Failed to Accept Trip Try a new Offer')
+    } else {
       try {
         const acceptResponse = await fetch(
           `${API_URL}/counter_offer/${offerId}/status`,
@@ -354,13 +371,13 @@ const TopView = () => {
             body: JSON.stringify({ status: 'accepted' })
           }
         )
-  
+
         if (!acceptResponse.ok) {
           throw new Error(
             `Error accepting counter offer: ${acceptResponse.statusText}`
           )
         }
-  
+
         const statusResponse = await fetch(
           `${APILINK}/trip/updateStatusAndDriver/${offer.trip_id}`,
           {
@@ -374,25 +391,24 @@ const TopView = () => {
             })
           }
         )
-  
+
         if (!statusResponse.ok) {
           throw new Error(
             `Error updating trip status: ${statusResponse.statusText}`
           )
         }
-  
+
         setCounterOffers(prevOffers =>
           prevOffers.filter(
             existingOffer => existingOffer.counter_offer_id !== offerId
           )
         )
-  
+
         setCounterOfferModalVisible(false) // Close modal on accept
       } catch (error) {
         console.error('Error accepting counter offer:', error)
       }
     }
-
   }
 
   const rejectCounterOffer = async offerId => {
@@ -402,125 +418,119 @@ const TopView = () => {
     await markOfferAsSeen(offerId)
   }
 
-    //new here
-    const fetchTopUpHistory = async (driverID) => {
-      // console.log("Honai driver id yeduuuuuu:", driverID);
-  
-      try {
-        const resp = await fetch(`${API_URL}/topUp/userBalance/${driverID}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
-        // console.log("maziBalance eduuuu:", resp);
-        const result = await resp.json();
-        // console.log("Top Up History:", result);
-  
-        // Check if the response was successful and contains the balance
-        if (result && result.success && result.data && result.data.length > 0) {
-          const userWalletBalance = result.data[0].user_wallet_balance;
-          // console.log("User Wallet Balance:", userWalletBalance);
-  
-          // Assuming you have a function or state to set the balance
-          return userWalletBalance; // Call setBalance with the fetched balance
-        } else {
-          Alert.alert("Error", "Failed to fetch Top Up History.");
-          return 0;
+  //new here
+  const fetchTopUpHistory = async driverID => {
+    // console.log("Honai driver id yeduuuuuu:", driverID);
+
+    try {
+      const resp = await fetch(`${API_URL}/topUp/userBalance/${driverID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.log("Error fetching History:", error);
-        Alert.alert("Error", "An error occurred while fetching History.");
+      })
+
+      // console.log("maziBalance eduuuu:", resp);
+      const result = await resp.json()
+      // console.log("Top Up History:", result);
+
+      // Check if the response was successful and contains the balance
+      if (result && result.success && result.data && result.data.length > 0) {
+        const userWalletBalance = result.data[0].user_wallet_balance
+        // console.log("User Wallet Balance:", userWalletBalance);
+
+        // Assuming you have a function or state to set the balance
+        return userWalletBalance // Call setBalance with the fetched balance
+      } else {
+        Alert.alert('Error', 'Failed to fetch Top Up History.')
+        return 0
       }
-    };
-  
-    const getTrip = async(tripId) => {
-      try {
-        const resp = await fetch(`${API_URL}/trip/${tripId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
-        const result = await resp.json();
-   
-        
-        return result[0];
-      } catch (error) {
-        console.log("Error fetching History:", error);
-        Alert.alert("Error", "An error occurred while fetching History.");
-      }
+    } catch (error) {
+      console.log('Error fetching History:', error)
+      Alert.alert('Error', 'An error occurred while fetching History.')
+    }
+  }
+
+  const getTrip = async tripId => {
+    try {
+      const resp = await fetch(`${API_URL}/trip/${tripId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const result = await resp.json()
+
+      return result[0]
+    } catch (error) {
+      console.log('Error fetching History:', error)
+      Alert.alert('Error', 'An error occurred while fetching History.')
+    }
+  }
+
+  ///new here
+  const settleCommission = async offer => {
+    const balance = await fetchTopUpHistory(offer.driver_id)
+    console.log('BALANCE YEDU', balance)
+
+    // Calculate fee based on accepted cost
+    const fee = 0.09 * offer.counter_offer_value
+    // console.log("ziBalance iri", balance);
+
+    // Check if balance is sufficient
+    if (balance < fee || balance <= 0) {
+      Alert.alert('Error', `Driver's floating balance is too low.`)
+      return
     }
 
-    ///new here
-    const settleCommission = async (offer) => {
-      const balance = await fetchTopUpHistory(offer.driver_id);
-      console.log("BALANCE YEDU", balance);
+    // Update balance after fee deduction
+    // const newBalance = balance - fee;
+    const trip = await getTrip(offer.trip_id)
+    console.log('TRIP REDU', trip)
+    // Prepare data for the API request
+    const data = {
+      commission: fee,
+      description: `Trip ID: ${offer.trip_id} Commission\n${trip.deliveray_details}\nFrom: ${trip.origin_location}\nTo: ${trip.dest_location}`
+    }
 
-      // Calculate fee based on accepted cost
-      const fee = 0.09 * offer.counter_offer_value;
-      // console.log("ziBalance iri", balance);
-  
-      // Check if balance is sufficient
-      if (balance < fee || balance <= 0) {
-        Alert.alert(
-          "Error",
-          `Driver's floating balance is too low.`
-        );
-        return;
-      }
-  
-      // Update balance after fee deduction
-      // const newBalance = balance - fee;
-      const trip = await getTrip(offer.trip_id);
-      console.log("TRIP REDU", trip);
-      // Prepare data for the API request
-      const data = {
-        commission: fee,
-        description: `Trip ID: ${offer.trip_id} Commission\n${trip.deliveray_details}\nFrom: ${trip.origin_location}\nTo: ${trip.dest_location}`,
-      };
-  
-      console.log("Zvikuenda izvo", data);
-  
-      try {
-        // Make the API call to process the trip commission
-        const resp = await fetch(
-          `${APILINK}/topUp/trip_commission_settlement/${1}/${offer.driver_id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          }
-        );
-  
-        // Check if the response is OK
-        if (!resp.ok) {
-          const errorText = await resp.text(); // Get the text response for debugging
-          Alert.alert("Error", "Failed to process top-up");
-          return false;
+    console.log('Zvikuenda izvo', data)
+
+    try {
+      // Make the API call to process the trip commission
+      const resp = await fetch(
+        `${APILINK}/topUp/trip_commission_settlement/${1}/${offer.driver_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
         }
-  
-        // Parse the JSON response
-        const result = await resp.json();
-        if (result) {
-          await markOffersAsSeen(offer.driver_id);
-          console.log("done"); 
-          return true;
-        } else {
-          Alert.alert("Error", "Failed to process top-up.");
-          return false;
-        }
-      } catch (error) {
-        console.error("Error processing top-up:", error);
-        Alert.alert("Error", "An error occurred while processing top-up.");
+      )
+
+      // Check if the response is OK
+      if (!resp.ok) {
+        const errorText = await resp.text() // Get the text response for debugging
+        Alert.alert('Error', 'Failed to process top-up')
+        return false
       }
-    };
 
-
+      // Parse the JSON response
+      const result = await resp.json()
+      if (result) {
+        await markOffersAsSeen(offer.driver_id)
+        console.log('done')
+        return true
+      } else {
+        Alert.alert('Error', 'Failed to process top-up.')
+        return false
+      }
+    } catch (error) {
+      console.error('Error processing top-up:', error)
+      Alert.alert('Error', 'An error occurred while processing top-up.')
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -533,18 +543,24 @@ const TopView = () => {
           <FontAwesome name='bars' size={24} color='black' />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setCounterOfferModalVisible(true)}
-          style={styles.menuButton}
-        >
-          <FontAwesome name='bell' size={24} color='black' />
-          {/* <Text>Counter</Text> */}
-          {notificationCount > 0 && (
-            <View style={styles.notificationCount}>
-              <Text style={styles.countText}>x{notificationCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        {customerType === 'customer' ? (
+          <TouchableOpacity
+            onPress={() => {
+              setNotificationCount(0) 
+              setCounterOfferModalVisible(true)
+            }}
+            style={styles.menuButton}
+          >
+            <FontAwesome name='bell' size={24} color='black' />
+            {notificationCount > 0 && (
+              <View style={styles.notificationCount}>
+                <Text style={styles.countText}>{notificationCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ) : null}
+
+  
 
         <TouchableOpacity
           onPress={() => navigation.navigate('CustomerAdminChat')}
@@ -794,11 +810,11 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   modalContainer2: {
-    width: '90%',
+    width: '95%',
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0)',
     borderRadius: 10,
-    padding: 20
+    
   },
   closeButton: {
     alignItems: 'center',

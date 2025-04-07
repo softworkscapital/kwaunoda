@@ -109,7 +109,7 @@ const DriverEndTrip = () => {
     if(trip.delivery_received_confirmation_code === code){
       try {
         const response = await fetch(
-          `${API_URL}/trip//end-trip/driver/${trip.trip_id}`,
+          `${API_URL}/trip/end-trip/driver/${trip.trip_id}`,
           {
             method: "POST",
             headers: {
@@ -119,7 +119,7 @@ const DriverEndTrip = () => {
         );
   
         const result = await response.json();
-        console.log("result from end trip function in Customer", result);
+        console.log("result from end trip function in driver", result);
       } catch (error) {
         console.error("Error posting feedback:", error);
       }

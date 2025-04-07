@@ -56,6 +56,8 @@ const TermsConditions = ({ navigation }) => {
     }
   };
 
+
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
   }

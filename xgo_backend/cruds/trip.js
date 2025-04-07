@@ -561,7 +561,7 @@ crudsObj.endTripByDriver = (trip_id) => {
             if (err2) {
               return reject(err2);
             }
-            return resolve({ status: "200", message: "Trip ended successfully" });
+            return resolve({ status: "200", result2 });
           }
         );
       }

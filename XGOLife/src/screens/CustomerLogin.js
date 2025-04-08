@@ -440,7 +440,6 @@ const CustomerLogin = () => {
             By Signing in you agree to our terms and conditions
           </Text>
         </TouchableOpacity>
-        .
       </View>
     </SafeAreaView>
   )

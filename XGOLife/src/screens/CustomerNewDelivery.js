@@ -69,6 +69,17 @@ const CustomerNewDelivery = () => {
 
   const navigation = useNavigation()
   const [driversData, setDriversData] = useState([])
+  const [promoCode, setPromoCode] = useState()
+
+  useEffect(() => {
+    const getReferral = async () => {
+      const storedIds = await AsyncStorage.getItem('theIds')
+      const parsedIds = JSON.parse(storedIds)
+      console.log(parsedIds);
+      setPromoCode(parsedIds.referral_code)
+    }
+    getReferral()
+  }, [])
 
   const getDrivers = async () => {
     try {
@@ -96,9 +107,7 @@ const CustomerNewDelivery = () => {
       return
     }
     //referral_codey7
-    const message = `Hello XGO driver, a new delivery has been requested.\n
-    Be the first to accept to accept this trip.\n
-    Tell a Friend to download the XGO App at www.xgolife.com experience a life of convenience and begin to send packages seamlessly.`
+    const message = `Hello XGO driver, a new delivery has been requested, $${price}.`
 
     try {
       const response = await fetch(
@@ -313,10 +322,11 @@ const CustomerNewDelivery = () => {
   }
 
   const sendSmsToClient = async data => {
+    
     const message = `Hi ${contact}, a package is being delivered to you.\n
     It consists of ${data.deliveray_details}.\n
     Please give the delivery person the following code after confirming your package: ${data.delivery_received_confirmation_code}.\n
-    Download the XGO App at www.xgolife.com to experience a life of convenience and begin to receive packages seamlessly.`
+    Download the XGO App at www.xgolife.com and use ${promoCode} as your referral code, to experience a life of convenience and begin to receive packages seamlessly.`
 
     try {
       const response = await fetch(

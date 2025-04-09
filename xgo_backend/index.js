@@ -37,6 +37,11 @@ const WithdrawalRouter = require("./routes/application_withdrawals");
 const VehicleRouter = require("./routes/vehicles");
 const StatsHalfHourlyRouter = require("./routes/stats_half_hourly");
 
+const ClientServiceChatRouter = require("./routes/client_service_chat");
+const ConversationSupportRouter = require("./routes/conversation_support");
+
+
+
 const pool = require("./cruds/poolfile");
 const bodyParser = require("body-parser");
 
@@ -103,6 +108,8 @@ app.use("/application_statistics", StatisticRouter);
 app.use("/application_withdrawals", WithdrawalRouter);
 app.use("/vehicle", VehicleRouter);
 app.use("/stats_half_hourly", StatsHalfHourlyRouter)
+app.use("/clientservicechat", ClientServiceChatRouter)
+app.use("/tickets", ConversationSupportRouter)
 
 pesepay.resultUrl = "https://localhost:3011/payment-result";
 pesepay.returnUrl = "XgoLife://home";

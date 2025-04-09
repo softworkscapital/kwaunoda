@@ -86,7 +86,7 @@ const OTPDriver = ({ navigation }) => {
   };
 
   const updateUsers = async () => {
-    const status = { status: "Verified" };
+    const status = { status: "Pending Verification" };
     try {
       const response = await fetch(`${APILINK}/users/update_status/${userId}`, {
         method: "PUT",

@@ -68,6 +68,11 @@ import CustomerReferredBy from "./src/screens/CustomerReferredBy";
 import WebView1 from "./src/screens/WebView1.js";
 import Start from "./src/screens/Start.js";
 import SignUp from "./src/screens/SignUp.js";
+import FindOutChat from "./src/screens/FindOutChat.js";
+
+
+import ViewEditInformation from "./src/screens/ViewEditInformation.js";
+import FindOutChatHome from "./src/screens/FindOutChatHome.js";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -157,6 +162,13 @@ const App = () => {
           <Stack.Screen name="OnlineStore" component={OnlineStore} />
           <Stack.Screen name="StoreCategories" component={StoreCategories} />
           <Stack.Screen name="StoreInventory" component={StoreInventory} />
+          <Stack.Screen name="ViewEditInformation" component={ViewEditInformation} />
+
+
+          <Stack.Screen name="FindOutChat" component={FindOutChat} />
+          <Stack.Screen name="FindOutChatHome" component={FindOutChatHome} />
+
+
           <Stack.Screen
             name="PaymentSuccessful"
             component={PaymentSuccessful}

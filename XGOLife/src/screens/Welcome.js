@@ -6,61 +6,69 @@ import {
   Animated,
   TouchableOpacity,
   Alert,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Make sure to import AsyncStorage
-import { API_URL } from "./config"; // Adjust the path as necessary
-import Toast from "react-native-toast-message"; // Adjust the path as necessary
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "./config";
+import Toast from "react-native-toast-message";
 
 const Welcome = ({ navigation, route }) => {
-  const { email, password } = route.params; // Destructure email and password from route params
-  const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity for fade animation
-  const [rotationAnim] = useState(new Animated.Value(0)); // Rotation animation
+  const { email } = route.params;
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [rotationAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(false);
-  const [customerId, setCustomerID] = useState(null); // State to hold customer ID
+  const [customerId, setCustomerID] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [userStatus, setUserStatus] = useState("");
 
   const fetchUserDetails = async () => {
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     try {
+      const hashedPassword = await AsyncStorage.getItem("hashedPassword");
+      console.log("Hashed Password:", hashedPassword);
+
       const response = await fetch(
-        `${API_URL}/users/login/${email}/${password}`,
+        `${API_URL}/users/login/${email}/${hashedPassword}`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       const result = await response.json();
+      console.log("API Response:", result);
 
-      // Access the customer ID from the result
       const customerId = result[0]?.customerid;
       console.log("Customer ID:", customerId);
       setCustomerID(customerId);
 
       if (response.ok && result.length > 0) {
-        const userStatus = result[0].status; // Assuming the user status is in the response
+        const userId = result[0]?.driver_id;
 
-        const ids = {
-          driver_id: result[0].driver_id,
-          customerId: result[0]?.customerid,
-          last_logged_account: result[0].last_logged_account,
-        };
+        const userResponse = await fetch(`${API_URL}/users/${userId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
-        console.log("The IDs", ids);
-        // Store driver ID and customer ID in AsyncStorage
-        await AsyncStorage.setItem("driver", JSON.stringify(result[0].driver_id));
-        await AsyncStorage.setItem("theIds", JSON.stringify(ids));
-        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
-        await AsyncStorage.setItem("userStatus", userStatus);
+        const userInfo = await userResponse.json();
+        console.log("User Info:", userInfo);
 
-        if (userStatus === "Pending Verification") {
-          navigation.navigate("Welcome", { email, password });
-        } else if (userStatus === "Suspended" || userStatus === "Blacklisted") {
-          navigation.navigate("AccountInError");
-        } else {
-          redirectHome(ids.last_logged_account, ids.driver_id);
+        if (userResponse.ok && userInfo.length > 0) {
+          const name = userInfo[0].username;
+          const status = userInfo[0].status;
+          setUserName(name);
+          setUserStatus(status);
+
+          Alert.alert(
+            "Welcome",
+            `Welcome ${name}, your account is ${status} and it's going to be verified by the XGO Life agents. Please be patient.`
+          );
         }
+
+        await AsyncStorage.setItem("driver", JSON.stringify(userId));
+        await AsyncStorage.setItem("theIds", JSON.stringify(result[0]));
+        await AsyncStorage.setItem("theCustomerId", JSON.stringify(customerId));
       } else {
         Alert.alert("Error", "No user found or wrong password/email.");
       }
@@ -75,21 +83,19 @@ const Welcome = ({ navigation, route }) => {
         autoHide: true,
       });
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUserDetails(); // Fetch user details when component mounts
+    fetchUserDetails();
 
-    // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
 
-    // Rotation animation
     Animated.loop(
       Animated.timing(rotationAnim, {
         toValue: 1,
@@ -98,94 +104,215 @@ const Welcome = ({ navigation, route }) => {
       })
     ).start();
 
-    // Start fading in
     fadeAnim.setValue(1);
   }, [fadeAnim, rotationAnim]);
 
-  const handleBack = () => {
-    navigation.navigate("CustomerLogin"); // Navigate to CustomerLogin.js
+  const redirectToFindOutChatHome = () => {
+    navigation.navigate("FindOutChatHome");
+  };
+
+  const redirectToViewEditInformation = () => {
+    navigation.navigate("ViewEditInformation");
   };
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.boxContainer}>
-        <Animated.View
-          style={[
-            styles.box,
-            {
-              transform: [
-                {
-                  rotate: rotationAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["0deg", "360deg"],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Text style={styles.boxText}>XGO</Text>
-        </Animated.View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>XGO Life</Text>
       </View>
-      <Text style={styles.message}>
-        Your account is still being verified by the XGO team.
-      </Text>
-      <Text style={[styles.message, { marginTop: 10 }]}>
-        Please be patient...
-      </Text>
-      <TouchableOpacity style={styles.btnBack} onPress={handleBack}>
-        <Text style={styles.txtBack}>Back</Text>
-      </TouchableOpacity>
-    </Animated.View>
+
+      <View style={styles.content}>
+        <View style={styles.boxContainer}>
+          <Animated.View
+            style={[
+              styles.box,
+              {
+                transform: [
+                  {
+                    rotate: rotationAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0deg", "360deg"],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Text style={styles.boxText}>XGO Life</Text>
+          </Animated.View>
+        </View>
+
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>Welcome, {userName}</Text>
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusLabel}>Status: </Text>
+            <View style={styles.statusBadge}>
+              <Text style={styles.statusText}>{userStatus}</Text>
+            </View>
+          </View>
+          <Text style={styles.message}>
+            Your account is going to be verified by the XGO Life agents. Please be patient...
+          </Text>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.btnNavigate} 
+            onPress={redirectToFindOutChatHome}
+          >
+            <Text style={styles.txtNavigate}>Go to Find Out Chat</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.btnNavigate} 
+            onPress={redirectToViewEditInformation}
+          >
+            <Text style={styles.txtNavigate}>Edit Information</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
+  },
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    marginTop: 30,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  backButtonText: {
+    fontSize: 28,
+    color: "#333",
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+    color: "#333",
+    fontFamily: "System",
+  },
+  content: {
+    flex: 1,
+    marginTop: 80, // Account for fixed header
+    paddingHorizontal: 20,
   },
   boxContainer: {
     justifyContent: "center",
     alignItems: "center",
-    height: 200, // Height for centering
-    width: "100%",
+    height: 200,
   },
   box: {
-    width: 120, // Increased width
-    height: 120, // Increased height
+    width: 120,
+    height: 120,
     backgroundColor: "#ffc000",
-    borderRadius: 10,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 80,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   boxText: {
-    color: "black",
-    fontWeight: "bold",
+    color: "#333",
+    fontWeight: "700",
+    fontSize: 18,
+    fontFamily: "System",
+  },
+  welcomeSection: {
+    alignItems: "center",
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
+    fontFamily: "System",
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  statusLabel: {
     fontSize: 16,
+    color: "#666",
+    fontFamily: "System",
+  },
+  statusBadge: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  statusText: {
+    color: "#333",
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "System",
   },
   message: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: "center",
-    marginTop: 120,
+    color: "#666",
+    lineHeight: 22,
+    fontFamily: "System",
   },
-  btnBack: {
+  buttonContainer: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+  },
+  btnNavigate: {
     backgroundColor: "#ffc000",
-    borderRadius: 50,
-    padding: 14,
-    width: "100%",
+    borderRadius: 25,
+    padding: 16,
+    marginBottom: 12,
     alignItems: "center",
-    marginTop: 80,
-    fontSize: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
   },
-  txtBack: {
-    color: "black",
+  txtNavigate: {
+    color: "#333",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontFamily: "System",
   },
 });
 

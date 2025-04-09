@@ -20,7 +20,7 @@ import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
 
-const CustomerAdminChat = ({ navigation, route }) => {
+const FindOutChat = ({ navigation, route }) => {
   const [message, setMessage] = useState("");
   const [useid, setUserid] = useState(" ");
   const [chatHistory, setChatHistory] = useState([]);
@@ -401,4 +401,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomerAdminChat;
+export default FindOutChat;

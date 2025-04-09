@@ -68,6 +68,18 @@ VehicleRouter.get("/:driver_id", async (req, res, next) => {
 });
 
 
+VehicleRouter.get("/getvehiclesbydriverid/:driver_id", async (req, res, next) => {
+  try {
+    let driver_id = req.params.driver_id; // Use driver_id instead of number_plate
+    let result = await VehicleDbOperations.getVehicleByDriverId(driver_id);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+
 // Route to update a driver's details
 VehicleRouter.put("/:id", async (req, res, next) => {
   try {

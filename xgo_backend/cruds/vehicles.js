@@ -87,6 +87,23 @@ crudsObj.getVehicleById = (number_plate) => {
 };
 
 
+
+crudsObj.getVehicleByDriverId = (driver_id) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "SELECT * FROM vehicles WHERE driver_id = ?",
+      [driver_id], 
+      (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(results);
+      }
+    );
+  });
+};
+
+
 crudsObj.updateVehicle = (number_plate, updatedValues) => {
   const {
     

@@ -61,6 +61,7 @@ import PesePaymentScreen from "./src/screens/Pesepay";
 import TermsConditions from "./src/screens/TermsConditions.js";
 import DriverTerms from "./src/screens/DriverTerms.js";
 import PaymentSuccessful from "./src/screens/PaymentSuccessful.js";
+import CreateChatScreen from "./src/screens/AdminChartHome.js";
 
 
 import WebView1 from "./src/screens/WebView1.js";
@@ -147,6 +148,8 @@ const App = () => {
         <Stack.Screen name="StoreCategories" component={StoreCategories} />
         <Stack.Screen name="StoreInventory" component={StoreInventory} />
         <Stack.Screen name="pesepay" component={PesePaymentScreen} />
+        <Stack.Screen name="StartChart" component={CreateChatScreen} />
+
         {/* Add the MapViewComponent to the stack navigator */}
       </Stack.Navigator>
       {/* <Toast/> */}

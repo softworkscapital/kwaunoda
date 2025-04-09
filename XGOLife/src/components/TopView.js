@@ -191,7 +191,7 @@ const TopView = () => {
     { id: '8', title: 'Settings', onPress: () => handleMenuPress('settings') },
     { id: '2', title: 'FAQ', onPress: () => handleMenuPress('FAQ') },
     { id: '3', title: 'Safety', onPress: () => handleMenuPress('Safety') },
-    { id: '10', title: 'Chat', onPress: () => handleMenuPress('ChatMenu') },
+    { id: '10', title: 'Chat', onPress: () => handleMenuPress('StartChart') },
     { id: '5', title: 'About Us', onPress: () => handleMenuPress('AboutUs') },
     {
       id: '11',
@@ -201,7 +201,7 @@ const TopView = () => {
     { id: '12', title: 'Log Out', onPress: () => handleLogout() }
   ]
 
-  const handleMenuPress = screen => {
+  const handleMenuPress = (screen) => {
     setMenuModalVisible(false)
     if (screen === 'ProfileInfo') {
       navigation.navigate(
@@ -563,11 +563,19 @@ const TopView = () => {
   
 
         <TouchableOpacity
-          onPress={() => navigation.navigate('CustomerAdminChat')}
+          onPress={() => navigation.navigate('StartChart')}
           style={styles.menuButton}
         >
           <FontAwesome name='comments' size={24} color='black' />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("StoreCategories")}
+          style={styles.menuButton}
+        >
+          <FontAwesome name="shopping-cart" size={24} color="black" />
+        </TouchableOpacity>
+     
       </View>
 
       <View style={styles.profileContainer}>

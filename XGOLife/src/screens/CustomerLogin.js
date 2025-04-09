@@ -24,7 +24,7 @@ import Toast from 'react-native-toast-message'
 import { API_URL } from './config'
 import MD5 from 'react-native-md5'
 import VersionCheck from './VersionChecker'
-import NetInfo from '@react-native-community/netinfo'
+import ConnectivityChecker from '../components/connectionCheck'
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState('')
@@ -33,8 +33,6 @@ const CustomerLogin = () => {
   const [loading, setLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const navigation = useNavigation()
-  const [isConnected, setIsConnected] = useState(null)
-  const [connectionType, setConnectionType] = useState(null)
 
   // useEffect(() => {
   //   const checkRememberMe = async () => {
@@ -48,45 +46,6 @@ const CustomerLogin = () => {
   //   };
   //   checkRememberMe();
   // }, []);
-
-  // useEffect(() => {
-  //   const unsubscribe = NetInfo.addEventListener(state => {
-  //     setIsConnected(state.isConnected)
-  //     setConnectionType(state.type)
-
-  //     if (!state.isConnected) {
-  //       console.log("not connected")
-  //       Toast.show({
-  //         text1: 'No Connection',
-  //         text2: 'You are currently offline.',
-  //         type: 'error'
-  //       })
-  //     } else if (state.isConnected && state.isInternetReachable === false) {
-  //       console.log("poor");
-  //       Toast.show({
-  //         text1: 'Poor Connection',
-  //         text2: 'Your connection is unstable.',
-  //         type: 'info'
-  //       })
-  //     }
-  //   })
-
-  //   // Check initial connectivity
-  //   const fetchData = async () => {
-  //     const state = await NetInfo.fetch()
-  //     setIsConnected(state.isConnected)
-  //     setConnectionType(state.type)
-  //   }
-
-  //   fetchData()
-
-  //   const intervalId = setInterval(() => {
-  //     unsubscribe();
-  //     fetchData();
-  //   }, 500)
-
-  //   return () => clearInterval(intervalId)
-  // }, [])
 
   const redirectHome = async (type, driverId, customerID) => {
     if (type === 'driver') {
@@ -321,6 +280,7 @@ const CustomerLogin = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ConnectivityChecker />
       <View style={styles.topBar}>
         <Image
           source={require('../../assets/icon.png')}
@@ -449,7 +409,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffc000',
-    paddingTop: 50
+    paddingTop: 50,
+    justifyContent: 'center'
   },
   topBar: {
     height: '25%',
